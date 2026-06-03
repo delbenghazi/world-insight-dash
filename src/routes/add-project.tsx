@@ -320,7 +320,6 @@ function validate(raw: Record<string, any>[]) {
       projectName: String(r["Project Name"] ?? "").trim(),
       projectType: String(r["Project Type"] ?? "").trim(),
       gtmiTier: (String(r["GTMI Tier"] ?? "Tier 2").trim() as Project["gtmiTier"]),
-      ...scores,
       dim1_absorption: scores.dim1_absorption,
       dim2_regulatory: scores.dim2_regulatory,
       dim3_technical: scores.dim3_technical,
