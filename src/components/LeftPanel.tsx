@@ -60,7 +60,7 @@ export function LeftPanel() {
                     style={{ background: countryColorVar(selectedCountry) }}
                   />
                 )}
-                <span className="font-semibold tracking-tight text-lg">
+                <span className="tracking-tight text-lg font-bold">
                   {country?.name ?? "Select on map"}
                 </span>
               </div>
