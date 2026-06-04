@@ -10,6 +10,7 @@ import {
   RiskLevel,
   useProjectStore,
 } from "@/lib/project-data";
+import { normalizeCountry } from "@/lib/countries";
 import templateAsset from "@/assets/Template_Capstone.xlsx.asset.json";
 
 export const Route = createFileRoute("/add-project")({
@@ -21,15 +22,6 @@ export const Route = createFileRoute("/add-project")({
   }),
   component: AddProject,
 });
-
-const COUNTRY_LOOKUP: Record<string, CountryCode> = {
-  GUATEMALA: "GTM",
-  GTM: "GTM",
-  HONDURAS: "HND",
-  HND: "HND",
-  "EL SALVADOR": "SLV",
-  SLV: "SLV",
-};
 
 const RISK_LOOKUP: Record<string, RiskLevel> = {
   L: "Low", LOW: "Low", M: "Medium", MEDIUM: "Medium", H: "High", HIGH: "High",
@@ -254,13 +246,13 @@ function validate(raw: Record<string, any>[]) {
 
   raw.forEach((r, i) => {
     const row = i + 3; // two-row header offset
-    const countryRaw = String(pick(r, "Country") ?? "").trim().toUpperCase();
+    const countryRaw = String(pick(r, "Country") ?? "").trim();
     if (!countryRaw) return; // skip blank rows
-    const code = COUNTRY_LOOKUP[countryRaw];
+    const code = normalizeCountry(countryRaw);
     if (!code) {
       issues.push({
         row, field: "Country", severity: "error",
-        message: `"${countryRaw}" is not in scope (Guatemala/Honduras/El Salvador).`,
+        message: `"${countryRaw}" is not a recognized country (ISO 3166).`,
       });
     }
     const projectId = String(pick(r, "Project ID") ?? "").trim();
@@ -307,7 +299,7 @@ function validate(raw: Record<string, any>[]) {
     const overallRisk: RiskLevel = RISK_LOOKUP[riskRaw] ?? "Medium";
 
     parsed.push({
-      country: code ?? "GTM",
+      country: code ?? countryRaw.toUpperCase(),
       projectId,
       projectName: String(pick(r, "Project Name") ?? "").trim(),
       projectType: String(pick(r, "Project Type") ?? "").trim(),

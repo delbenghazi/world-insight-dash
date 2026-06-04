@@ -11,27 +11,23 @@ import { ZoomIn, ZoomOut } from "lucide-react";
 import {
   CountryCode,
   countryColorVar,
+  countriesInUse,
   useProjectStore,
 } from "@/lib/project-data";
+import { isoNumericToIso3 } from "@/lib/countries";
 
 const TOPO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-
-// Numeric country IDs from world-atlas (ISO 3166-1 numeric)
-const ISO_NUM_TO_CODE: Record<string, CountryCode> = {
-  "320": "GTM",
-  "340": "HND",
-  "222": "SLV",
-};
 
 const MIN_ZOOM = 0.52;
 const MAX_ZOOM = 4;
 const ZOOM_FACTOR = 1.4;
 
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
-  const { selectedCountry, hoveredCountry, setHoveredCountry } =
+  const { projects, selectedCountry, hoveredCountry, setHoveredCountry } =
     useProjectStore();
   const navigate = useNavigate();
+  const focusSet = new Set(countriesInUse(projects));
   const [ready, setReady] = useState(!entrance);
   const [zoom, setZoom] = useState(1);
   const [center, setCenter] = useState<[number, number]>([0, 0]);
@@ -101,7 +97,8 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
           <Geographies geography={TOPO_URL}>
             {({ geographies }) =>
               geographies.map((geo) => {
-                const code = ISO_NUM_TO_CODE[String(geo.id)];
+                const iso3 = isoNumericToIso3(String(geo.id));
+                const code = iso3 && focusSet.has(iso3) ? iso3 : null;
                 const isFocus = !!code;
                 const isSelected = code && selectedCountry === code;
                 const isHovered = code && hoveredCountry === code;
