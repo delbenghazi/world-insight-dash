@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { motion } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
+import { ZoomIn, ZoomOut } from "lucide-react";
 import {
   CountryCode,
   countryColorVar,
@@ -18,11 +19,16 @@ const ISO_NUM_TO_CODE: Record<string, CountryCode> = {
   "222": "SLV",
 };
 
+const MIN_ZOOM = 80;
+const MAX_ZOOM = 400;
+const ZOOM_STEP = 40;
+
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const { selectedCountry, hoveredCountry, setHoveredCountry } =
     useProjectStore();
   const navigate = useNavigate();
   const [ready, setReady] = useState(!entrance);
+  const [zoom, setZoom] = useState(155);
 
   useEffect(() => {
     if (!entrance) return;
@@ -30,18 +36,19 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
     return () => clearTimeout(t);
   }, [entrance]);
 
-  const initialScale = entrance ? 380 : 155;
+  const zoomIn = useCallback(() => setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM)), []);
+  const zoomOut = useCallback(() => setZoom((z) => Math.max(z - ZOOM_STEP, MIN_ZOOM)), []);
 
   return (
     <motion.div
-      className="h-full w-full"
+      className="relative h-full w-full"
       initial={{ scale: entrance ? 2.4 : 1, opacity: entrance ? 0 : 1 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
     >
       <ComposableMap
         projection="geoEqualEarth"
-        projectionConfig={{ scale: 155 }}
+        projectionConfig={{ scale: zoom }}
         style={{ width: "100%", height: "100%" }}
       >
         <Geographies geography={TOPO_URL}>
@@ -93,6 +100,25 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
           }
         </Geographies>
       </ComposableMap>
+
+      <div className="pointer-events-auto absolute right-4 top-4 flex flex-col gap-2 rounded-lg border bg-surface p-1 shadow-sm">
+        <button
+          onClick={zoomIn}
+          disabled={zoom >= MAX_ZOOM}
+          className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-secondary disabled:opacity-30"
+          aria-label="Zoom in"
+        >
+          <ZoomIn size={16} />
+        </button>
+        <button
+          onClick={zoomOut}
+          disabled={zoom <= MIN_ZOOM}
+          className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-secondary disabled:opacity-30"
+          aria-label="Zoom out"
+        >
+          <ZoomOut size={16} />
+        </button>
+      </div>
     </motion.div>
   );
 }
