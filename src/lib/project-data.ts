@@ -420,7 +420,9 @@ export function countriesByRegion(
     .map(([region, codes]) => ({ region, codes }));
 }
 
-// Composite scale is 5–15. Risk thresholds: >=12 High, >=9 Medium, else Low.
+// Composite scale is 5–15.
+// Overall risk is derived from the distribution of project-level risks;
+// the most frequent label wins, with ties broken toward the higher risk.
 export function countryStats(projects: Project[], c: CountryCode) {
   const list = projectsByCountry(projects, c);
   const avg =
@@ -431,8 +433,18 @@ export function countryStats(projects: Project[], c: CountryCode) {
   for (const p of list) tierCount[p.gtmiTier] = (tierCount[p.gtmiTier] ?? 0) + 1;
   const gtmiTier =
     Object.entries(tierCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
-  const risk: RiskLevel = avg >= 12 ? "High" : avg >= 9 ? "Medium" : "Low";
-  return { count: list.length, avgScore: avg, gtmiTier, overallRisk: risk };
+  const riskCounts: Record<RiskLevel, number> = { Low: 0, Medium: 0, High: 0 };
+  for (const p of list) riskCounts[p.overallRisk]++;
+  let overallRisk: RiskLevel = "Low";
+  let maxCount = riskCounts.Low;
+  if (riskCounts.Medium >= maxCount) {
+    overallRisk = "Medium";
+    maxCount = riskCounts.Medium;
+  }
+  if (riskCounts.High >= maxCount) {
+    overallRisk = "High";
+  }
+  return { count: list.length, avgScore: avg, gtmiTier, overallRisk };
 }
 
 export function riskColorVar(r: RiskLevel) {
