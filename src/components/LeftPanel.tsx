@@ -2,12 +2,18 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { FOCUS_COUNTRIES, useProjectStore, countryColorVar } from "@/lib/project-data";
+import {
+  countriesByRegion,
+  countryColorVar,
+  FOCUS_COUNTRIES,
+  useProjectStore,
+} from "@/lib/project-data";
 
 export function LeftPanel() {
   const [open, setOpen] = useState(true);
-  const { selectedCountry, setSelectedCountry } = useProjectStore();
+  const { projects, selectedCountry, setSelectedCountry } = useProjectStore();
   const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry] : null;
+  const groups = countriesByRegion(projects);
 
   return (
     <motion.aside
