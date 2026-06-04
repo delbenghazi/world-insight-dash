@@ -61,8 +61,9 @@ function Compare() {
                   <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{code}</span>
                 </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                  <Box label="Avg score" value={stats.avgScore.toFixed(2)} />
+                <div className="mt-4 grid grid-cols-4 gap-2 text-center">
+                  <Box label="GTMI" value={stats.gtmiTier} />
+                  <Box label="Avg" value={`${stats.avgScore.toFixed(1)}/15`} />
                   <Box label="Projects" value={String(stats.count)} />
                   <Box label="Risk" value={stats.overallRisk} color={riskColorVar(stats.overallRisk)} />
                 </div>

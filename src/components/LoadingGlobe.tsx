@@ -11,7 +11,7 @@ interface Props {
   durationMs?: number;
 }
 
-export function LoadingGlobe({ onDone, durationMs = 2600 }: Props) {
+export function LoadingGlobe({ onDone, durationMs = 1200 }: Props) {
   const [rotation, setRotation] = useState(0);
   const [geo, setGeo] = useState<any>(null);
 

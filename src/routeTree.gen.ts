@@ -13,6 +13,7 @@ import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AddProjectRouteImport } from './routes/add-project'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CountryCodeRouteImport } from './routes/country.$code'
 
 const MethodologyRoute = MethodologyRouteImport.update({
   id: '/methodology',
@@ -34,18 +35,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CountryCodeRoute = CountryCodeRouteImport.update({
+  id: '/country/$code',
+  path: '/country/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/add-project': typeof AddProjectRoute
   '/compare': typeof CompareRoute
   '/methodology': typeof MethodologyRoute
+  '/country/$code': typeof CountryCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/add-project': typeof AddProjectRoute
   '/compare': typeof CompareRoute
   '/methodology': typeof MethodologyRoute
+  '/country/$code': typeof CountryCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,25 @@ export interface FileRoutesById {
   '/add-project': typeof AddProjectRoute
   '/compare': typeof CompareRoute
   '/methodology': typeof MethodologyRoute
+  '/country/$code': typeof CountryCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/add-project' | '/compare' | '/methodology'
+  fullPaths:
+    | '/'
+    | '/add-project'
+    | '/compare'
+    | '/methodology'
+    | '/country/$code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/add-project' | '/compare' | '/methodology'
-  id: '__root__' | '/' | '/add-project' | '/compare' | '/methodology'
+  to: '/' | '/add-project' | '/compare' | '/methodology' | '/country/$code'
+  id:
+    | '__root__'
+    | '/'
+    | '/add-project'
+    | '/compare'
+    | '/methodology'
+    | '/country/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +87,7 @@ export interface RootRouteChildren {
   AddProjectRoute: typeof AddProjectRoute
   CompareRoute: typeof CompareRoute
   MethodologyRoute: typeof MethodologyRoute
+  CountryCodeRoute: typeof CountryCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/country/$code': {
+      id: '/country/$code'
+      path: '/country/$code'
+      fullPath: '/country/$code'
+      preLoaderRoute: typeof CountryCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +135,7 @@ const rootRouteChildren: RootRouteChildren = {
   AddProjectRoute: AddProjectRoute,
   CompareRoute: CompareRoute,
   MethodologyRoute: MethodologyRoute,
+  CountryCodeRoute: CountryCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

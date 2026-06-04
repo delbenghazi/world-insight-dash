@@ -67,9 +67,11 @@ export function LeftPanel() {
             </div>
             {(Object.keys(FOCUS_COUNTRIES) as Array<keyof typeof FOCUS_COUNTRIES>).map(
               (code) => (
-                <button
+                <Link
                   key={code}
-                  onClick={() => setSelectedCountry(code)}
+                  to="/country/$code"
+                  params={{ code }}
+                  onMouseEnter={() => setSelectedCountry(code)}
                   className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition hover:bg-secondary ${
                     selectedCountry === code ? "border-foreground/30 bg-secondary" : "border-transparent"
                   }`}
@@ -82,7 +84,7 @@ export function LeftPanel() {
                     {FOCUS_COUNTRIES[code].name}
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">{code}</span>
-                </button>
+                </Link>
               )
             )}
           </div>

@@ -65,7 +65,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
         </div>
         <div className="ml-auto flex items-center gap-4 text-xs">
           <Pill label="GTMI" value={stats.gtmiTier} />
-          <Pill label="Avg" value={stats.avgScore.toFixed(2)} />
+          <Pill label="Avg" value={`${stats.avgScore.toFixed(1)}/15`} />
           <Pill
             label="Risk"
             value={stats.overallRisk}
@@ -141,7 +141,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
             <table className="w-full text-xs">
               <thead className="bg-secondary text-muted-foreground">
                 <tr>
-                  {["ID", "Name", "Type", "Score", "Interaction", "Risk", "Note"].map(
+                  {["ID", "Name", "Type", "GTMI", "Composite", "Interaction", "Risk", "Linked"].map(
                     (h) => (
                       <th
                         key={h}
@@ -155,11 +155,15 @@ export function DetailPanel({ code }: { code: CountryCode }) {
               </thead>
               <tbody>
                 {filtered.map((p) => (
-                  <tr key={p.projectId} className="border-t hover:bg-secondary/50">
+                  <tr key={p.projectId} className="border-t align-top hover:bg-secondary/50">
                     <td className="px-3 py-2 font-mono">{p.projectId}</td>
-                    <td className="px-3 py-2 font-medium">{p.projectName}</td>
+                    <td className="px-3 py-2 font-medium">
+                      <div>{p.projectName}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">{p.interactionNote}</div>
+                    </td>
                     <td className="px-3 py-2 text-muted-foreground">{p.projectType}</td>
-                    <td className="px-3 py-2 font-mono">{p.compositeScore.toFixed(2)}</td>
+                    <td className="px-3 py-2 font-mono">{p.gtmiTier}</td>
+                    <td className="px-3 py-2 font-mono">{p.compositeScore}/15</td>
                     <td className="px-3 py-2">{p.interactionType}</td>
                     <td className="px-3 py-2">
                       <span
@@ -172,12 +176,12 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                         {p.overallRisk}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground">{p.notes}</td>
+                    <td className="px-3 py-2 font-mono text-muted-foreground">{p.linkedProjectIds.join(", ")}</td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">
                       No projects match the current filters.
                     </td>
                   </tr>
