@@ -31,19 +31,19 @@ export function AIAdvisor() {
     setMessages((m) => [...m, { role: "user", content: q }]);
     setInput("");
     // Stub reply — wire to Lovable AI once Cloud is enabled.
-    const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry].name : "the region";
+    const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry].name : "the portfolio";
     const ctx = selectedCountry
       ? summaries[selectedCountry]?.summary
-      : "Three-country Central America scope.";
+      : "Global portfolio scope.";
     setTimeout(() => {
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          content: `Working from ${projects.length} projects of record in scope. For ${country}: ${ctx?.slice(
+          content: `Working from ${projects.length} projects of record for recognized countries. For ${country}: ${ctx?.slice(
             0,
             260
-          )}…\n\n(Live AI advisor activates once Lovable Cloud + AI Gateway is enabled. The current response is a scoped stub so the UX is visible.)`,
+          )}…\n\n(Live AI advisor activates once Lovable Cloud + AI Gateway is enabled. The current response is a portfolio stub so the UX is visible.)`,
         },
       ]);
     }, 350);
