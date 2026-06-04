@@ -45,51 +45,50 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 
-  --background: oklch(0.985 0.002 250);
-  --foreground: oklch(0.20 0.02 250);
+  /* Pale blue institutional canvas */
+  --background: oklch(0.985 0.012 245);
+  --foreground: oklch(0.22 0.03 250);
 
   --surface: oklch(1 0 0);
-  --surface-elevated: oklch(0.995 0.002 250);
+  --surface-elevated: oklch(0.995 0.004 250);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.20 0.02 250);
+  --card-foreground: oklch(0.22 0.03 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.02 250);
+  --popover-foreground: oklch(0.22 0.03 250);
 
-  /* Primary: clean tech blue */
   --primary: oklch(0.55 0.19 254);
   --primary-foreground: oklch(0.99 0 0);
-  --primary-soft: oklch(0.92 0.05 250);
+  --primary-soft: oklch(0.94 0.04 250);
 
-  --secondary: oklch(0.96 0.01 250);
-  --secondary-foreground: oklch(0.22 0.02 250);
+  --secondary: oklch(0.965 0.012 245);
+  --secondary-foreground: oklch(0.22 0.03 250);
 
-  --muted: oklch(0.955 0.005 250);
-  --muted-foreground: oklch(0.50 0.015 250);
+  --muted: oklch(0.96 0.008 245);
+  --muted-foreground: oklch(0.50 0.02 250);
 
-  --accent: oklch(0.92 0.05 250);
+  --accent: oklch(0.93 0.05 280);
   --accent-foreground: oklch(0.30 0.10 254);
 
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.90 0.008 250);
-  --input: oklch(0.92 0.008 250);
+  --border: oklch(0.90 0.012 245);
+  --input: oklch(0.92 0.01 245);
   --ring: oklch(0.55 0.19 254);
 
-  /* Map */
-  --map-base: oklch(0.96 0.004 250);
-  --map-neutral: oklch(0.90 0.005 250);
-  --map-border: oklch(0.78 0.008 250);
+  /* Map — light gray landmasses on iridescent canvas */
+  --map-base: oklch(0.97 0.006 245);
+  --map-neutral: oklch(0.93 0.006 245);
+  --map-border: oklch(0.74 0.012 245);
 
-  /* Country palette */
-  --country-guatemala: oklch(0.62 0.24 350);   /* magenta */
-  --country-honduras: oklch(0.72 0.17 55);     /* orange */
-  --country-elsalvador: oklch(0.78 0.16 90);   /* mustard yellow */
+  /* Country palette (preserved) */
+  --country-guatemala: oklch(0.62 0.24 350);
+  --country-honduras: oklch(0.72 0.17 55);
+  --country-elsalvador: oklch(0.78 0.16 90);
 
-  /* Risk (separate from country palette) */
   --risk-low: oklch(0.70 0.14 155);
   --risk-medium: oklch(0.75 0.15 75);
   --risk-high: oklch(0.60 0.22 25);
@@ -99,6 +98,27 @@
   --chart-3: var(--country-elsalvador);
   --chart-4: var(--primary);
   --chart-5: var(--muted-foreground);
+
+  /* Iridescent atmosphere — soft studio lighting */
+  --aurora-blue: oklch(0.93 0.05 240);
+  --aurora-lavender: oklch(0.92 0.06 295);
+  --aurora-blush: oklch(0.94 0.045 15);
+  --aurora-peri: oklch(0.92 0.055 265);
+
+  --gradient-atmosphere:
+    radial-gradient(60% 50% at 18% 12%, color-mix(in oklab, var(--aurora-blue) 65%, transparent) 0%, transparent 70%),
+    radial-gradient(55% 45% at 88% 18%, color-mix(in oklab, var(--aurora-blush) 55%, transparent) 0%, transparent 72%),
+    radial-gradient(70% 60% at 78% 88%, color-mix(in oklab, var(--aurora-lavender) 60%, transparent) 0%, transparent 75%),
+    radial-gradient(65% 55% at 12% 82%, color-mix(in oklab, var(--aurora-peri) 55%, transparent) 0%, transparent 75%),
+    linear-gradient(180deg, oklch(0.985 0.014 245) 0%, oklch(0.97 0.018 250) 100%);
+
+  --glass-surface: color-mix(in oklab, white 72%, transparent);
+  --glass-surface-strong: color-mix(in oklab, white 86%, transparent);
+  --glass-border: color-mix(in oklab, white 70%, oklch(0.78 0.02 250) 30%);
+  --glass-shadow:
+    0 1px 0 0 color-mix(in oklab, white 80%, transparent) inset,
+    0 20px 50px -20px oklch(0.45 0.08 250 / 0.18),
+    0 8px 24px -12px oklch(0.45 0.08 250 / 0.12);
 }
 
 @layer base {
@@ -116,6 +136,43 @@
 
 @layer utilities {
   .font-mono { font-family: var(--font-mono); }
+
+  .atmosphere {
+    background: var(--gradient-atmosphere);
+    background-attachment: fixed;
+  }
+
+  .glass-panel {
+    background: var(--glass-surface);
+    backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-panel-strong {
+    background: var(--glass-surface-strong);
+    backdrop-filter: blur(28px) saturate(170%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Pointer-tracked specular sheen. Set --mx/--my (0-100) on parent. */
+  .sheen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: radial-gradient(
+      420px circle at calc(var(--mx, 50) * 1%) calc(var(--my, 30) * 1%),
+      color-mix(in oklab, white 55%, transparent) 0%,
+      color-mix(in oklab, var(--aurora-peri) 18%, transparent) 28%,
+      transparent 60%
+    );
+    mix-blend-mode: screen;
+    opacity: 0.7;
+    transition: opacity 400ms ease;
+  }
 
   .whirl-ring {
     position: absolute;

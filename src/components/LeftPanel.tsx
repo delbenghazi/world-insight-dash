@@ -18,12 +18,12 @@ export function LeftPanel() {
   return (
     <motion.aside
       animate={{ width: open ? 320 : 56 }}
-      transition={{ type: "spring", stiffness: 220, damping: 28 }}
-      className="relative z-20 flex h-full shrink-0 flex-col border-r bg-surface"
+      transition={{ type: "spring", stiffness: 220, damping: 30, mass: 0.9 }}
+      className="relative z-20 flex h-full shrink-0 flex-col glass-panel border-r border-y-0 border-l-0 rounded-none"
     >
       <button
         onClick={() => setOpen((o) => !o)}
-        className="absolute -right-3 top-6 z-30 flex h-6 w-6 items-center justify-center rounded-full border bg-surface shadow-sm hover:bg-secondary"
+        className="absolute -right-3 top-6 z-30 flex h-6 w-6 items-center justify-center rounded-full glass-panel-strong transition hover:scale-110"
         aria-label="Toggle panel"
       >
         {open ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
