@@ -112,7 +112,7 @@ export function LeftPanel() {
           <div className="mt-auto space-y-2 border-t pt-5">
             <Link
               to="/add-project"
-              className="group flex items-center justify-between rounded-md border border-dashed px-3 py-3 text-sm transition hover:border-primary hover:bg-primary-soft bg-yellow-100"
+              className="group flex items-center justify-between rounded-md border border-dashed px-3 py-3 text-sm transition hover:border-primary hover:bg-primary-soft bg-[#faf7d6]"
             >
               <span className="font-medium">Add Project</span>
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition group-hover:scale-105">
