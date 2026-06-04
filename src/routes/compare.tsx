@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
+import { useState } from "react";
 import {
   countriesInUse,
   countryColorVar,
@@ -26,7 +27,13 @@ export const Route = createFileRoute("/compare")({
 
 function Compare() {
   const { projects, summaries } = useProjectStore();
-  const codes = countriesInUse(projects);
+  const available = countriesInUse(projects);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [confirmed, setConfirmed] = useState(false);
+  const codes = confirmed ? selected : [];
+
+  const toggle = (code: string) =>
+    setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-surface">
@@ -43,10 +50,60 @@ function Compare() {
       <main className="mx-auto max-w-7xl px-6 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Comparison view</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          Compare average composite scores, project volume, dominant interaction types,
-          institutional bottlenecks, and sequencing implications across every country in
-          the imported portfolio.
+          Select the countries you want to compare side-by-side on composite scores,
+          project volume, dominant interaction types, institutional bottlenecks, and
+          sequencing implications.
         </p>
+
+        <div className="mt-8 rounded-xl border bg-surface p-5">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+              Choose countries · {selected.length} selected
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelected(selected.length === available.length ? [] : [...available])}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                {selected.length === available.length ? "Clear" : "Select all"}
+              </button>
+              <button
+                onClick={() => setConfirmed(true)}
+                disabled={selected.length < 1}
+                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+              >
+                Compare
+              </button>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {available.map((code) => {
+              const c = FOCUS_COUNTRIES[code] ?? { name: code };
+              const on = selected.includes(code);
+              return (
+                <button
+                  key={code}
+                  onClick={() => { toggle(code); setConfirmed(false); }}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition ${on ? "border-primary bg-primary/10 text-foreground" : "bg-background hover:bg-secondary"}`}
+                >
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: countryColorVar(code) }} />
+                  {c.name}
+                  {on && <Check size={12} />}
+                </button>
+              );
+            })}
+            {available.length === 0 && (
+              <div className="text-xs text-muted-foreground">No countries in the portfolio yet.</div>
+            )}
+          </div>
+        </div>
+
+        {!confirmed && (
+          <div className="mt-10 rounded-xl border border-dashed bg-surface/40 p-10 text-center text-sm text-muted-foreground">
+            Pick at least one country above and click Compare to see the side-by-side view.
+          </div>
+        )}
+
 
         <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {codes.map((code) => {
