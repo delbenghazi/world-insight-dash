@@ -21,7 +21,7 @@ const INTERACTIONS: InteractionType[] = [
 const RISKS: RiskLevel[] = ["Low", "Medium", "High"];
 
 export function DetailPanel({ code }: { code: CountryCode }) {
-  const { projects, summaries, updateSummary } = useProjectStore();
+  const { projects, summaries, updateSummary, removeProject } = useProjectStore();
   const country = FOCUS_COUNTRIES[code];
   const stats = countryStats(projects, code);
   const list = projectsByCountry(projects, code);
