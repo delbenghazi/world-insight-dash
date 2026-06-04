@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -25,8 +25,8 @@ const ISO_NUM_TO_CODE: Record<string, CountryCode> = {
 };
 
 const MIN_ZOOM = 0.52;
-const MAX_ZOOM = 2.58;
-const ZOOM_STEP = 0.26;
+const MAX_ZOOM = 4;
+const ZOOM_FACTOR = 1.4;
 
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const { selectedCountry, hoveredCountry, setHoveredCountry } =
@@ -35,6 +35,8 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const [ready, setReady] = useState(!entrance);
   const [zoom, setZoom] = useState(1);
   const [center, setCenter] = useState<[number, number]>([0, 0]);
+  const targetZoomRef = useRef(1);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!entrance) return;
@@ -42,13 +44,35 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
     return () => clearTimeout(t);
   }, [entrance]);
 
+  const animateZoom = useCallback((target: number) => {
+    targetZoomRef.current = target;
+    if (rafRef.current != null) return;
+    const tick = () => {
+      setZoom((current) => {
+        const diff = targetZoomRef.current - current;
+        if (Math.abs(diff) < 0.003) {
+          rafRef.current = null;
+          return targetZoomRef.current;
+        }
+        rafRef.current = requestAnimationFrame(tick);
+        // exponential smoothing for buttery motion
+        return current + diff * 0.18;
+      });
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(() => () => {
+    if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+  }, []);
+
   const zoomIn = useCallback(
-    () => setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM)),
-    []
+    () => animateZoom(Math.min(targetZoomRef.current * ZOOM_FACTOR, MAX_ZOOM)),
+    [animateZoom]
   );
   const zoomOut = useCallback(
-    () => setZoom((z) => Math.max(z - ZOOM_STEP, MIN_ZOOM)),
-    []
+    () => animateZoom(Math.max(targetZoomRef.current / ZOOM_FACTOR, MIN_ZOOM)),
+    [animateZoom]
   );
 
   return (
@@ -70,6 +94,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
           maxZoom={MAX_ZOOM}
           onMoveEnd={({ coordinates, zoom }) => {
             setCenter(coordinates as [number, number]);
+            targetZoomRef.current = zoom;
             setZoom(zoom);
           }}
         >
@@ -130,19 +155,19 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
         </ZoomableGroup>
       </ComposableMap>
 
-      <div className="pointer-events-auto absolute right-4 top-4 flex flex-col gap-2 rounded-lg border bg-surface p-1 shadow-sm">
+      <div className="pointer-events-auto absolute right-4 top-4 flex flex-col gap-2 rounded-lg border border-pink-300/60 bg-pink-50/95 p-1 shadow-md backdrop-blur">
         <button
           onClick={zoomIn}
-          disabled={zoom >= MAX_ZOOM}
-          className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-secondary disabled:opacity-30"
+          disabled={zoom >= MAX_ZOOM - 0.01}
+          className="flex h-8 w-8 items-center justify-center rounded-md text-pink-700 transition-colors hover:bg-pink-200 active:bg-pink-300 disabled:opacity-30"
           aria-label="Zoom in"
         >
           <ZoomIn size={16} />
         </button>
         <button
           onClick={zoomOut}
-          disabled={zoom <= MIN_ZOOM}
-          className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-secondary disabled:opacity-30"
+          disabled={zoom <= MIN_ZOOM + 0.01}
+          className="flex h-8 w-8 items-center justify-center rounded-md text-pink-700 transition-colors hover:bg-pink-200 active:bg-pink-300 disabled:opacity-30"
           aria-label="Zoom out"
         >
           <ZoomOut size={16} />
