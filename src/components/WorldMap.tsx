@@ -109,11 +109,12 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                 const stroke = isFocus
                   ? "var(--color-map-border)"
                   : "var(--color-map-neutral-stroke)";
+                // Pixel-sized strokes via non-scaling-stroke — stay crisp at every zoom.
                 const strokeWidth = isFocus
                   ? isSelected
-                    ? 0.9
-                    : 0.6
-                  : 0.3;
+                    ? 1.4
+                    : 1.0
+                  : 0.5;
                 const fillOpacity = isFocus
                   ? isSelected || isHovered
                     ? 1
