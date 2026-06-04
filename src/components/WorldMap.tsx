@@ -94,6 +94,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
           maxZoom={MAX_ZOOM}
           onMoveEnd={({ coordinates, zoom }) => {
             setCenter(coordinates as [number, number]);
+            targetZoomRef.current = zoom;
             setZoom(zoom);
           }}
         >
