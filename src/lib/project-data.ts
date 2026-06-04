@@ -353,7 +353,7 @@ const defaultSummaries: Record<CountryCode, string> = {
 
 interface State {
   projects: Project[];
-  summaries: Record<CountryCode, CountrySummary>;
+  summaries: Record<string, CountrySummary>;
   selectedCountry: CountryCode | null;
   hoveredCountry: CountryCode | null;
   setSelectedCountry: (c: CountryCode | null) => void;
@@ -362,15 +362,18 @@ interface State {
   updateSummary: (c: CountryCode, summary: string) => void;
 }
 
+const seededSummaries: Record<string, CountrySummary> = Object.fromEntries(
+  Object.entries(defaultSummaries).map(([code, summary]) => [
+    code,
+    { code, summary, updatedAt: Date.now() },
+  ])
+);
+
 export const useProjectStore = create<State>()(
   persist(
     (set) => ({
       projects: seed,
-      summaries: {
-        GTM: { code: "GTM", summary: defaultSummaries.GTM, updatedAt: Date.now() },
-        HND: { code: "HND", summary: defaultSummaries.HND, updatedAt: Date.now() },
-        SLV: { code: "SLV", summary: defaultSummaries.SLV, updatedAt: Date.now() },
-      },
+      summaries: seededSummaries,
       selectedCountry: null,
       hoveredCountry: null,
       setSelectedCountry: (c) => set({ selectedCountry: c }),
@@ -392,6 +395,26 @@ export function projectsByCountry(projects: Project[], c: CountryCode) {
   return projects.filter((p) => p.country === c);
 }
 
+/** Distinct country codes present in the imported project set. */
+export function countriesInUse(projects: Project[]): CountryCode[] {
+  return Array.from(new Set(projects.map((p) => p.country))).sort();
+}
+
+/** Group imported countries by their (sub)region for sidebar/compare views. */
+export function countriesByRegion(
+  projects: Project[]
+): Array<{ region: string; codes: CountryCode[] }> {
+  const groups: Record<string, CountryCode[]> = {};
+  for (const code of countriesInUse(projects)) {
+    const meta = getCountryMeta(code);
+    const region = meta?.subregion || meta?.region || "Other";
+    (groups[region] ||= []).push(code);
+  }
+  return Object.entries(groups)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([region, codes]) => ({ region, codes }));
+}
+
 // Composite scale is 5–15. Risk thresholds: >=12 High, >=9 Medium, else Low.
 export function countryStats(projects: Project[], c: CountryCode) {
   const list = projectsByCountry(projects, c);
@@ -399,13 +422,11 @@ export function countryStats(projects: Project[], c: CountryCode) {
     list.length === 0
       ? 0
       : list.reduce((a, p) => a + p.compositeScore, 0) / list.length;
-  // Most-common GTMI tier from data
   const tierCount: Record<string, number> = {};
   for (const p of list) tierCount[p.gtmiTier] = (tierCount[p.gtmiTier] ?? 0) + 1;
   const gtmiTier =
     Object.entries(tierCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
-  const risk: RiskLevel =
-    avg >= 12 ? "High" : avg >= 9 ? "Medium" : "Low";
+  const risk: RiskLevel = avg >= 12 ? "High" : avg >= 9 ? "Medium" : "Low";
   return { count: list.length, avgScore: avg, gtmiTier, overallRisk: risk };
 }
 
@@ -417,10 +438,7 @@ export function riskColorVar(r: RiskLevel) {
       : "var(--color-risk-low)";
 }
 
+/** Per-country accent color. Deterministic for any ISO3 code. */
 export function countryColorVar(c: CountryCode) {
-  return c === "GTM"
-    ? "var(--color-country-guatemala)"
-    : c === "HND"
-      ? "var(--color-country-honduras)"
-      : "var(--color-country-elsalvador)";
+  return countryAccent(c);
 }
