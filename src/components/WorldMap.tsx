@@ -81,6 +81,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
       transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
     >
       <ComposableMap
+        className="rsm-svg bg-slate-400"
         projection="geoEqualEarth"
         projectionConfig={{ scale: 195 }}
         style={{
