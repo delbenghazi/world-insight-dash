@@ -155,19 +155,19 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
         </ZoomableGroup>
       </ComposableMap>
 
-      <div className="pointer-events-auto absolute right-4 top-4 flex flex-col gap-2 rounded-lg border bg-surface p-1 shadow-sm">
+      <div className="pointer-events-auto absolute right-4 top-4 flex flex-col gap-2 rounded-lg border border-pink-300/60 bg-pink-50/95 p-1 shadow-md backdrop-blur">
         <button
           onClick={zoomIn}
-          disabled={zoom >= MAX_ZOOM}
-          className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-secondary disabled:opacity-30"
+          disabled={zoom >= MAX_ZOOM - 0.01}
+          className="flex h-8 w-8 items-center justify-center rounded-md text-pink-700 transition-colors hover:bg-pink-200 active:bg-pink-300 disabled:opacity-30"
           aria-label="Zoom in"
         >
           <ZoomIn size={16} />
         </button>
         <button
           onClick={zoomOut}
-          disabled={zoom <= MIN_ZOOM}
-          className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-secondary disabled:opacity-30"
+          disabled={zoom <= MIN_ZOOM + 0.01}
+          className="flex h-8 w-8 items-center justify-center rounded-md text-pink-700 transition-colors hover:bg-pink-200 active:bg-pink-300 disabled:opacity-30"
           aria-label="Zoom out"
         >
           <ZoomOut size={16} />
