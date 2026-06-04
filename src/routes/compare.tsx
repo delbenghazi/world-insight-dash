@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
+import { useState } from "react";
 import {
   countriesInUse,
   countryColorVar,
@@ -26,7 +27,13 @@ export const Route = createFileRoute("/compare")({
 
 function Compare() {
   const { projects, summaries } = useProjectStore();
-  const codes = countriesInUse(projects);
+  const available = countriesInUse(projects);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [confirmed, setConfirmed] = useState(false);
+  const codes = confirmed ? selected : [];
+
+  const toggle = (code: string) =>
+    setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-surface">
