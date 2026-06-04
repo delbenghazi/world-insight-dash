@@ -9,13 +9,13 @@ import { AIAdvisor } from "@/components/AIAdvisor";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DPI Sequencing Atlas — Central America" },
+      { title: "DT Global EU Global Gateway · GovTech interaction tool" },
       {
         name: "description",
         content:
           "Policy and strategy dashboard for digital public infrastructure sequencing across Guatemala, Honduras, and El Salvador.",
       },
-      { property: "og:title", content: "DPI Sequencing Atlas — Central America" },
+      { property: "og:title", content: "DT Global EU Global Gateway · GovTech interaction tool" },
       {
         property: "og:description",
         content:
@@ -43,7 +43,7 @@ function Home() {
               <WorldMap />
             </div>
             <div className="pointer-events-none absolute left-6 top-6 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-              World map · Equal Earth · Focus: CA-3
+              World Map
             </div>
           </main>
         </div>
