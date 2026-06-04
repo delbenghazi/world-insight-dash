@@ -3,6 +3,7 @@ import {
   ComposableMap,
   Geographies,
   Geography,
+  Marker,
   ZoomableGroup,
 } from "react-simple-maps";
 import { motion } from "framer-motion";
@@ -10,10 +11,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import {
   CountryCode,
+  FOCUS_COUNTRIES,
   countryColorVar,
   countriesInUse,
   useProjectStore,
 } from "@/lib/project-data";
+import { CountryCard } from "@/components/CountryCard";
 import { isoNumericToIso3 } from "@/lib/countries";
 
 const TOPO_URL =
