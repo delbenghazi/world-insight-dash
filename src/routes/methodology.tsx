@@ -105,12 +105,10 @@ function Methodology() {
           </div>
         </section>
 
-        <section className="mt-12 rounded-lg border bg-primary-soft/50 p-5">
-          <h2 className="text-base font-semibold">Composite score and risk</h2>
+        <section className="mt-12 rounded-lg border bg-surface p-5">
+          <h2 className="text-base font-semibold">Credits</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Composite score is the unweighted mean of the five dimensions (1 = low, 5 = high). Overall
-            risk is then bucketed: Low (&lt; 2.5), Medium (2.5–3.49), High (≥ 3.5). Country aggregates
-            average the project composites for the country.
+            This atlas was created by Dana Elbenghazi, Yuan Liang, and Mohamed Louajri.
           </p>
         </section>
       </main>
