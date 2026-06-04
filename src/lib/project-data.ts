@@ -20,14 +20,19 @@ export type CountryCode = string;
  */
 export const FOCUS_COUNTRIES: Record<
   string,
-  { name: string; region: string; tone: string }
+  { name: string; region: string; tone: string; latlng: [number, number] }
 > = new Proxy(
   {},
   {
     get(_t, prop: string) {
       const meta = getCountryMeta(prop);
       if (!meta) return undefined;
-      return { name: meta.name, region: meta.subregion || meta.region, tone: meta.cca3 };
+      return {
+        name: meta.name,
+        region: meta.subregion || meta.region,
+        tone: meta.cca3,
+        latlng: meta.latlng,
+      };
     },
     has(_t, prop: string) {
       return !!getCountryMeta(prop);
@@ -39,7 +44,7 @@ export const FOCUS_COUNTRIES: Record<
       return { enumerable: true, configurable: true };
     },
   }
-) as Record<string, { name: string; region: string; tone: string }>;
+) as Record<string, { name: string; region: string; tone: string; latlng: [number, number] }>;
 
 export { normalizeCountry };
 
