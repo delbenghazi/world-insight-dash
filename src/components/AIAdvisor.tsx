@@ -75,7 +75,7 @@ export function AIAdvisor() {
               <div>
                 <div className="text-sm font-semibold">AI Advisor</div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Scoped to DPI sequencing · CA-3
+                  Scoped to DPI sequencing · Global
                 </div>
               </div>
               <button
