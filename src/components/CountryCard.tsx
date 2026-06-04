@@ -70,7 +70,7 @@ function Stat({
   color?: string;
 }) {
   return (
-    <div className="rounded-md border bg-background/60 p-1.5">
+    <div className="rounded-lg border border-white/60 bg-white/55 p-1.5 shadow-[0_1px_0_0_rgba(255,255,255,0.7)_inset]">
       <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
