@@ -12,6 +12,7 @@ export interface CountryMeta {
   region: string; // e.g. "Americas"
   subregion: string; // e.g. "Central America"
   altSpellings: string[];
+  latlng: [number, number]; // [lat, lng] centroid
 }
 
 export const ALL_COUNTRIES: Record<string, CountryMeta> = {};
