@@ -19,9 +19,10 @@ import { isoNumericToIso3 } from "@/lib/countries";
 const TOPO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-const MIN_ZOOM = 0.52;
+const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 4;
 const ZOOM_FACTOR = 1.4;
+const INITIAL_ZOOM = 1.18;
 
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const { projects, selectedCountry, hoveredCountry, setHoveredCountry } =
@@ -29,9 +30,9 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const navigate = useNavigate();
   const focusSet = new Set(countriesInUse(projects));
   const [ready, setReady] = useState(!entrance);
-  const [zoom, setZoom] = useState(1);
-  const [center, setCenter] = useState<[number, number]>([0, 0]);
-  const targetZoomRef = useRef(1);
+  const [zoom, setZoom] = useState(INITIAL_ZOOM);
+  const [center, setCenter] = useState<[number, number]>([10, 10]);
+  const targetZoomRef = useRef(INITIAL_ZOOM);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
     >
       <ComposableMap
         projection="geoEqualEarth"
-        projectionConfig={{ scale: 165 }}
+        projectionConfig={{ scale: 195 }}
         style={{ width: "100%", height: "100%" }}
       >
         <ZoomableGroup

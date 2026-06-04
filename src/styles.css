@@ -81,13 +81,13 @@
   --input: oklch(0.92 0.006 240);
   --ring: oklch(0.55 0.19 254);
 
-  /* Map — CARTO Positron / Mapbox Light inspired */
-  --map-ocean: oklch(0.955 0.014 235);
-  --map-ocean-edge: oklch(0.935 0.016 235);
-  --map-base: oklch(0.955 0.014 235);
-  --map-neutral: oklch(0.905 0.005 240);
-  --map-neutral-stroke: oklch(0.83 0.008 240);
-  --map-border: oklch(0.74 0.012 240);
+  /* Map — premium cartographic stage, stronger land/water contrast */
+  --map-ocean: oklch(0.93 0.022 235);
+  --map-ocean-edge: oklch(0.90 0.026 235);
+  --map-base: oklch(0.93 0.022 235);
+  --map-neutral: oklch(0.985 0.003 240);
+  --map-neutral-stroke: oklch(0.74 0.012 240);
+  --map-border: oklch(0.55 0.02 245);
 
   --country-guatemala: oklch(0.62 0.24 350);
   --country-honduras: oklch(0.72 0.17 55);
@@ -144,15 +144,32 @@
     background-attachment: fixed;
   }
 
-  /* Contained map stage — its own surface separated from page */
+  /* Contained map stage — architectural, hero cartographic surface */
   .map-stage {
     background:
-      radial-gradient(140% 100% at 50% 0%,
-        oklch(0.965 0.014 235) 0%,
-        var(--map-ocean) 55%,
+      linear-gradient(180deg,
+        oklch(0.94 0.02 235) 0%,
+        var(--map-ocean) 45%,
         var(--map-ocean-edge) 100%);
-    box-shadow: var(--stage-shadow);
-    border-radius: 20px;
+    box-shadow:
+      0 0 0 1px oklch(0.55 0.02 245 / 0.18) inset,
+      0 1px 0 0 oklch(1 0 0 / 0.55) inset,
+      0 30px 80px -40px oklch(0.25 0.04 245 / 0.30),
+      0 10px 30px -18px oklch(0.25 0.04 245 / 0.14);
+    border-radius: 6px;
+  }
+
+  /* Subtle graticule overlay for cartographic feel */
+  .map-graticule::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, oklch(0.45 0.02 245 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0.45 0.02 245 / 0.05) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mix-blend-mode: multiply;
   }
 
   .panel {
