@@ -141,16 +141,16 @@ export function DetailPanel({ code }: { code: CountryCode }) {
             <table className="w-full text-xs">
               <thead className="bg-secondary text-muted-foreground">
                 <tr>
-                  {["ID", "Name", "Type", "GTMI", "Composite", "Interaction", "Risk", "Linked"].map(
-                    (h) => (
-                      <th
-                        key={h}
-                        className="px-3 py-2 text-left font-medium uppercase tracking-wider"
-                      >
-                        {h}
-                      </th>
-                    )
-                  )}
+                {["ID", "Name", "Type", "GTMI", "Composite", "Interaction", "Risk", "Linked", ""].map(
+                  (h) => (
+                    <th
+                      key={h || "action"}
+                      className="px-3 py-2 text-left font-medium uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
                 </tr>
               </thead>
               <tbody>
