@@ -113,6 +113,13 @@ function Methodology() {
             average the project composites for the country.
           </p>
         </section>
+
+        <section className="mt-12 rounded-lg border bg-surface p-5">
+          <h2 className="text-base font-semibold">Credits</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            This atlas was created by Dana Elbenghazi, Yuan Liang, and Mohamed Louajri.
+          </p>
+        </section>
       </main>
     </div>
   );
