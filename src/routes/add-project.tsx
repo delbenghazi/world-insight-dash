@@ -299,7 +299,7 @@ function validate(raw: Record<string, any>[]) {
     const overallRisk: RiskLevel = RISK_LOOKUP[riskRaw] ?? "Medium";
 
     parsed.push({
-      country: code ?? "GTM",
+      country: code ?? countryRaw.toUpperCase(),
       projectId,
       projectName: String(pick(r, "Project Name") ?? "").trim(),
       projectType: String(pick(r, "Project Type") ?? "").trim(),
