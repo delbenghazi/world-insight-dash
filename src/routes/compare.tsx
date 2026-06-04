@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import {
-  CountryCode,
-  FOCUS_COUNTRIES,
+  countriesInUse,
   countryColorVar,
   countryStats,
+  FOCUS_COUNTRIES,
   projectsByCountry,
   riskColorVar,
   useProjectStore,
@@ -13,14 +13,16 @@ import {
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
-      { title: "Compare CA-3 — DPI Sequencing Atlas" },
-      { name: "description", content: "Side-by-side comparison of Guatemala, Honduras, and El Salvador on DPI sequencing." },
+      { title: "Compare countries — DT Global GovTech Atlas" },
+      {
+        name: "description",
+        content:
+          "Side-by-side comparison of imported countries on DPI sequencing.",
+      },
     ],
   }),
   component: Compare,
 });
-
-const CODES: CountryCode[] = ["GTM", "HND", "SLV"];
 
 function Compare() {
   const { projects, summaries } = useProjectStore();
