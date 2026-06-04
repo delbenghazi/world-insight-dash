@@ -67,32 +67,46 @@ export function LeftPanel() {
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-6 space-y-2 border-t pt-5">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Focus countries
-            </div>
-            {(Object.keys(FOCUS_COUNTRIES) as Array<keyof typeof FOCUS_COUNTRIES>).map(
-              (code) => (
-                <Link
-                  key={code}
-                  to="/country/$code"
-                  params={{ code }}
-                  onMouseEnter={() => setSelectedCountry(code)}
-                  className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition hover:bg-secondary ${
-                    selectedCountry === code ? "border-foreground/30 bg-secondary" : "border-transparent"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ background: countryColorVar(code) }}
-                    />
-                    {FOCUS_COUNTRIES[code].name}
-                  </span>
-                  <span className="font-mono text-xs text-muted-foreground">{code}</span>
-                </Link>
-              )
+          <div className="mt-6 space-y-4 overflow-y-auto border-t pt-5">
+            {groups.length === 0 && (
+              <div className="text-xs text-muted-foreground">
+                No countries imported yet.
+              </div>
             )}
+            {groups.map(({ region, codes }) => (
+              <div key={region} className="space-y-2">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                  {region}
+                </div>
+                {codes.map((code) => {
+                  const meta = FOCUS_COUNTRIES[code];
+                  return (
+                    <Link
+                      key={code}
+                      to="/country/$code"
+                      params={{ code }}
+                      onMouseEnter={() => setSelectedCountry(code)}
+                      className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition hover:bg-secondary ${
+                        selectedCountry === code
+                          ? "border-foreground/30 bg-secondary"
+                          : "border-transparent"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ background: countryColorVar(code) }}
+                        />
+                        {meta?.name ?? code}
+                      </span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {code}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
           <div className="mt-auto space-y-2 border-t pt-5">
