@@ -452,7 +452,20 @@ export function countryStats(projects: Project[], c: CountryCode) {
         ? "Medium"
         : "Low";
   }
-  return { count: list.length, avgScore: avg, gtmiTier, overallRisk };
+  const interactionCounts: Record<string, number> = {};
+  for (const p of list)
+    interactionCounts[p.interactionType] =
+      (interactionCounts[p.interactionType] ?? 0) + 1;
+  const dominantInteraction =
+    Object.entries(interactionCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
+  return {
+    count: list.length,
+    avgScore: avg,
+    gtmiTier,
+    overallRisk,
+    riskCounts,
+    dominantInteraction,
+  };
 }
 
 export function riskColorVar(r: RiskLevel) {
