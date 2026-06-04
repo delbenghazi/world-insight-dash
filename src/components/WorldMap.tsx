@@ -24,9 +24,10 @@ const MAX_ZOOM = 4;
 const ZOOM_FACTOR = 1.4;
 
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
-  const { selectedCountry, hoveredCountry, setHoveredCountry } =
+  const { projects, selectedCountry, hoveredCountry, setHoveredCountry } =
     useProjectStore();
   const navigate = useNavigate();
+  const focusSet = new Set(countriesInUse(projects));
   const [ready, setReady] = useState(!entrance);
   const [zoom, setZoom] = useState(1);
   const [center, setCenter] = useState<[number, number]>([0, 0]);
