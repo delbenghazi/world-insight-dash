@@ -3,7 +3,6 @@ import {
   ComposableMap,
   Geographies,
   Geography,
-  Marker,
   ZoomableGroup,
 } from "react-simple-maps";
 import { motion } from "framer-motion";
@@ -11,7 +10,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import {
   CountryCode,
-  FOCUS_COUNTRIES,
   countryColorVar,
   countriesInUse,
   useProjectStore,
@@ -175,46 +173,6 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
               })
             }
           </Geographies>
-
-          {/* Country dots — small premium markers for data-bearing countries */}
-          {Array.from(focusSet).map((code) => {
-            const meta = FOCUS_COUNTRIES[code];
-            if (!meta?.latlng) return null;
-            const [lat, lng] = meta.latlng;
-            const isHovered = hoveredCountry === code;
-            const isSelected = selectedCountry === code;
-            const accent = countryColorVar(code);
-            const r = isHovered || isSelected ? 4.5 : 3.2;
-            return (
-              <Marker
-                key={`mk-${code}`}
-                coordinates={[lng, lat]}
-                onMouseEnter={() => setHoveredCountry(code)}
-                onMouseLeave={() => setHoveredCountry(null)}
-                onClick={() =>
-                  navigate({ to: "/country/$code", params: { code } })
-                }
-                style={{ default: { cursor: "pointer" }, hover: { cursor: "pointer" }, pressed: {} }}
-              >
-                {/* Outer halo */}
-                <circle
-                  r={r + 4}
-                  fill={accent}
-                  opacity={isHovered || isSelected ? 0.18 : 0.0}
-                  style={{ transition: "opacity 220ms ease, r 220ms ease" }}
-                />
-                {/* Dot */}
-                <circle
-                  r={r}
-                  fill={accent}
-                  stroke="white"
-                  strokeWidth={1.2}
-                  vectorEffect="non-scaling-stroke"
-                  style={{ transition: "r 220ms cubic-bezier(.22,1,.36,1)" }}
-                />
-              </Marker>
-            );
-          })}
         </ZoomableGroup>
       </ComposableMap>
 
