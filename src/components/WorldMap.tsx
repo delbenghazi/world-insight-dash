@@ -30,9 +30,9 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const navigate = useNavigate();
   const focusSet = new Set(countriesInUse(projects));
   const [ready, setReady] = useState(!entrance);
-  const [zoom, setZoom] = useState(1);
-  const [center, setCenter] = useState<[number, number]>([0, 0]);
-  const targetZoomRef = useRef(1);
+  const [zoom, setZoom] = useState(INITIAL_ZOOM);
+  const [center, setCenter] = useState<[number, number]>([10, 10]);
+  const targetZoomRef = useRef(INITIAL_ZOOM);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
