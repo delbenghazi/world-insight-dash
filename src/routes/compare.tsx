@@ -26,6 +26,7 @@ export const Route = createFileRoute("/compare")({
 
 function Compare() {
   const { projects, summaries } = useProjectStore();
+  const codes = countriesInUse(projects);
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-surface">
@@ -34,7 +35,7 @@ function Compare() {
             <ArrowLeft size={14} /> Back to atlas
           </Link>
           <div className="ml-auto text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-            Comparison · CA-3
+            Comparison · {codes.length} {codes.length === 1 ? "country" : "countries"}
           </div>
         </div>
       </header>
@@ -42,13 +43,14 @@ function Compare() {
       <main className="mx-auto max-w-7xl px-6 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Comparison view</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          Compare average composite scores, project volume, dominant interaction types, institutional bottlenecks,
-          and sequencing implications across Guatemala, Honduras, and El Salvador.
+          Compare average composite scores, project volume, dominant interaction types,
+          institutional bottlenecks, and sequencing implications across every country in
+          the imported portfolio.
         </p>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {CODES.map((code) => {
-            const c = FOCUS_COUNTRIES[code];
+        <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {codes.map((code) => {
+            const c = FOCUS_COUNTRIES[code] ?? { name: code, region: "Other", tone: code };
             const stats = countryStats(projects, code);
             const list = projectsByCountry(projects, code);
             const interactions = countByKey(list, "interactionType");
