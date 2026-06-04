@@ -74,36 +74,15 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   return (
     <motion.div
       className="relative h-full w-full"
-      initial={{ scale: entrance ? 2.4 : 1, opacity: entrance ? 0 : 1 }}
+      initial={{ scale: entrance ? 1.06 : 1, opacity: entrance ? 0 : 1 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
     >
       <ComposableMap
         projection="geoEqualEarth"
-        projectionConfig={{ scale: 155 }}
+        projectionConfig={{ scale: 165 }}
         style={{ width: "100%", height: "100%" }}
       >
-        <defs>
-          <filter id="landRelief" x="-5%" y="-5%" width="110%" height="110%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="0.55" result="blur" />
-            <feSpecularLighting
-              in="blur"
-              surfaceScale="1.4"
-              specularConstant="0.35"
-              specularExponent="22"
-              lightingColor="#ffffff"
-              result="spec"
-            >
-              <feDistantLight azimuth="135" elevation="58" />
-            </feSpecularLighting>
-            <feComposite in="spec" in2="SourceAlpha" operator="in" result="specOut" />
-            <feMerge>
-              <feMergeNode in="SourceGraphic" />
-              <feMergeNode in="specOut" />
-            </feMerge>
-          </filter>
-        </defs>
-
         <ZoomableGroup
           center={center}
           zoom={zoom}
@@ -126,16 +105,23 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                 const fill = isFocus
                   ? countryColorVar(code!)
                   : "var(--color-map-neutral)";
-                const opacity = isFocus
+                const stroke = isFocus
+                  ? "var(--color-map-border)"
+                  : "var(--color-map-neutral-stroke)";
+                const strokeWidth = isFocus
+                  ? isSelected
+                    ? 0.9
+                    : 0.6
+                  : 0.3;
+                const fillOpacity = isFocus
                   ? isSelected || isHovered
                     ? 1
-                    : 0.9
+                    : 0.92
                   : 1;
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    filter="url(#landRelief)"
                     onMouseEnter={() => isFocus && setHoveredCountry(code!)}
                     onMouseLeave={() => setHoveredCountry(null)}
                     onClick={() =>
@@ -148,12 +134,13 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                     style={{
                       default: {
                         fill,
-                        fillOpacity: opacity,
-                        stroke: "var(--color-map-border)",
-                        strokeWidth: isSelected ? 1.1 : 0.45,
+                        fillOpacity,
+                        stroke,
+                        strokeWidth,
+                        strokeLinejoin: "round",
                         outline: "none",
                         transition:
-                          "fill-opacity 380ms cubic-bezier(.22,1,.36,1), stroke-width 380ms cubic-bezier(.22,1,.36,1), stroke 380ms ease",
+                          "fill-opacity 320ms cubic-bezier(.22,1,.36,1), stroke-width 320ms cubic-bezier(.22,1,.36,1), stroke 320ms ease",
                         cursor: isFocus ? "pointer" : "default",
                       },
                       hover: {
@@ -161,8 +148,8 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                         fillOpacity: 1,
                         stroke: isFocus
                           ? "var(--color-foreground)"
-                          : "var(--color-map-border)",
-                        strokeWidth: isFocus ? 1.1 : 0.5,
+                          : "var(--color-map-neutral-stroke)",
+                        strokeWidth: isFocus ? 0.95 : 0.35,
                         outline: "none",
                       },
                       pressed: { fill, outline: "none" },
@@ -175,23 +162,23 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
         </ZoomableGroup>
       </ComposableMap>
 
-      <div className="pointer-events-auto absolute right-5 top-5 flex flex-col gap-1 rounded-2xl p-1.5 glass-panel">
+      <div className="pointer-events-auto absolute right-4 top-4 flex flex-col gap-0.5 rounded-xl p-1 panel">
         <button
           onClick={zoomIn}
           disabled={zoom >= MAX_ZOOM - 0.01}
-          className="flex h-9 w-9 items-center justify-center rounded-xl text-foreground/70 transition-all duration-300 hover:bg-white/60 hover:text-foreground hover:scale-[1.06] active:scale-95 disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground/70 transition-colors duration-200 hover:bg-foreground/[0.06] hover:text-foreground active:scale-95 disabled:opacity-30"
           aria-label="Zoom in"
         >
-          <ZoomIn size={16} />
+          <ZoomIn size={15} />
         </button>
-        <div className="mx-2 h-px bg-white/60" />
+        <div className="mx-1.5 h-px bg-border" />
         <button
           onClick={zoomOut}
           disabled={zoom <= MIN_ZOOM + 0.01}
-          className="flex h-9 w-9 items-center justify-center rounded-xl text-foreground/70 transition-all duration-300 hover:bg-white/60 hover:text-foreground hover:scale-[1.06] active:scale-95 disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground/70 transition-colors duration-200 hover:bg-foreground/[0.06] hover:text-foreground active:scale-95 disabled:opacity-30"
           aria-label="Zoom out"
         >
-          <ZoomOut size={16} />
+          <ZoomOut size={15} />
         </button>
       </div>
     </motion.div>
