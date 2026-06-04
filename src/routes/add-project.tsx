@@ -246,13 +246,13 @@ function validate(raw: Record<string, any>[]) {
 
   raw.forEach((r, i) => {
     const row = i + 3; // two-row header offset
-    const countryRaw = String(pick(r, "Country") ?? "").trim().toUpperCase();
+    const countryRaw = String(pick(r, "Country") ?? "").trim();
     if (!countryRaw) return; // skip blank rows
-    const code = COUNTRY_LOOKUP[countryRaw];
+    const code = normalizeCountry(countryRaw);
     if (!code) {
       issues.push({
         row, field: "Country", severity: "error",
-        message: `"${countryRaw}" is not in scope (Guatemala/Honduras/El Salvador).`,
+        message: `"${countryRaw}" is not a recognized country (ISO 3166).`,
       });
     }
     const projectId = String(pick(r, "Project ID") ?? "").trim();
