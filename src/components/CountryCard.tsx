@@ -14,10 +14,10 @@ export function CountryCard() {
     <AnimatePresence>
       {hoveredCountry && (
         <motion.div
-          initial={{ opacity: 0, y: 10, scale: 0.97 }}
+          initial={{ opacity: 0, y: 8, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 6, scale: 0.98 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="pointer-events-none absolute left-1/2 top-6 z-30 -translate-x-1/2"
         >
           <Card code={hoveredCountry} />
@@ -29,57 +29,78 @@ export function CountryCard() {
   function Card({ code }: { code: CountryCode }) {
     const c = FOCUS_COUNTRIES[code];
     const s = countryStats(projects, code);
-    return (
-      <div className="w-[260px] rounded-2xl p-3.5 glass-panel-strong">
+    const rc = s.riskCounts;
+    const distParts: string[] = [];
+    if (rc.High) distParts.push(`${rc.High} High`);
+    if (rc.Medium) distParts.push(`${rc.Medium} Medium`);
+    if (rc.Low) distParts.push(`${rc.Low} Low`);
+    const distribution = distParts.join(" · ") || "—";
 
+    return (
+      <div className="w-[300px] rounded-xl p-3.5 panel-strong">
+        {/* Header */}
         <div className="flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
             style={{ background: countryColorVar(code) }}
           />
-          <div className="text-sm font-semibold">{c.name}</div>
+          <div className="text-sm font-semibold tracking-tight">{c.name}</div>
           <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
             {code}
           </span>
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-2 text-center">
-          <Stat label="GTMI" value={s.gtmiTier} />
-          <Stat
-            label="Risk"
-            value={s.overallRisk}
-            color={riskColorVar(s.overallRisk)}
-          />
-          <Stat label="Projects" value={String(s.count)} />
-          <Stat
-            label="Composite"
-            value={`${s.avgScore.toFixed(1)}/15`}
-          />
-        </div>
+
+        {/* Compact table */}
+        <table className="mt-3 w-full border-collapse text-[12px]">
+          <tbody>
+            <Row label="GTMI tier" value={s.gtmiTier} />
+            <Row
+              label="Overall risk"
+              value={s.overallRisk}
+              valueColor={riskColorVar(s.overallRisk)}
+            />
+            <Row
+              label="Composite score"
+              value={`${s.avgScore.toFixed(1)} / 15`}
+            />
+            <Row label="Projects" value={String(s.count)} />
+            <Row label="Risk distribution" value={distribution} mono />
+            <Row
+              label="Dominant interaction"
+              value={s.dominantInteraction}
+              last
+            />
+          </tbody>
+        </table>
       </div>
     );
   }
 }
 
-function Stat({
+function Row({
   label,
   value,
-  color,
+  valueColor,
+  mono,
+  last,
 }: {
   label: string;
   value: string;
-  color?: string;
+  valueColor?: string;
+  mono?: boolean;
+  last?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-white/60 bg-white/55 p-1.5 shadow-[0_1px_0_0_rgba(255,255,255,0.7)_inset]">
-      <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+    <tr className={last ? "" : "border-b border-border/60"}>
+      <td className="py-1.5 pr-3 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
         {label}
-      </div>
-      <div
-        className="mt-0.5 text-sm font-semibold"
-        style={color ? { color } : undefined}
+      </td>
+      <td
+        className={`py-1.5 text-right font-semibold ${mono ? "font-mono text-[11px]" : ""}`}
+        style={valueColor ? { color: valueColor } : undefined}
       >
         {value}
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }
