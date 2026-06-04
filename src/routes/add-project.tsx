@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { ArrowLeft, Upload, CheckCircle2, AlertTriangle, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, Upload, CheckCircle2, AlertTriangle, FileSpreadsheet, Download } from "lucide-react";
 import {
   CountryCode,
   FOCUS_COUNTRIES,
@@ -10,6 +10,7 @@ import {
   RiskLevel,
   useProjectStore,
 } from "@/lib/project-data";
+import templateAsset from "@/assets/Template_Capstone.xlsx.asset.json";
 
 export const Route = createFileRoute("/add-project")({
   head: () => ({
@@ -21,24 +22,6 @@ export const Route = createFileRoute("/add-project")({
   component: AddProject,
 });
 
-const REQUIRED = [
-  "Country",
-  "Project ID",
-  "Project Name",
-  "Project Type",
-  "GTMI Tier",
-  "Dim1 Absorption",
-  "Dim2 Regulatory",
-  "Dim3 Technical",
-  "Dim4 Political",
-  "Dim5 Investment",
-  "Interaction Type",
-  "Linked Project IDs",
-  "Notes",
-  "Composite Score",
-  "Overall Risk",
-];
-
 const COUNTRY_LOOKUP: Record<string, CountryCode> = {
   GUATEMALA: "GTM",
   GTM: "GTM",
@@ -48,11 +31,26 @@ const COUNTRY_LOOKUP: Record<string, CountryCode> = {
   SLV: "SLV",
 };
 
+const RISK_LOOKUP: Record<string, RiskLevel> = {
+  L: "Low", LOW: "Low", M: "Medium", MEDIUM: "Medium", H: "High", HIGH: "High",
+};
+
 interface ValidationIssue {
   row: number;
   field: string;
   message: string;
   severity: "error" | "warning";
+}
+
+function pick(r: Record<string, any>, ...keys: string[]) {
+  for (const k of keys) {
+    for (const actual of Object.keys(r)) {
+      if (actual.replace(/\s+/g, " ").trim().toLowerCase().startsWith(k.toLowerCase())) {
+        return r[actual];
+      }
+    }
+  }
+  return "";
 }
 
 function AddProject() {
@@ -67,8 +65,11 @@ function AddProject() {
     setImported(false);
     const buf = await f.arrayBuffer();
     const wb = XLSX.read(buf);
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const raw = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: "" });
+    // Prefer "Interaction Matrix" sheet if present; otherwise first sheet
+    const sheetName = wb.SheetNames.find((s) => /interaction/i.test(s)) ?? wb.SheetNames[0];
+    const sheet = wb.Sheets[sheetName];
+    // Template uses two header rows; row 1 is section group, row 2 is the field name.
+    const raw = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: "", range: 1 });
     const { parsed, issues } = validate(raw);
     setRows(parsed);
     setIssues(issues);
@@ -78,19 +79,6 @@ function AddProject() {
     const merged = [...projects.filter((p) => !rows.find((r) => r.projectId === p.projectId)), ...rows];
     setProjects(merged);
     setImported(true);
-  }
-
-  function downloadTemplate() {
-    const ws = XLSX.utils.aoa_to_sheet([
-      REQUIRED,
-      [
-        "Guatemala", "GT-010", "Sample Project", "Foundational DPI", "Tier 2",
-        3, 3, 3, 3, 3, "Complementary", "", "Sample note", 3.0, "Medium",
-      ],
-    ]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Projects");
-    XLSX.writeFile(wb, "dpi-projects-template.xlsx");
   }
 
   const errCount = issues.filter((i) => i.severity === "error").length;
@@ -115,9 +103,9 @@ function AddProject() {
       <main className="mx-auto max-w-6xl px-6 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Import projects</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Upload an Excel file shaped like the interaction matrix. We validate country names,
-          duplicate IDs, score ranges, linked-project references, and composite-score consistency
-          before committing rows to the atlas.
+          Use the official Capstone template. We validate country names, duplicate IDs, 1–3 score
+          ranges, linked-project references, and composite-score consistency before committing
+          rows to the atlas.
         </p>
 
         <div className="mt-8 grid gap-6 md:grid-cols-[1.2fr_1fr]">
@@ -133,27 +121,25 @@ function AddProject() {
               {fileName ?? "Drop or select an Excel file"}
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
-              .xlsx · .xls · .csv — first sheet is parsed
+              .xlsx · .xls · .csv — Interaction Matrix sheet is parsed
             </div>
           </label>
 
-          <div className="rounded-xl border bg-surface p-5">
-            <div className="flex items-center gap-2">
-              <FileSpreadsheet size={16} />
-              <h3 className="text-sm font-semibold">Expected columns</h3>
+          <a
+            href={templateAsset.url}
+            download="Template_Capstone.xlsx"
+            className="group flex h-64 flex-col items-center justify-center rounded-xl border bg-surface p-6 text-center transition hover:border-primary hover:bg-primary-soft/30"
+          >
+            <FileSpreadsheet size={28} className="text-muted-foreground transition group-hover:text-primary" />
+            <div className="mt-3 text-base font-semibold">Blank Template</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              Official Parallel Investment Interaction Matrix — pre-formatted with the codebook,
+              dropdowns, and 1–3 scoring rules.
             </div>
-            <ul className="mt-3 grid grid-cols-2 gap-1 text-xs text-muted-foreground">
-              {REQUIRED.map((c) => (
-                <li key={c} className="font-mono">· {c}</li>
-              ))}
-            </ul>
-            <button
-              onClick={downloadTemplate}
-              className="mt-4 w-full rounded-md border bg-secondary px-3 py-2 text-xs font-medium hover:bg-secondary/70"
-            >
-              Download blank template
-            </button>
-          </div>
+            <span className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground">
+              <Download size={12} /> Download .xlsx
+            </span>
+          </a>
         </div>
 
         {rows.length > 0 && (
@@ -246,7 +232,7 @@ function AddProject() {
                       <td className="px-3 py-2">{p.projectName}</td>
                       <td className="px-3 py-2">{p.projectType}</td>
                       <td className="px-3 py-2">{p.gtmiTier}</td>
-                      <td className="px-3 py-2 font-mono">{p.compositeScore.toFixed(2)}</td>
+                      <td className="px-3 py-2 font-mono">{p.compositeScore}/15</td>
                       <td className="px-3 py-2">{p.overallRisk}</td>
                       <td className="px-3 py-2">{p.interactionType}</td>
                     </tr>
@@ -267,69 +253,84 @@ function validate(raw: Record<string, any>[]) {
   const seenIds = new Set<string>();
 
   raw.forEach((r, i) => {
-    const row = i + 2; // header offset
-    const countryRaw = String(r["Country"] ?? "").trim().toUpperCase();
+    const row = i + 3; // two-row header offset
+    const countryRaw = String(pick(r, "Country") ?? "").trim().toUpperCase();
+    if (!countryRaw) return; // skip blank rows
     const code = COUNTRY_LOOKUP[countryRaw];
     if (!code) {
       issues.push({
         row, field: "Country", severity: "error",
-        message: `"${r["Country"]}" is not in scope (Guatemala/Honduras/El Salvador).`,
+        message: `"${countryRaw}" is not in scope (Guatemala/Honduras/El Salvador).`,
       });
     }
-    const projectId = String(r["Project ID"] ?? "").trim();
+    const projectId = String(pick(r, "Project ID") ?? "").trim();
     if (!projectId) {
       issues.push({ row, field: "Project ID", severity: "error", message: "Missing." });
-    } else if (seenIds.has(projectId)) {
+      return;
+    }
+    if (seenIds.has(projectId)) {
       issues.push({ row, field: "Project ID", severity: "error", message: `Duplicate "${projectId}".` });
     }
     seenIds.add(projectId);
 
-    const dims = [
-      ["Dim1 Absorption", "dim1_absorption"],
-      ["Dim2 Regulatory", "dim2_regulatory"],
-      ["Dim3 Technical", "dim3_technical"],
-      ["Dim4 Political", "dim4_political"],
-      ["Dim5 Investment", "dim5_investment"],
-    ] as const;
+    const dims: Array<[string, keyof Project]> = [
+      ["Inst. Load", "dim1_institutional"],
+      ["Reg. Deps", "dim2_regulatory"],
+      ["Tech. Deps", "dim3_technical"],
+      ["Pol. Sensitivity", "dim4_political"],
+      ["Invest. Needs", "dim5_investment"],
+    ];
     const scores: Record<string, number> = {};
-    for (const [col, key] of dims) {
-      const v = Number(r[col]);
-      if (!Number.isFinite(v) || v < 1 || v > 5) {
-        issues.push({ row, field: col, severity: "error", message: `Must be 1–5, got "${r[col]}".` });
+    for (const [label, key] of dims) {
+      const v = Number(pick(r, `${label} Score`, label));
+      if (!Number.isFinite(v) || v < 1 || v > 3) {
+        issues.push({ row, field: label, severity: "error", message: `Must be 1–3, got "${pick(r, `${label} Score`, label)}".` });
       }
-      scores[key] = v;
+      scores[key as string] = v;
     }
 
-    const composite = Number(r["Composite Score"]);
-    const avg = (scores.dim1_absorption + scores.dim2_regulatory + scores.dim3_technical + scores.dim4_political + scores.dim5_investment) / 5;
-    if (Number.isFinite(composite) && Math.abs(composite - avg) > 0.5) {
+    const composite = Number(pick(r, "Composite"));
+    const sum = scores.dim1_institutional + scores.dim2_regulatory + scores.dim3_technical + scores.dim4_political + scores.dim5_investment;
+    if (Number.isFinite(composite) && Math.abs(composite - sum) > 1) {
       issues.push({
-        row, field: "Composite Score", severity: "warning",
-        message: `Stored ${composite} differs from dimension average ${avg.toFixed(2)}.`,
+        row, field: "Composite", severity: "warning",
+        message: `Stored ${composite} differs from dimension sum ${sum}.`,
       });
     }
 
-    const linked = String(r["Linked Project IDs"] ?? "")
+    const linked = String(pick(r, "Linked Project") ?? "")
       .split(/[,;]/)
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const riskRaw = String(pick(r, "Overall Risk") ?? "Medium").trim().toUpperCase();
+    const overallRisk: RiskLevel = RISK_LOOKUP[riskRaw] ?? "Medium";
+
     parsed.push({
       country: code ?? "GTM",
       projectId,
-      projectName: String(r["Project Name"] ?? "").trim(),
-      projectType: String(r["Project Type"] ?? "").trim(),
-      gtmiTier: (String(r["GTMI Tier"] ?? "Tier 2").trim() as Project["gtmiTier"]),
-      dim1_absorption: scores.dim1_absorption,
+      projectName: String(pick(r, "Project Name") ?? "").trim(),
+      projectType: String(pick(r, "Project Type") ?? "").trim(),
+      leadDonor: String(pick(r, "Lead Donor", "Donor") ?? "").trim(),
+      implementingAgency: String(pick(r, "Implementing Agency", "Agency") ?? "").trim(),
+      gtmiTier: String(pick(r, "GTMI Tier") ?? "B").trim(),
+      startDate: String(pick(r, "Start Date") ?? "").trim(),
+      endDate: String(pick(r, "End Date") ?? "").trim(),
+      dim1_institutional: scores.dim1_institutional,
+      dim1_note: String(pick(r, "Inst. Load Note") ?? "").trim(),
       dim2_regulatory: scores.dim2_regulatory,
+      dim2_note: String(pick(r, "Reg. Deps Note") ?? "").trim(),
       dim3_technical: scores.dim3_technical,
+      dim3_note: String(pick(r, "Tech. Deps Note") ?? "").trim(),
       dim4_political: scores.dim4_political,
+      dim4_note: String(pick(r, "Pol. Sensitivity Note") ?? "").trim(),
       dim5_investment: scores.dim5_investment,
-      interactionType: (String(r["Interaction Type"] ?? "Complementary").trim() as InteractionType),
+      dim5_note: String(pick(r, "Invest. Needs Note") ?? "").trim(),
+      compositeScore: Number.isFinite(composite) ? composite : sum,
+      interactionType: (String(pick(r, "Interaction Type") ?? "Complementary").trim() as InteractionType),
       linkedProjectIds: linked,
-      notes: String(r["Notes"] ?? "").trim(),
-      compositeScore: Number.isFinite(composite) ? composite : Number(avg.toFixed(2)),
-      overallRisk: (String(r["Overall Risk"] ?? "Medium").trim() as RiskLevel),
+      interactionNote: String(pick(r, "Interaction Note") ?? "").trim(),
+      overallRisk,
     });
   });
 
@@ -338,7 +339,7 @@ function validate(raw: Record<string, any>[]) {
     for (const linked of p.linkedProjectIds) {
       if (!seenIds.has(linked)) {
         issues.push({
-          row: i + 2,
+          row: i + 3,
           field: "Linked Project IDs",
           severity: "warning",
           message: `Linked "${linked}" not present in this import or existing atlas.`,
