@@ -1,18 +1,47 @@
-// Domain types + real EU Global Gateway / IDB project data (Honduras, Guatemala, El Salvador).
+// Domain types + seed EU Global Gateway / IDB project data.
+// Country handling is now global — any ISO 3166-1 alpha-3 code is valid.
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import {
+  ALL_COUNTRIES,
+  countryAccent,
+  getCountryMeta,
+  normalizeCountry,
+} from "./countries";
 
-export type CountryCode = "GTM" | "HND" | "SLV";
+/** ISO 3166-1 alpha-3 country code (e.g. "GTM", "USA", "KEN"). */
+export type CountryCode = string;
 
+/**
+ * Backwards-compatible lookup. Any valid ISO3 code resolves to a country.
+ * Returns undefined for unknown codes so existing optional-chaining patterns
+ * keep working.
+ */
 export const FOCUS_COUNTRIES: Record<
-  CountryCode,
+  string,
   { name: string; region: string; tone: string }
-> = {
-  GTM: { name: "Guatemala", region: "Central America", tone: "guatemala" },
-  HND: { name: "Honduras", region: "Central America", tone: "honduras" },
-  SLV: { name: "El Salvador", region: "Central America", tone: "elsalvador" },
-};
+> = new Proxy(
+  {},
+  {
+    get(_t, prop: string) {
+      const meta = getCountryMeta(prop);
+      if (!meta) return undefined;
+      return { name: meta.name, region: meta.subregion || meta.region, tone: meta.cca3 };
+    },
+    has(_t, prop: string) {
+      return !!getCountryMeta(prop);
+    },
+    ownKeys() {
+      return Object.keys(ALL_COUNTRIES);
+    },
+    getOwnPropertyDescriptor() {
+      return { enumerable: true, configurable: true };
+    },
+  }
+) as Record<string, { name: string; region: string; tone: string }>;
+
+export { normalizeCountry };
 
 export type RiskLevel = "Low" | "Medium" | "High";
 export type GTMITier = "A" | "B" | "C";
