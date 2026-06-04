@@ -23,15 +23,6 @@ export const Route = createFileRoute("/add-project")({
   component: AddProject,
 });
 
-const COUNTRY_LOOKUP: Record<string, CountryCode> = {
-  GUATEMALA: "GTM",
-  GTM: "GTM",
-  HONDURAS: "HND",
-  HND: "HND",
-  "EL SALVADOR": "SLV",
-  SLV: "SLV",
-};
-
 const RISK_LOOKUP: Record<string, RiskLevel> = {
   L: "Low", LOW: "Low", M: "Medium", MEDIUM: "Medium", H: "High", HIGH: "High",
 };
