@@ -163,7 +163,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                         stroke: isFocus
                           ? "var(--color-foreground)"
                           : "var(--color-map-neutral-stroke)",
-                        strokeWidth: isFocus ? 1.1 : 0.55,
+                        strokeWidth: isFocus ? 1.6 : 0.55,
                         vectorEffect: "non-scaling-stroke",
                         shapeRendering: "geometricPrecision",
                         outline: "none",
