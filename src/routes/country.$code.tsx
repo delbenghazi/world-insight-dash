@@ -1,29 +1,29 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { DetailPanel } from "@/components/DetailPanel";
-import { CountryCode, FOCUS_COUNTRIES } from "@/lib/project-data";
-
-const VALID: CountryCode[] = ["GTM", "HND", "SLV"];
+import { FOCUS_COUNTRIES } from "@/lib/project-data";
+import { getCountryMeta, normalizeCountry } from "@/lib/countries";
 
 export const Route = createFileRoute("/country/$code")({
   head: ({ params }) => ({
     meta: [
       {
-        title: `${FOCUS_COUNTRIES[params.code as CountryCode]?.name ?? "Country"} — DPI Sequencing Atlas`,
+        title: `${FOCUS_COUNTRIES[params.code]?.name ?? params.code} — DT Global GovTech Atlas`,
       },
       {
         name: "description",
-        content: `Project portfolio, scoring, and sequencing risks for ${FOCUS_COUNTRIES[params.code as CountryCode]?.name ?? params.code}.`,
+        content: `Project portfolio, scoring, and sequencing risks for ${FOCUS_COUNTRIES[params.code]?.name ?? params.code}.`,
       },
     ],
   }),
   loader: ({ params }) => {
-    if (!VALID.includes(params.code as CountryCode)) throw notFound();
-    return { code: params.code as CountryCode };
+    const resolved = getCountryMeta(params.code) ? params.code : normalizeCountry(params.code);
+    if (!resolved) throw notFound();
+    return { code: resolved };
   },
   notFoundComponent: () => (
     <div className="flex h-screen items-center justify-center text-muted-foreground">
-      Country not in scope.
+      Unknown country code.
     </div>
   ),
   errorComponent: () => (
