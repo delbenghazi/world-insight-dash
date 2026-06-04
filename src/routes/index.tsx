@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import { LoadingGlobe } from "@/components/LoadingGlobe";
 import { WorldMap } from "@/components/WorldMap";
@@ -28,9 +28,24 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const [loaded, setLoaded] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = shellRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const mx = ((e.clientX - r.left) / r.width) * 100;
+    const my = ((e.clientY - r.top) / r.height) * 100;
+    el.style.setProperty("--mx", String(mx));
+    el.style.setProperty("--my", String(my));
+  };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-background">
+    <div
+      ref={shellRef}
+      onPointerMove={onPointerMove}
+      className="atmosphere sheen relative h-screen w-full overflow-hidden"
+    >
       <AnimatePresence>
         {!loaded && <LoadingGlobe onDone={() => setLoaded(true)} />}
       </AnimatePresence>
@@ -42,7 +57,7 @@ function Home() {
             <div className="absolute inset-0">
               <WorldMap />
             </div>
-            <div className="pointer-events-none absolute left-6 top-6 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="pointer-events-none absolute left-6 top-6 text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/80">
               World Map
             </div>
           </main>
