@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { motion } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
