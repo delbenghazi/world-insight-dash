@@ -81,13 +81,13 @@
   --input: oklch(0.92 0.006 240);
   --ring: oklch(0.55 0.19 254);
 
-  /* Map — CARTO Positron / Mapbox Light inspired */
-  --map-ocean: oklch(0.955 0.014 235);
-  --map-ocean-edge: oklch(0.935 0.016 235);
-  --map-base: oklch(0.955 0.014 235);
-  --map-neutral: oklch(0.905 0.005 240);
-  --map-neutral-stroke: oklch(0.83 0.008 240);
-  --map-border: oklch(0.74 0.012 240);
+  /* Map — premium cartographic stage, stronger land/water contrast */
+  --map-ocean: oklch(0.93 0.022 235);
+  --map-ocean-edge: oklch(0.90 0.026 235);
+  --map-base: oklch(0.93 0.022 235);
+  --map-neutral: oklch(0.985 0.003 240);
+  --map-neutral-stroke: oklch(0.74 0.012 240);
+  --map-border: oklch(0.55 0.02 245);
 
   --country-guatemala: oklch(0.62 0.24 350);
   --country-honduras: oklch(0.72 0.17 55);
