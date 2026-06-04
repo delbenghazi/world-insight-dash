@@ -47,13 +47,13 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
     const tick = () => {
       setZoom((current) => {
         const diff = targetZoomRef.current - current;
-        if (Math.abs(diff) < 0.003) {
+        if (Math.abs(diff) < 0.0008) {
           rafRef.current = null;
           return targetZoomRef.current;
         }
         rafRef.current = requestAnimationFrame(tick);
-        // exponential smoothing for buttery motion
-        return current + diff * 0.18;
+        // gentler exponential smoothing for buttery, sustained motion
+        return current + diff * 0.085;
       });
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -75,9 +75,9 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   return (
     <motion.div
       className="relative h-full w-full"
-      initial={{ scale: entrance ? 1.06 : 1, opacity: entrance ? 0 : 1 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ scale: entrance ? 1.12 : 1, opacity: entrance ? 0 : 1, filter: entrance ? "blur(6px)" : "blur(0px)" }}
+      animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+      transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
     >
       <ComposableMap
         projection="geoEqualEarth"
