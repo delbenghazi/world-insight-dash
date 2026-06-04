@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { motion } from "framer-motion";
+import { useNavigate } from "@tanstack/react-router";
 import {
   CountryCode,
   countryColorVar,
@@ -18,8 +19,9 @@ const ISO_NUM_TO_CODE: Record<string, CountryCode> = {
 };
 
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
-  const { selectedCountry, hoveredCountry, setSelectedCountry, setHoveredCountry } =
+  const { selectedCountry, hoveredCountry, setHoveredCountry } =
     useProjectStore();
+  const navigate = useNavigate();
   const [ready, setReady] = useState(!entrance);
 
   useEffect(() => {
