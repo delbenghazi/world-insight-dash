@@ -123,6 +123,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
+                    vectorEffect="non-scaling-stroke"
                     onMouseEnter={() => isFocus && setHoveredCountry(code!)}
                     onMouseLeave={() => setHoveredCountry(null)}
                     onClick={() =>
@@ -139,6 +140,9 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                         stroke,
                         strokeWidth,
                         strokeLinejoin: "round",
+                        strokeLinecap: "round",
+                        vectorEffect: "non-scaling-stroke",
+                        shapeRendering: "geometricPrecision",
                         outline: "none",
                         transition:
                           "fill-opacity 320ms cubic-bezier(.22,1,.36,1), stroke-width 320ms cubic-bezier(.22,1,.36,1), stroke 320ms ease",
@@ -150,7 +154,9 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                         stroke: isFocus
                           ? "var(--color-foreground)"
                           : "var(--color-map-neutral-stroke)",
-                        strokeWidth: isFocus ? 0.95 : 0.35,
+                        strokeWidth: isFocus ? 1.1 : 0.55,
+                        vectorEffect: "non-scaling-stroke",
+                        shapeRendering: "geometricPrecision",
                         outline: "none",
                       },
                       pressed: { fill, outline: "none" },
