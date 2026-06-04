@@ -82,7 +82,12 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
       <ComposableMap
         projection="geoEqualEarth"
         projectionConfig={{ scale: 195 }}
-        style={{ width: "100%", height: "100%" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          shapeRendering: "geometricPrecision",
+          textRendering: "geometricPrecision",
+        }}
       >
         <ZoomableGroup
           center={center}
