@@ -177,11 +177,24 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                       </span>
                     </td>
                     <td className="px-3 py-2 font-mono text-muted-foreground">{p.linkedProjectIds.join(", ")}</td>
+                    <td className="px-3 py-2">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Remove project "${p.projectName}"?`)) {
+                            removeProject(p.projectId);
+                          }
+                        }}
+                        className="rounded p-1 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                        title="Remove project"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
                       No projects match the current filters.
                     </td>
                   </tr>
