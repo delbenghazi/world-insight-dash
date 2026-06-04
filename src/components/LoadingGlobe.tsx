@@ -24,7 +24,7 @@ export function LoadingGlobe({ onDone, durationMs = 1200 }: Props) {
 
   useEffect(() => {
     let raf: number;
-    let start = performance.now();
+    const start = performance.now();
     const tick = (t: number) => {
       setRotation(((t - start) / 30) % 360);
       raf = requestAnimationFrame(tick);
@@ -46,38 +46,44 @@ export function LoadingGlobe({ onDone, durationMs = 1200 }: Props) {
   }, [rotation]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+    >
       <motion.div
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 1.4 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        initial={{ opacity: 0, scale: 0.92, filter: "blur(8px)" }}
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+        exit={{ opacity: 0, scale: 2.6, filter: "blur(10px)" }}
+        transition={{
+          opacity: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+          scale: { duration: 1.2, ease: [0.65, 0, 0.35, 1] },
+          filter: { duration: 1.1, ease: "easeOut" },
+        }}
         className="relative"
         style={{ width: 200, height: 200 }}
       >
-        <span className="whirl-ring" />
-        <span className="whirl-ring-2" />
         <svg width={200} height={200} viewBox="0 0 200 200">
           <circle
             cx={100}
             cy={100}
             r={95}
-            fill="var(--color-map-base)"
+            fill="var(--color-map-ocean)"
             stroke="var(--color-map-border)"
-            strokeWidth={1}
+            strokeWidth={0.6}
           />
           {geo &&
             geo.features.map((f: any, i: number) => (
               <path
                 key={i}
                 d={path(f) || ""}
-                fill="var(--color-foreground)"
-                fillOpacity={0.85}
-                stroke="var(--color-background)"
+                fill="var(--color-map-neutral)"
+                fillOpacity={1}
+                stroke="var(--color-map-neutral-stroke)"
                 strokeWidth={0.3}
               />
             ))}
-          {/* Graticule-ish meridian */}
           <ellipse
             cx={100}
             cy={100}
@@ -86,9 +92,10 @@ export function LoadingGlobe({ onDone, durationMs = 1200 }: Props) {
             fill="none"
             stroke="var(--color-map-border)"
             strokeWidth={0.5}
+            opacity={0.4}
           />
         </svg>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
