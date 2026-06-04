@@ -97,7 +97,8 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
           <Geographies geography={TOPO_URL}>
             {({ geographies }) =>
               geographies.map((geo) => {
-                const code = ISO_NUM_TO_CODE[String(geo.id)];
+                const iso3 = isoNumericToIso3(String(geo.id));
+                const code = iso3 && focusSet.has(iso3) ? iso3 : null;
                 const isFocus = !!code;
                 const isSelected = code && selectedCountry === code;
                 const isHovered = code && hoveredCountry === code;
