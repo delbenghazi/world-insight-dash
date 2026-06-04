@@ -65,7 +65,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                   geography={geo}
                   onMouseEnter={() => isFocus && setHoveredCountry(code!)}
                   onMouseLeave={() => setHoveredCountry(null)}
-                  onClick={() => isFocus && setSelectedCountry(code!)}
+                  onClick={() => isFocus && navigate({ to: "/country/$code", params: { code: code! } })}
                   style={{
                     default: {
                       fill,
