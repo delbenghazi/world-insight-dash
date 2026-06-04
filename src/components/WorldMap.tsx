@@ -25,8 +25,8 @@ const ISO_NUM_TO_CODE: Record<string, CountryCode> = {
 };
 
 const MIN_ZOOM = 0.52;
-const MAX_ZOOM = 2.58;
-const ZOOM_STEP = 0.26;
+const MAX_ZOOM = 4;
+const ZOOM_FACTOR = 1.4;
 
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const { selectedCountry, hoveredCountry, setHoveredCountry } =
@@ -35,6 +35,8 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const [ready, setReady] = useState(!entrance);
   const [zoom, setZoom] = useState(1);
   const [center, setCenter] = useState<[number, number]>([0, 0]);
+  const targetZoomRef = useRef(1);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!entrance) return;
@@ -42,13 +44,35 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
     return () => clearTimeout(t);
   }, [entrance]);
 
+  const animateZoom = useCallback((target: number) => {
+    targetZoomRef.current = target;
+    if (rafRef.current != null) return;
+    const tick = () => {
+      setZoom((current) => {
+        const diff = targetZoomRef.current - current;
+        if (Math.abs(diff) < 0.003) {
+          rafRef.current = null;
+          return targetZoomRef.current;
+        }
+        rafRef.current = requestAnimationFrame(tick);
+        // exponential smoothing for buttery motion
+        return current + diff * 0.18;
+      });
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(() => () => {
+    if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+  }, []);
+
   const zoomIn = useCallback(
-    () => setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM)),
-    []
+    () => animateZoom(Math.min(targetZoomRef.current * ZOOM_FACTOR, MAX_ZOOM)),
+    [animateZoom]
   );
   const zoomOut = useCallback(
-    () => setZoom((z) => Math.max(z - ZOOM_STEP, MIN_ZOOM)),
-    []
+    () => animateZoom(Math.max(targetZoomRef.current / ZOOM_FACTOR, MIN_ZOOM)),
+    [animateZoom]
   );
 
   return (
