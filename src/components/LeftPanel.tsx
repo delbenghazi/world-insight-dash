@@ -26,7 +26,7 @@ export function LeftPanel() {
       {open ? (
         <div className="flex h-full flex-col p-5">
           <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            DPI Sequencing Atlas
+            DT Global EU Global Gateway · GovTech interaction tool
           </div>
 
           <AnimatePresence mode="wait">
