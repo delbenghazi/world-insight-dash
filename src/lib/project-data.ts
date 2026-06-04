@@ -20,14 +20,19 @@ export type CountryCode = string;
  */
 export const FOCUS_COUNTRIES: Record<
   string,
-  { name: string; region: string; tone: string }
+  { name: string; region: string; tone: string; latlng: [number, number] }
 > = new Proxy(
   {},
   {
     get(_t, prop: string) {
       const meta = getCountryMeta(prop);
       if (!meta) return undefined;
-      return { name: meta.name, region: meta.subregion || meta.region, tone: meta.cca3 };
+      return {
+        name: meta.name,
+        region: meta.subregion || meta.region,
+        tone: meta.cca3,
+        latlng: meta.latlng,
+      };
     },
     has(_t, prop: string) {
       return !!getCountryMeta(prop);
@@ -39,7 +44,7 @@ export const FOCUS_COUNTRIES: Record<
       return { enumerable: true, configurable: true };
     },
   }
-) as Record<string, { name: string; region: string; tone: string }>;
+) as Record<string, { name: string; region: string; tone: string; latlng: [number, number] }>;
 
 export { normalizeCountry };
 
@@ -452,7 +457,20 @@ export function countryStats(projects: Project[], c: CountryCode) {
         ? "Medium"
         : "Low";
   }
-  return { count: list.length, avgScore: avg, gtmiTier, overallRisk };
+  const interactionCounts: Record<string, number> = {};
+  for (const p of list)
+    interactionCounts[p.interactionType] =
+      (interactionCounts[p.interactionType] ?? 0) + 1;
+  const dominantInteraction =
+    Object.entries(interactionCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
+  return {
+    count: list.length,
+    avgScore: avg,
+    gtmiTier,
+    overallRisk,
+    riskCounts,
+    dominantInteraction,
+  };
 }
 
 export function riskColorVar(r: RiskLevel) {

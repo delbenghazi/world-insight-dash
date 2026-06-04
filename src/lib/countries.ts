@@ -12,6 +12,7 @@ export interface CountryMeta {
   region: string; // e.g. "Americas"
   subregion: string; // e.g. "Central America"
   altSpellings: string[];
+  latlng: [number, number]; // [lat, lng] centroid
 }
 
 export const ALL_COUNTRIES: Record<string, CountryMeta> = {};
@@ -47,6 +48,7 @@ for (const c of raw as any[]) {
     region: c.region || "Other",
     subregion: c.subregion || c.region || "Other",
     altSpellings: c.altSpellings || [],
+    latlng: (c.latlng && c.latlng.length === 2 ? c.latlng : [0, 0]) as [number, number],
   };
   ALL_COUNTRIES[c.cca3] = meta;
   if (c.ccn3) NUM_INDEX[c.ccn3] = c.cca3;
