@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Save } from "lucide-react";
+import { Check, Save, Trash2 } from "lucide-react";
 import {
   CountryCode,
   FOCUS_COUNTRIES,
