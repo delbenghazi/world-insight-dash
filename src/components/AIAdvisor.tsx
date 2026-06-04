@@ -21,7 +21,7 @@ export function AIAdvisor() {
     {
       role: "assistant",
       content:
-        "Policy copilot ready. I answer only within DPI sequencing scope for Guatemala, Honduras, and El Salvador. Ask about sequencing, coordination risks, or stakeholder implications.",
+        "Policy copilot ready. I answer only for recognized countries in the DPI sequencing portfolio. Ask about sequencing, coordination risks, or stakeholder implications.",
     },
   ]);
   const { selectedCountry, projects, summaries } = useProjectStore();
