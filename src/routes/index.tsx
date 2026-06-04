@@ -43,7 +43,7 @@ function Home() {
         <div className="flex h-full w-full">
           <LeftPanel />
           <main className="relative flex-1 p-3">
-            <section className="map-stage relative h-full w-full overflow-hidden">
+            <section className="map-stage map-graticule relative h-full w-full overflow-hidden">
               {/* Architectural corner ticks */}
               <span className="pointer-events-none absolute left-0 top-0 h-3 w-3 border-l border-t border-foreground/25" />
               <span className="pointer-events-none absolute right-0 top-0 h-3 w-3 border-r border-t border-foreground/25" />
