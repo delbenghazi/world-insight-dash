@@ -31,7 +31,7 @@ export function LeftPanel() {
 
       {open ? (
         <div className="flex h-full flex-col p-5">
-          <div className="uppercase tracking-[0.18em] text-muted-foreground font-semibold text-slate-900 text-sm font-mono whitespace-pre-line">
+          <div className="uppercase tracking-[0.18em] text-muted-foreground font-mono whitespace-pre-line text-xs font-light text-slate-900">
             {"DT Global - EU Global Gateway \nGovTech interaction tool"}
           </div>
 
