@@ -359,6 +359,7 @@ interface State {
   setSelectedCountry: (c: CountryCode | null) => void;
   setHoveredCountry: (c: CountryCode | null) => void;
   setProjects: (p: Project[]) => void;
+  removeProject: (projectId: string) => void;
   updateSummary: (c: CountryCode, summary: string) => void;
 }
 
@@ -379,6 +380,10 @@ export const useProjectStore = create<State>()(
       setSelectedCountry: (c) => set({ selectedCountry: c }),
       setHoveredCountry: (c) => set({ hoveredCountry: c }),
       setProjects: (p) => set({ projects: p }),
+      removeProject: (projectId) =>
+        set((s) => ({
+          projects: s.projects.filter((p) => p.projectId !== projectId),
+        })),
       updateSummary: (c, summary) =>
         set((s) => ({
           summaries: {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Save } from "lucide-react";
+import { Check, Save, Trash2 } from "lucide-react";
 import {
   CountryCode,
   FOCUS_COUNTRIES,
@@ -21,7 +21,7 @@ const INTERACTIONS: InteractionType[] = [
 const RISKS: RiskLevel[] = ["Low", "Medium", "High"];
 
 export function DetailPanel({ code }: { code: CountryCode }) {
-  const { projects, summaries, updateSummary } = useProjectStore();
+  const { projects, summaries, updateSummary, removeProject } = useProjectStore();
   const country = FOCUS_COUNTRIES[code];
   const stats = countryStats(projects, code);
   const list = projectsByCountry(projects, code);
@@ -141,16 +141,16 @@ export function DetailPanel({ code }: { code: CountryCode }) {
             <table className="w-full text-xs">
               <thead className="bg-secondary text-muted-foreground">
                 <tr>
-                  {["ID", "Name", "Type", "GTMI", "Composite", "Interaction", "Risk", "Linked"].map(
-                    (h) => (
-                      <th
-                        key={h}
-                        className="px-3 py-2 text-left font-medium uppercase tracking-wider"
-                      >
-                        {h}
-                      </th>
-                    )
-                  )}
+                {["ID", "Name", "Type", "GTMI", "Composite", "Interaction", "Risk", "Linked", ""].map(
+                  (h) => (
+                    <th
+                      key={h || "action"}
+                      className="px-3 py-2 text-left font-medium uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
                 </tr>
               </thead>
               <tbody>
@@ -177,11 +177,24 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                       </span>
                     </td>
                     <td className="px-3 py-2 font-mono text-muted-foreground">{p.linkedProjectIds.join(", ")}</td>
+                    <td className="px-3 py-2">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Remove project "${p.projectName}"?`)) {
+                            removeProject(p.projectId);
+                          }
+                        }}
+                        className="rounded p-1 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                        title="Remove project"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
                       No projects match the current filters.
                     </td>
                   </tr>

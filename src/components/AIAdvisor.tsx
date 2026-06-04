@@ -21,7 +21,7 @@ export function AIAdvisor() {
     {
       role: "assistant",
       content:
-        "Policy copilot ready. I answer only within DPI sequencing scope for Guatemala, Honduras, and El Salvador. Ask about sequencing, coordination risks, or stakeholder implications.",
+        "Policy copilot ready. I answer only for recognized countries in the DPI sequencing portfolio. Ask about sequencing, coordination risks, or stakeholder implications.",
     },
   ]);
   const { selectedCountry, projects, summaries } = useProjectStore();
@@ -31,19 +31,19 @@ export function AIAdvisor() {
     setMessages((m) => [...m, { role: "user", content: q }]);
     setInput("");
     // Stub reply — wire to Lovable AI once Cloud is enabled.
-    const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry].name : "the region";
+    const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry].name : "the portfolio";
     const ctx = selectedCountry
       ? summaries[selectedCountry]?.summary
-      : "Three-country Central America scope.";
+      : "Global portfolio scope.";
     setTimeout(() => {
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          content: `Working from ${projects.length} projects of record in scope. For ${country}: ${ctx?.slice(
+          content: `Working from ${projects.length} projects of record for recognized countries. For ${country}: ${ctx?.slice(
             0,
             260
-          )}…\n\n(Live AI advisor activates once Lovable Cloud + AI Gateway is enabled. The current response is a scoped stub so the UX is visible.)`,
+          )}…\n\n(Live AI advisor activates once Lovable Cloud + AI Gateway is enabled. The current response is a portfolio stub so the UX is visible.)`,
         },
       ]);
     }, 350);
@@ -75,7 +75,7 @@ export function AIAdvisor() {
               <div>
                 <div className="text-sm font-semibold">AI Advisor</div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Scoped to DPI sequencing · CA-3
+                  Scoped to DPI sequencing · Global
                 </div>
               </div>
               <button
