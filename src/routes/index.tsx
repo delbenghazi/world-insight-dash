@@ -30,21 +30,10 @@ function Home() {
   const [loaded, setLoaded] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const el = shellRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const mx = ((e.clientX - r.left) / r.width) * 100;
-    const my = ((e.clientY - r.top) / r.height) * 100;
-    el.style.setProperty("--mx", String(mx));
-    el.style.setProperty("--my", String(my));
-  };
-
   return (
     <div
       ref={shellRef}
-      onPointerMove={onPointerMove}
-      className="atmosphere sheen relative h-screen w-full overflow-hidden"
+      className="page-canvas relative h-screen w-full overflow-hidden"
     >
       <AnimatePresence>
         {!loaded && <LoadingGlobe onDone={() => setLoaded(true)} />}
@@ -53,13 +42,14 @@ function Home() {
       {loaded && (
         <div className="flex h-full w-full">
           <LeftPanel />
-          <main className="relative flex-1">
-            <div className="absolute inset-0">
+          <main className="relative flex-1 p-5">
+            <section className="map-stage relative h-full w-full overflow-hidden">
               <WorldMap />
-            </div>
-            <div className="pointer-events-none absolute left-6 top-6 text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/80">
-              World Map
-            </div>
+              <div className="pointer-events-none absolute left-5 top-4 flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-foreground/40" />
+                World Map
+              </div>
+            </section>
           </main>
         </div>
       )}
