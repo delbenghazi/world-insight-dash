@@ -9,7 +9,7 @@ import {
 } from "@/lib/project-data";
 
 export function CountryCard() {
-  const { hoveredCountry, projects, summaries } = useProjectStore();
+  const { hoveredCountry, projects } = useProjectStore();
   return (
     <AnimatePresence>
       {hoveredCountry && (
@@ -29,32 +29,31 @@ export function CountryCard() {
   function Card({ code }: { code: CountryCode }) {
     const c = FOCUS_COUNTRIES[code];
     const s = countryStats(projects, code);
-    const summary = summaries[code]?.summary ?? "";
     return (
-      <div className="w-[340px] rounded-lg border bg-card/95 p-4 shadow-lg backdrop-blur">
+      <div className="w-[260px] rounded-lg border bg-card/95 p-3 shadow-lg backdrop-blur">
         <div className="flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
             style={{ background: countryColorVar(code) }}
           />
-          <div className="text-base font-semibold">{c.name}</div>
+          <div className="text-sm font-semibold">{c.name}</div>
           <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
             {code}
           </span>
         </div>
-        <div className="mt-3 grid grid-cols-4 gap-3 text-center">
+        <div className="mt-2 grid grid-cols-2 gap-2 text-center">
           <Stat label="GTMI" value={s.gtmiTier} />
-          <Stat label="Avg score" value={s.avgScore.toFixed(2)} />
           <Stat
             label="Risk"
             value={s.overallRisk}
             color={riskColorVar(s.overallRisk)}
           />
           <Stat label="Projects" value={String(s.count)} />
+          <Stat
+            label="Composite"
+            value={`${s.avgScore.toFixed(1)}/15`}
+          />
         </div>
-        <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
-          {summary}
-        </p>
       </div>
     );
   }
@@ -70,11 +69,14 @@ function Stat({
   color?: string;
 }) {
   return (
-    <div>
+    <div className="rounded-md border bg-background/60 p-1.5">
       <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
-      <div className="text-sm font-semibold" style={color ? { color } : undefined}>
+      <div
+        className="mt-0.5 text-sm font-semibold"
+        style={color ? { color } : undefined}
+      >
         {value}
       </div>
     </div>
