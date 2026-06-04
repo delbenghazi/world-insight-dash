@@ -19,9 +19,10 @@ import { isoNumericToIso3 } from "@/lib/countries";
 const TOPO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-const MIN_ZOOM = 0.52;
+const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 4;
 const ZOOM_FACTOR = 1.4;
+const INITIAL_ZOOM = 1.18;
 
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const { projects, selectedCountry, hoveredCountry, setHoveredCountry } =
