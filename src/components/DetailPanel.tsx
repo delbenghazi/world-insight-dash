@@ -65,7 +65,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
         </div>
         <div className="ml-auto flex items-center gap-4 text-xs">
           <Pill label="GTMI" value={stats.gtmiTier} />
-          <Pill label="Avg" value={stats.avgScore.toFixed(2)} />
+          <Pill label="Avg" value={`${stats.avgScore.toFixed(1)}/15`} />
           <Pill
             label="Risk"
             value={stats.overallRisk}
