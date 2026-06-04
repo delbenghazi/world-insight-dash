@@ -421,8 +421,9 @@ export function countriesByRegion(
 }
 
 // Composite scale is 5–15.
-// Overall risk is derived from the distribution of project-level risks;
-// the most frequent label wins, with ties broken toward the higher risk.
+// Country-level risk = dominant project risk profile.
+// Most frequent label wins. Unique 3-way ties (e.g. 1 Low + 1 Medium + 1 High)
+// resolve to Medium; all other ties resolve to the higher risk.
 export function countryStats(projects: Project[], c: CountryCode) {
   const list = projectsByCountry(projects, c);
   const avg =
@@ -435,14 +436,21 @@ export function countryStats(projects: Project[], c: CountryCode) {
     Object.entries(tierCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
   const riskCounts: Record<RiskLevel, number> = { Low: 0, Medium: 0, High: 0 };
   for (const p of list) riskCounts[p.overallRisk]++;
-  let overallRisk: RiskLevel = "Low";
-  let maxCount = riskCounts.Low;
-  if (riskCounts.Medium >= maxCount) {
+  const maxCount = Math.max(riskCounts.Low, riskCounts.Medium, riskCounts.High);
+  const maxes = (Object.entries(riskCounts) as [RiskLevel, number][])
+    .filter(([, c]) => c === maxCount)
+    .map(([r]) => r);
+  let overallRisk: RiskLevel;
+  if (maxes.length === 1) {
+    overallRisk = maxes[0];
+  } else if (maxes.length === 3) {
     overallRisk = "Medium";
-    maxCount = riskCounts.Medium;
-  }
-  if (riskCounts.High >= maxCount) {
-    overallRisk = "High";
+  } else {
+    overallRisk = maxes.includes("High")
+      ? "High"
+      : maxes.includes("Medium")
+        ? "Medium"
+        : "Low";
   }
   return { count: list.length, avgScore: avg, gtmiTier, overallRisk };
 }
