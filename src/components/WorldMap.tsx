@@ -11,18 +11,13 @@ import { ZoomIn, ZoomOut } from "lucide-react";
 import {
   CountryCode,
   countryColorVar,
+  countriesInUse,
   useProjectStore,
 } from "@/lib/project-data";
+import { isoNumericToIso3 } from "@/lib/countries";
 
 const TOPO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-
-// Numeric country IDs from world-atlas (ISO 3166-1 numeric)
-const ISO_NUM_TO_CODE: Record<string, CountryCode> = {
-  "320": "GTM",
-  "340": "HND",
-  "222": "SLV",
-};
 
 const MIN_ZOOM = 0.52;
 const MAX_ZOOM = 4;
