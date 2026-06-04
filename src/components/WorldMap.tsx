@@ -3,7 +3,6 @@ import {
   ComposableMap,
   Geographies,
   Geography,
-  Marker,
   ZoomableGroup,
 } from "react-simple-maps";
 import { motion } from "framer-motion";
@@ -11,7 +10,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import {
   CountryCode,
-  FOCUS_COUNTRIES,
   countryColorVar,
   countriesInUse,
   useProjectStore,
