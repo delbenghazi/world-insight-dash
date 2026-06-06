@@ -38,7 +38,7 @@ function Compare() {
     setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
   return (
     <div className="min-h-screen bg-background">
-      <WorkflowNav active="portfolio" />
+      <WorkflowNav />
 
       <main className="mx-auto max-w-7xl px-6 py-10">
 

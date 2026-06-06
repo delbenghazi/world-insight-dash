@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare, Globe2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare, Globe2, Map, FileText, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
@@ -44,6 +44,34 @@ export function LeftPanel() {
             <span className="text-foreground">coordinate</span>, or{" "}
             <span className="text-foreground">flag as risk</span> before commitment.
           </p>
+
+          <nav className="mt-4 flex flex-col gap-0.5 border-t pt-3">
+            {[
+              { to: "/methodology", label: "Atlas", icon: Map },
+              {
+                to: "/country/$code",
+                label: "Country Portfolio",
+                icon: FileText,
+                params: { code: selectedCountry ?? "GTM" },
+              },
+              { to: "/compare", label: "Compare", icon: GitCompare },
+              { to: "/add-project", label: "Add Project", icon: Plus },
+              { to: "/about", label: "About", icon: Info },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  params={item.params as never}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+                >
+                  <Icon size={13} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
 
           <div className="mt-5 space-y-2">
             <div className="rounded-md border bg-surface px-3 py-2.5">
@@ -154,20 +182,6 @@ export function LeftPanel() {
             ))}
           </div>
 
-          <div className="mt-auto flex items-center gap-1 border-t pt-3 text-xs text-muted-foreground">
-            <Link
-              to="/methodology"
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 hover:bg-secondary hover:text-foreground"
-            >
-              <BookOpen size={12} /> Methodology
-            </Link>
-            <Link
-              to="/compare"
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 hover:bg-secondary hover:text-foreground"
-            >
-              <GitCompare size={12} /> Compare
-            </Link>
-          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 pt-16">
