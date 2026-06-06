@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -15,26 +15,54 @@ import {
   useProjectStore,
 } from "@/lib/project-data";
 import { CountryCard } from "@/components/CountryCard";
-import { isoNumericToIso3 } from "@/lib/countries";
+import { getCountryMeta, isoNumericToIso3 } from "@/lib/countries";
 
 const TOPO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-const MIN_ZOOM = 0.6;
-const MAX_ZOOM = 4;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 8;
 const ZOOM_FACTOR = 1.4;
-const INITIAL_ZOOM = 1.18;
+
+function computeFit(codes: CountryCode[]): { center: [number, number]; zoom: number } {
+  const pts = codes
+    .map((c) => getCountryMeta(c)?.latlng)
+    .filter((p): p is [number, number] => !!p);
+  if (pts.length === 0) return { center: [10, 10], zoom: 1 };
+  const lats = pts.map((p) => p[0]);
+  const lngs = pts.map((p) => p[1]);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const center: [number, number] = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
+  // Single-point or tight cluster gets a regional zoom; large spans zoom out.
+  const latSpan = Math.max(maxLat - minLat, 6);
+  const lngSpan = Math.max(maxLng - minLng, 6);
+  const span = Math.max(latSpan, lngSpan) * 1.8; // padding around bbox
+  const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, 180 / span));
+  return { center, zoom };
+}
 
 export function WorldMap({ entrance = true }: { entrance?: boolean }) {
   const { projects, selectedCountry, hoveredCountry, setHoveredCountry } =
     useProjectStore();
   const navigate = useNavigate();
-  const focusSet = new Set(countriesInUse(projects));
+  const activeCountries = useMemo(() => countriesInUse(projects), [projects]);
+  const focusSet = useMemo(() => new Set(activeCountries), [activeCountries]);
+  const fit = useMemo(() => computeFit(activeCountries), [activeCountries]);
   const [ready, setReady] = useState(!entrance);
-  const [zoom, setZoom] = useState(INITIAL_ZOOM);
-  const [center, setCenter] = useState<[number, number]>([10, 10]);
-  const targetZoomRef = useRef(INITIAL_ZOOM);
+  const [zoom, setZoom] = useState(fit.zoom);
+  const [center, setCenter] = useState<[number, number]>(fit.center);
+  const targetZoomRef = useRef(fit.zoom);
   const rafRef = useRef<number | null>(null);
+
+  // Auto-fit whenever the set of active countries changes.
+  useEffect(() => {
+    setCenter(fit.center);
+    setZoom(fit.zoom);
+    targetZoomRef.current = fit.zoom;
+  }, [fit.center, fit.zoom]);
 
   useEffect(() => {
     if (!entrance) return;
