@@ -35,6 +35,10 @@ export function LeftPanel() {
             {"DT Global - EU Global Gateway \nGovTech interaction tool"}
           </div>
 
+          <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+            This platform helps development advisors identify sequencing dependencies, institutional bottlenecks, and coordination risks across parallel digital investments — before project commitment. Select a country to explore its portfolio, or add a new project to run an interaction assessment.
+          </p>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={selectedCountry ?? "none"}
