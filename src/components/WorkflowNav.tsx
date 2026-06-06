@@ -36,12 +36,6 @@ export function WorkflowNav({ active }: { active?: StepKey }) {
   return (
     <header className="border-b bg-surface/80 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center gap-4 px-6 py-3">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft size={12} /> Atlas
-        </Link>
         <nav className="ml-2 flex flex-1 items-center gap-1 overflow-x-auto">
           {STEPS.map((s) => {
             const Icon = s.icon;
