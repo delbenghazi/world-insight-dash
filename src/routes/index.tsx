@@ -48,8 +48,8 @@ function Home() {
             <main className="relative flex-1">
               <section className="relative h-full w-full overflow-hidden">
                 <WorldMap />
-                <div className="pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 rounded-full border bg-surface/85 px-3 py-1.5 text-[11px] text-muted-foreground backdrop-blur">
-                  Hover a highlighted country, then click to open its portfolio
+                <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full border bg-surface/85 px-3 py-1.5 text-[11px] font-medium text-foreground backdrop-blur">
+                  Click a highlighted country to view its portfolio
                 </div>
               </section>
             </main>

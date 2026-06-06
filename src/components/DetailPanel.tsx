@@ -59,6 +59,12 @@ export function DetailPanel({ code }: { code: CountryCode }) {
     return true;
   });
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+  }, [code]);
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
       <div className="flex items-center gap-3 border-b bg-surface px-6 py-4">
