@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CountryCode,
@@ -10,6 +11,16 @@ import {
 
 export function CountryCard() {
   const { hoveredCountry, projects } = useProjectStore();
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
     <AnimatePresence>
       {hoveredCountry && (
@@ -18,7 +29,8 @@ export function CountryCard() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 6, scale: 0.98 }}
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-none absolute left-1/2 top-6 z-30 -translate-x-1/2"
+          className="pointer-events-none fixed z-30"
+          style={{ left: mousePos.x + 16, top: mousePos.y + 16 }}
         >
           <Card code={hoveredCountry} />
         </motion.div>
