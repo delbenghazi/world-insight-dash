@@ -116,6 +116,16 @@ function Methodology() {
             This atlas was created by Dana Elbenghazi, Yuan Liang, and Mohamed Louajri.
           </p>
         </section>
+
+        <div className="mt-10 flex items-center justify-between rounded-md border border-dashed bg-surface/40 px-4 py-3 text-sm text-muted-foreground">
+          <span>Next: pick a country to explore its portfolio</span>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
+          >
+            Open atlas <ArrowRight size={12} />
+          </Link>
+        </div>
       </main>
     </div>
   );
