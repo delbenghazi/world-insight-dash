@@ -182,20 +182,6 @@ export function LeftPanel() {
             ))}
           </div>
 
-          <div className="mt-auto flex items-center gap-1 border-t pt-3 text-xs text-muted-foreground">
-            <Link
-              to="/methodology"
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 hover:bg-secondary hover:text-foreground"
-            >
-              <BookOpen size={12} /> Methodology
-            </Link>
-            <Link
-              to="/compare"
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 hover:bg-secondary hover:text-foreground"
-            >
-              <GitCompare size={12} /> Compare
-            </Link>
-          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 pt-16">
