@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, ChevronDown, ChevronUp, Save, Sparkles, Trash2, Plus } from "lucide-react";
 import { RiskHero } from "./RiskHero";
