@@ -16,7 +16,7 @@ export function WorkflowNav() {
   const selectedCountry = useProjectStore((s) => s.selectedCountry);
   const countryCode = selectedCountry ?? "GTM";
 
-  const items: NavItem[] = [
+  const mainItems: NavItem[] = [
     { label: "Home", to: "/", icon: Home, match: (p) => p === "/" },
     { label: "Atlas", to: "/methodology", icon: Map, match: (p) => p.startsWith("/methodology") },
     {
@@ -28,8 +28,29 @@ export function WorkflowNav() {
     },
     { label: "Compare", to: "/compare", icon: GitCompare, match: (p) => p.startsWith("/compare") },
     { label: "Add Project", to: "/add-project", icon: Plus, match: (p) => p.startsWith("/add-project") },
-    { label: "About", to: "/about", icon: Info, match: (p) => p.startsWith("/about") },
   ];
+
+  const aboutItem: NavItem = { label: "About", to: "/about", icon: Info, match: (p) => p.startsWith("/about") };
+
+  const renderItem = (item: NavItem) => {
+    const Icon = item.icon;
+    const isActive = item.match(pathname);
+    return (
+      <Link
+        key={item.label}
+        to={item.to}
+        params={item.params as never}
+        className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition ${
+          isActive
+            ? "bg-primary text-primary-foreground"
+            : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+        }`}
+      >
+        <Icon size={12} />
+        {item.label}
+      </Link>
+    );
+  };
 
   return (
     <header className="border-b bg-surface/80 backdrop-blur">
@@ -38,25 +59,10 @@ export function WorkflowNav() {
           DT Global · EU Global Gateway
         </div>
         <nav className="ml-2 flex flex-1 items-center gap-1 overflow-x-auto">
-          {items.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.match(pathname);
-            return (
-              <Link
-                key={item.label}
-                to={item.to}
-                params={item.params as never}
-                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition ${
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
-              >
-                <Icon size={12} />
-                {item.label}
-              </Link>
-            );
-          })}
+          {mainItems.map(renderItem)}
+          <div className="ml-auto">
+            {renderItem(aboutItem)}
+          </div>
         </nav>
       </div>
     </header>
