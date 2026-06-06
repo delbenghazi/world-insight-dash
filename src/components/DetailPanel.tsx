@@ -85,7 +85,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {/* Hero: classification + composite */}
         <section className="px-6 pt-6">
           {list.length === 0 ? (
