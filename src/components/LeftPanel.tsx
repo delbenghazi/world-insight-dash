@@ -45,6 +45,34 @@ export function LeftPanel() {
             <span className="text-foreground">flag as risk</span> before commitment.
           </p>
 
+          <nav className="mt-4 flex flex-col gap-0.5 border-t pt-3">
+            {[
+              { to: "/methodology", label: "Atlas", icon: Map },
+              {
+                to: "/country/$code",
+                label: "Country Portfolio",
+                icon: FileText,
+                params: { code: selectedCountry ?? "GTM" },
+              },
+              { to: "/compare", label: "Compare", icon: GitCompare },
+              { to: "/add-project", label: "Add Project", icon: Plus },
+              { to: "/about", label: "About", icon: Info },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  params={item.params as never}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+                >
+                  <Icon size={13} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
           <div className="mt-5 space-y-2">
             <div className="rounded-md border bg-surface px-3 py-2.5">
               <div className="flex items-center gap-2 text-[11px] font-medium text-foreground">
