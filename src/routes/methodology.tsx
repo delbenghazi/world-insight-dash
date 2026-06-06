@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { WorkflowNav } from "@/components/WorkflowNav";
 
 export const Route = createFileRoute("/methodology")({
   head: () => ({
@@ -59,14 +60,9 @@ const INTERACTIONS = [
 function Methodology() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-surface">
-        <div className="mx-auto flex max-w-4xl items-center gap-4 px-6 py-4">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft size={14} /> Back to atlas
-          </Link>
-        </div>
-      </header>
+      <WorkflowNav active="methodology" />
       <main className="mx-auto max-w-3xl px-6 py-12">
+
         <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
           Methodology
         </div>
