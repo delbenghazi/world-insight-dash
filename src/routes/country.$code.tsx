@@ -38,7 +38,7 @@ function CountryPage() {
   const { code } = Route.useLoaderData();
   return (
     <div className="flex h-screen flex-col bg-background">
-      <WorkflowNav active="portfolio" />
+      <WorkflowNav />
       <div className="flex-1 overflow-hidden">
         <DetailPanel code={code} />
       </div>

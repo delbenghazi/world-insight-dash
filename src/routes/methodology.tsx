@@ -157,7 +157,7 @@ function FlowArrow() {
 function Methodology() {
   return (
     <div className="min-h-screen bg-background">
-      <WorkflowNav active="methodology" />
+      <WorkflowNav />
       <main className="mx-auto max-w-7xl px-6 py-12">
         <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
           Methodology
