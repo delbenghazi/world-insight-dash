@@ -34,24 +34,27 @@ function Home() {
   return (
     <div
       ref={shellRef}
-      className="page-canvas relative h-screen w-full overflow-hidden"
+      className="page-canvas relative flex h-screen w-full flex-col overflow-hidden"
     >
       <AnimatePresence>
         {!loaded && <LoadingGlobe onDone={() => setLoaded(true)} />}
       </AnimatePresence>
 
       {loaded && (
-        <div className="flex h-full w-full">
-          <LeftPanel />
-          <main className="relative flex-1">
-            <section className="relative h-full w-full overflow-hidden">
-              <WorldMap />
-              <div className="pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 rounded-full border bg-surface/85 px-3 py-1.5 text-[11px] text-muted-foreground backdrop-blur">
-                Hover a highlighted country, then click to open its portfolio
-              </div>
-            </section>
-          </main>
-        </div>
+        <>
+          <WorkflowNav />
+          <div className="flex min-h-0 flex-1 w-full">
+            <LeftPanel />
+            <main className="relative flex-1">
+              <section className="relative h-full w-full overflow-hidden">
+                <WorldMap />
+                <div className="pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 rounded-full border bg-surface/85 px-3 py-1.5 text-[11px] text-muted-foreground backdrop-blur">
+                  Hover a highlighted country, then click to open its portfolio
+                </div>
+              </section>
+            </main>
+          </div>
+        </>
       )}
 
       {loaded && <AIAdvisor />}
