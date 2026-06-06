@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Globe2, LayoutGrid, Sparkles, Plus, ArrowLeft, Info } from "lucide-react";
+import { BookOpen, Globe2, LayoutGrid, Sparkles, Plus, Info } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 type StepKey = "methodology" | "country" | "portfolio" | "advisor" | "add";
