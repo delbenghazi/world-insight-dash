@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import { Upload, CheckCircle2, AlertTriangle, FileSpreadsheet, Download } from "lucide-react";
