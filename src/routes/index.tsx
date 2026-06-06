@@ -5,7 +5,6 @@ import { LoadingGlobe } from "@/components/LoadingGlobe";
 import { WorldMap } from "@/components/WorldMap";
 import { LeftPanel } from "@/components/LeftPanel";
 import { AIAdvisor } from "@/components/AIAdvisor";
-import { WorkflowNav } from "@/components/WorkflowNav";
 import { useProjectStore } from "@/lib/project-data";
 
 export const Route = createFileRoute("/")({
