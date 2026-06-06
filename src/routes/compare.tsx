@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Check } from "lucide-react";
 import { useState } from "react";
+import { WorkflowNav } from "@/components/WorkflowNav";
+import { EmptyState } from "@/components/EmptyState";
 import {
   countriesInUse,
   countryColorVar,
@@ -36,18 +38,10 @@ function Compare() {
     setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-surface">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft size={14} /> Back to atlas
-          </Link>
-          <div className="ml-auto text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-            Comparison · {codes.length} {codes.length === 1 ? "country" : "countries"}
-          </div>
-        </div>
-      </header>
+      <WorkflowNav active="portfolio" />
 
       <main className="mx-auto max-w-7xl px-6 py-10">
+
         <h1 className="text-3xl font-semibold tracking-tight">Comparison view</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
           Select the countries you want to compare side-by-side on composite scores,
@@ -98,11 +92,22 @@ function Compare() {
           </div>
         </div>
 
-        {!confirmed && (
-          <div className="mt-10 rounded-xl border border-dashed bg-surface/40 p-10 text-center text-sm text-muted-foreground">
-            Pick at least one country above and click Compare to see the side-by-side view.
+        {available.length === 0 ? (
+          <div className="mt-8">
+            <EmptyState
+              title="No portfolios to compare yet"
+              description="Add at least one project to the atlas, then return here to compare countries side-by-side."
+              action={{ label: "Add a project", to: "/add-project" }}
+            />
           </div>
-        )}
+        ) : !confirmed ? (
+          <div className="mt-8">
+            <EmptyState
+              title="Pick countries to compare"
+              description="Select one or more countries above and press Compare to see composite scores, dominant interactions, and bottlenecks side-by-side."
+            />
+          </div>
+        ) : null}
 
 
         <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">

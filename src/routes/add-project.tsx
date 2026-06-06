@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { ArrowLeft, Upload, CheckCircle2, AlertTriangle, FileSpreadsheet, Download } from "lucide-react";
+import { Upload, CheckCircle2, AlertTriangle, FileSpreadsheet, Download } from "lucide-react";
+import { WorkflowNav } from "@/components/WorkflowNav";
 import {
   CountryCode,
   FOCUS_COUNTRIES,
@@ -78,21 +79,10 @@ function AddProject() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-surface">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft size={14} /> Back to atlas
-          </Link>
-          <div className="ml-auto text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-            Add Project · Excel import
-          </div>
-        </div>
-      </header>
+      <WorkflowNav active="add" />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
+
         <h1 className="text-3xl font-semibold tracking-tight">Import projects</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Use the official Capstone template. We validate country names, duplicate IDs, 1–3 score

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { WorkflowNav } from "@/components/WorkflowNav";
 
 export const Route = createFileRoute("/methodology")({
   head: () => ({
@@ -59,14 +60,9 @@ const INTERACTIONS = [
 function Methodology() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-surface">
-        <div className="mx-auto flex max-w-4xl items-center gap-4 px-6 py-4">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft size={14} /> Back to atlas
-          </Link>
-        </div>
-      </header>
+      <WorkflowNav active="methodology" />
       <main className="mx-auto max-w-3xl px-6 py-12">
+
         <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
           Methodology
         </div>
@@ -120,6 +116,16 @@ function Methodology() {
             This atlas was created by Dana Elbenghazi, Yuan Liang, and Mohamed Louajri.
           </p>
         </section>
+
+        <div className="mt-10 flex items-center justify-between rounded-md border border-dashed bg-surface/40 px-4 py-3 text-sm text-muted-foreground">
+          <span>Next: pick a country to explore its portfolio</span>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
+          >
+            Open atlas <ArrowRight size={12} />
+          </Link>
+        </div>
       </main>
     </div>
   );
