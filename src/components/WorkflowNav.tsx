@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Globe2, LayoutGrid, Sparkles, Plus, ArrowLeft } from "lucide-react";
+import { BookOpen, Globe2, LayoutGrid, Sparkles, Plus, ArrowLeft, Info } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 type StepKey = "methodology" | "country" | "portfolio" | "advisor" | "add";
@@ -62,6 +62,17 @@ export function WorkflowNav({ active }: { active?: StepKey }) {
             );
           })}
         </nav>
+        <Link
+          to="/about"
+          className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition ${
+            pathname === "/about"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+          }`}
+        >
+          <Info size={12} />
+          About
+        </Link>
       </div>
     </header>
   );
