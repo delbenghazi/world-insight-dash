@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare, Globe2 } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare, Globe2, Map, FileText, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
