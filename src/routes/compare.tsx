@@ -92,11 +92,22 @@ function Compare() {
           </div>
         </div>
 
-        {!confirmed && (
-          <div className="mt-10 rounded-xl border border-dashed bg-surface/40 p-10 text-center text-sm text-muted-foreground">
-            Pick at least one country above and click Compare to see the side-by-side view.
+        {available.length === 0 ? (
+          <div className="mt-8">
+            <EmptyState
+              title="No portfolios to compare yet"
+              description="Add at least one project to the atlas, then return here to compare countries side-by-side."
+              action={{ label: "Add a project", to: "/add-project" }}
+            />
           </div>
-        )}
+        ) : !confirmed ? (
+          <div className="mt-8">
+            <EmptyState
+              title="Pick countries to compare"
+              description="Select one or more countries above and press Compare to see composite scores, dominant interactions, and bottlenecks side-by-side."
+            />
+          </div>
+        ) : null}
 
 
         <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
