@@ -73,33 +73,6 @@ export function LeftPanel() {
             })}
           </nav>
 
-          <div className="mt-5 space-y-2">
-            <div className="rounded-md border bg-surface px-3 py-2.5">
-              <div className="flex items-center gap-2 text-[11px] font-medium text-foreground">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background text-[10px]">
-                  1
-                </span>
-                Select a country to explore its portfolio
-              </div>
-              <div className="mt-1 pl-7 text-[11px] text-muted-foreground">
-                Pick from the map or the list below.
-              </div>
-            </div>
-            <Link
-              to="/add-project"
-              className="group flex items-center justify-between rounded-md border border-dashed border-primary/40 bg-primary-soft px-3 py-2.5 text-sm transition hover:border-primary"
-            >
-              <span className="flex items-center gap-2 text-[12px] font-medium">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px]">
-                  2
-                </span>
-                Add a project to run an assessment
-              </span>
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition group-hover:scale-105">
-                <Plus size={14} />
-              </span>
-            </Link>
-          </div>
 
           <AnimatePresence mode="wait">
             <motion.div
