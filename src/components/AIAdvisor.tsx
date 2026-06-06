@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Bot, Send, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bot, Send, Sparkles, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useProjectStore, FOCUS_COUNTRIES } from "@/lib/project-data";
+import { useProjectStore, FOCUS_COUNTRIES, projectsByCountry } from "@/lib/project-data";
 
 interface Msg {
   role: "user" | "assistant";
@@ -9,45 +9,47 @@ interface Msg {
 }
 
 const SUGGESTIONS = [
-  "What sequencing risks should DT Global flag for donors?",
-  "Where do mandates compete inside the selected country?",
-  "Summarize stakeholder implications for citizens.",
+  "What should be sequenced first in this portfolio?",
+  "Where do mandates compete inside this country?",
+  "Which projects look complementary and can be coordinated?",
 ];
 
 export function AIAdvisor() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      role: "assistant",
-      content:
-        "Policy copilot ready. I answer only for recognized countries in the DPI sequencing portfolio. Ask about sequencing, coordination risks, or stakeholder implications.",
-    },
-  ]);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const { selectedCountry, projects, summaries } = useProjectStore();
+  const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry] : null;
+  const portfolio = selectedCountry ? projectsByCountry(projects, selectedCountry) : [];
+
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("open-advisor", handler);
+    return () => window.removeEventListener("open-advisor", handler);
+  }, []);
+
+  // Reset chat when active country changes — advisor is scoped to current portfolio.
+  useEffect(() => {
+    setMessages([]);
+  }, [selectedCountry]);
 
   function ask(q: string) {
-    if (!q.trim()) return;
+    if (!q.trim() || !selectedCountry) return;
     setMessages((m) => [...m, { role: "user", content: q }]);
     setInput("");
-    // Stub reply — wire to Lovable AI once Cloud is enabled.
-    const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry].name : "the portfolio";
-    const ctx = selectedCountry
-      ? summaries[selectedCountry]?.summary
-      : "Global portfolio scope.";
+    const ctx = summaries[selectedCountry]?.summary ?? "No saved sequencing notes yet.";
     setTimeout(() => {
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          content: `Working from ${projects.length} projects of record for recognized countries. For ${country}: ${ctx?.slice(
-            0,
-            260
-          )}…\n\n(Live AI advisor activates once Lovable Cloud + AI Gateway is enabled. The current response is a portfolio stub so the UX is visible.)`,
+          content: `Scoped to ${country?.name} (${portfolio.length} project${portfolio.length === 1 ? "" : "s"}).\n\nSequencing notes on file: ${ctx.slice(0, 240)}${ctx.length > 240 ? "…" : ""}\n\n(Live AI advisor activates once Lovable AI is wired. This is a portfolio-scoped stub.)`,
         },
       ]);
     }, 350);
   }
+
+  const label = country ? `Advisor · ${country.name}` : "Portfolio Advisor";
 
   return (
     <>
@@ -56,7 +58,7 @@ export function AIAdvisor() {
         className="fixed bottom-6 right-6 z-40 flex h-12 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background shadow-lg transition hover:scale-[1.02]"
       >
         <Sparkles size={14} />
-        Policy copilot
+        {label}
       </button>
 
       <AnimatePresence>
@@ -73,45 +75,72 @@ export function AIAdvisor() {
                 <Bot size={14} />
               </div>
               <div>
-                <div className="text-sm font-semibold">AI Advisor</div>
+                <div className="text-sm font-semibold">
+                  {country ? `Advisor · ${country.name}` : "Portfolio Advisor"}
+                </div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Scoped to DPI sequencing · Global
+                  {country
+                    ? `Scoped to ${portfolio.length} project${portfolio.length === 1 ? "" : "s"}`
+                    : "Select a country to scope this advisor"}
                 </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                aria-label="Close advisor"
               >
-                Close
+                <X size={14} />
               </button>
             </div>
+
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`max-w-[88%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm leading-relaxed ${
-                    m.role === "user"
-                      ? "ml-auto bg-primary text-primary-foreground"
-                      : "bg-secondary text-foreground"
-                  }`}
-                >
-                  {m.content}
+              {!selectedCountry ? (
+                <div className="flex h-full flex-col items-center justify-center text-center">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+                    <Sparkles size={16} />
+                  </div>
+                  <div className="mt-3 text-sm font-semibold">No portfolio selected</div>
+                  <p className="mt-1.5 max-w-xs text-xs text-muted-foreground">
+                    The advisor only answers questions about a specific country portfolio. Select a country on the map or from the sidebar to begin.
+                  </p>
                 </div>
-              ))}
-              {messages.length <= 1 && (
-                <div className="space-y-1.5 pt-1">
-                  {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => ask(s)}
-                      className="w-full rounded-md border bg-background px-3 py-2 text-left text-xs text-muted-foreground transition hover:border-primary hover:text-foreground"
+              ) : (
+                <>
+                  {messages.length === 0 && (
+                    <div className="rounded-md bg-secondary px-3 py-2 text-sm leading-relaxed text-foreground">
+                      Ready to advise on{" "}
+                      <span className="font-semibold">{country?.name}</span>. Ask about sequencing, mandate overlaps, or coordination risks across this portfolio.
+                    </div>
+                  )}
+                  {messages.map((m, i) => (
+                    <div
+                      key={i}
+                      className={`max-w-[88%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm leading-relaxed ${
+                        m.role === "user"
+                          ? "ml-auto bg-primary text-primary-foreground"
+                          : "bg-secondary text-foreground"
+                      }`}
                     >
-                      {s}
-                    </button>
+                      {m.content}
+                    </div>
                   ))}
-                </div>
+                  {messages.length === 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      {SUGGESTIONS.map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => ask(s)}
+                          className="w-full rounded-md border bg-background px-3 py-2 text-left text-xs text-muted-foreground transition hover:border-primary hover:text-foreground"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -122,12 +151,18 @@ export function AIAdvisor() {
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about sequencing, mandates, donors…"
-                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/40 focus:ring-2"
+                placeholder={
+                  selectedCountry
+                    ? `Ask about ${country?.name}…`
+                    : "Select a country first"
+                }
+                disabled={!selectedCountry}
+                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/40 focus:ring-2 disabled:opacity-50"
               />
               <button
                 type="submit"
-                className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground"
+                disabled={!selectedCountry}
+                className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground disabled:opacity-50"
               >
                 <Send size={14} />
               </button>
