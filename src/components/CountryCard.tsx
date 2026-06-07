@@ -68,6 +68,7 @@ export function CountryCard() {
   function Card({ code }: { code: CountryCode }) {
     const c = FOCUS_COUNTRIES[code];
     const s = countryStats(projects, code);
+    const proxy = countryProxyInfo(projects, code);
     const rc = s.riskCounts;
     const distParts: string[] = [];
     if (rc.High) distParts.push(`${rc.High} High`);
