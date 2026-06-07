@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Check, ChevronDown, ChevronUp, Save, Sparkles, Trash2, Plus } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Save, Trash2, Plus } from "lucide-react";
 import { RiskHero } from "./RiskHero";
 import { EmptyState } from "./EmptyState";
 import {
