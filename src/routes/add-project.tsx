@@ -109,10 +109,15 @@ interface AIDetail {
   plainLanguageSummary?: string;
 }
 
-interface EditableRow extends Project {
+interface EditableRow extends Omit<Project, "dim1_institutional" | "dim2_regulatory" | "dim3_technical" | "dim4_political" | "dim5_investment"> {
   _key: string;
   _aiSuggested?: boolean;
   _aiDetail?: AIDetail;
+  dim1_institutional: number | null;
+  dim2_regulatory: number | null;
+  dim3_technical: number | null;
+  dim4_political: number | null;
+  dim5_investment: number | null;
 }
 
 interface IntakeFile {
