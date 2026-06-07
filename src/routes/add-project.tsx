@@ -849,7 +849,26 @@ function SelectCell({
   );
 }
 
-const DIM_LABELS: Array<[keyof AIDetail, string]> = [
+function CompositeCell({ row, issues }: { row: EditableRow; issues: Map<string, ValidationIssue[]> }) {
+  const sum = sumDims(row);
+  const cellErr = cellIssues(issues, row._key, "compositeScore");
+  const hasErr = cellErr.some((i) => i.severity === "error");
+  return (
+    <td className={`px-3 py-2 ${hasErr ? "bg-destructive/10" : ""}`}>
+      <div className={`block w-full min-w-[6rem] font-mono ${hasErr ? "text-destructive" : ""}`} title="Auto-calculated from D1–D5">
+        {sum}/15
+      </div>
+      <div className="mt-0.5 text-[10px] text-muted-foreground">auto · Σ D1–D5</div>
+      {cellErr.length > 0 && (
+        <div className="mt-1 text-[10px] leading-tight" style={{ color: hasErr ? "var(--color-destructive)" : "var(--color-risk-medium)" }}>
+          {cellErr.map((i, idx) => <div key={idx}>{i.message}</div>)}
+        </div>
+      )}
+    </td>
+  );
+}
+
+
   ["d1", "D1 · Institutional Absorption Load"],
   ["d2", "D2 · Regulatory Dependencies"],
   ["d3", "D3 · Technical Dependencies"],
