@@ -77,7 +77,7 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
               </div>
               <div>
                 <div className="text-sm font-semibold">
-                  {country ? `Advisor · ${country.name}` : "Portfolio Advisor"}
+                  {countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor"}
                 </div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                   {country
