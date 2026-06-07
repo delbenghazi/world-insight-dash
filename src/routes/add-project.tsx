@@ -341,6 +341,7 @@ function AddProject() {
   const [analysing, setAnalysing] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [pendingSources, setPendingSources] = useState<ProjectSource[]>([]);
+  const [proxyState, setProxyState] = useState<Record<string, ProxyEntry>>({});
 
   const issues = useMemo(() => validateRows(rows), [rows]);
   const issuesByCell = useMemo(() => {
@@ -424,6 +425,33 @@ function AddProject() {
         return { ...r, [field]: clean } as EditableRow;
       })
     );
+    // Manual edit overrides any prior proxy attribution.
+    setProxyState((prev) => {
+      const k = `${key}:${field}`;
+      if (!(k in prev)) return prev;
+      const next = { ...prev };
+      delete next[k];
+      return next;
+    });
+  }
+
+  function setProxyAnswer(rowKey: string, field: DimField, questionId: string, value: string) {
+    const cfg = PROXY_CONFIGS[field];
+    if (!cfg) return;
+    const k = `${rowKey}:${field}`;
+    const prevEntry = proxyState[k]?.answers ?? {};
+    const answers = { ...prevEntry, [questionId]: value };
+    const result = cfg.score(answers);
+    setProxyState((prev) => ({
+      ...prev,
+      [k]: { answers, note: result?.note ?? "" },
+    }));
+    if (result) {
+      setImported(false);
+      setRows((prev) =>
+        prev.map((r) => (r._key === rowKey ? ({ ...r, [field]: result.score } as EditableRow) : r))
+      );
+    }
   }
 
   function deleteRow(key: string) {
@@ -829,7 +857,13 @@ function AddProject() {
                         {isOpen && row._aiDetail && (
                           <tr className={`border-t ${aiTint}`}>
                             <td colSpan={10} className="px-6 py-4">
-                              <ScoreDetail row={row} detail={row._aiDetail} onScoreChange={updateDim} />
+                              <ScoreDetail
+                                row={row}
+                                detail={row._aiDetail}
+                                onScoreChange={updateDim}
+                                proxyState={proxyState}
+                                onProxyAnswer={setProxyAnswer}
+                              />
                             </td>
                           </tr>
                         )}
@@ -972,15 +1006,194 @@ const DIM_LABELS: Array<[keyof AIDetail, DimField, string]> = [
   ["d5", "dim5_investment", "D5 · Investment Needs & Funding"],
 ];
 
+type ProxyQuestion = {
+  id: string;
+  label: string;
+  options: Array<{ value: string; label: string }>;
+};
+
+type ProxyConfig = {
+  questions: ProxyQuestion[];
+  score: (a: Record<string, string>) => { score: 1 | 2 | 3; note: string } | null;
+};
+
+const PROXY_CONFIGS: Record<DimField, ProxyConfig> = {
+  dim1_institutional: {
+    questions: [
+      {
+        id: "agencies",
+        label: "How many distinct implementing agencies or ministries are involved?",
+        options: [
+          { value: "one", label: "One lead agency" },
+          { value: "two_three", label: "2–3 agencies" },
+          { value: "four_plus", label: "4+ agencies / cross-ministerial" },
+        ],
+      },
+      {
+        id: "coordination",
+        label: "Is a new coordination mechanism (steering committee, MoU, joint unit) required?",
+        options: [
+          { value: "none", label: "No — existing channels suffice" },
+          { value: "existing", label: "Yes — reuses an existing committee" },
+          { value: "new_permanent", label: "Yes — new permanent inter-institutional body" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.agencies || !a.coordination) return null;
+      const aMap: Record<string, 1 | 2 | 3> = { one: 1, two_three: 2, four_plus: 3 };
+      const cMap: Record<string, 1 | 2 | 3> = { none: 1, existing: 2, new_permanent: 3 };
+      const score = Math.max(aMap[a.agencies], cMap[a.coordination]) as 1 | 2 | 3;
+      const ag = { one: "single agency", two_three: "2–3 agencies", four_plus: "4+ agencies" }[a.agencies];
+      const co = { none: "no new coordination", existing: "existing committee", new_permanent: "new permanent body" }[a.coordination];
+      return { score, note: `${ag}, ${co} → score ${score}` };
+    },
+  },
+  dim2_regulatory: {
+    questions: [
+      {
+        id: "legal_basis",
+        label: "Can the project be implemented under current law?",
+        options: [
+          { value: "yes", label: "Yes — existing framework covers it" },
+          { value: "secondary", label: "Needs new secondary legislation (decrees, reglamentos)" },
+          { value: "primary", label: "Needs new primary legislation (congressional approval)" },
+        ],
+      },
+      {
+        id: "blocking",
+        label: "Is any pending legislation a precondition for implementation?",
+        options: [
+          { value: "no", label: "No" },
+          { value: "maybe", label: "Possibly — gaps flagged but not blocking" },
+          { value: "yes", label: "Yes — explicitly listed as precondition" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.legal_basis || !a.blocking) return null;
+      const lMap: Record<string, 1 | 2 | 3> = { yes: 1, secondary: 2, primary: 3 };
+      const bMap: Record<string, 1 | 2 | 3> = { no: 1, maybe: 2, yes: 3 };
+      const score = Math.max(lMap[a.legal_basis], bMap[a.blocking]) as 1 | 2 | 3;
+      const lg = { yes: "current law sufficient", secondary: "needs secondary legislation", primary: "needs primary legislation" }[a.legal_basis];
+      const bl = { no: "no blocking gap", maybe: "regulatory gap identified", yes: "pending legislation is precondition" }[a.blocking];
+      return { score, note: `${lg}, ${bl} → score ${score}` };
+    },
+  },
+  dim3_technical: {
+    questions: [
+      {
+        id: "infra",
+        label: "What technical footprint does the project require?",
+        options: [
+          { value: "existing", label: "Deploys on existing infrastructure" },
+          { value: "integrate", label: "Integrates with 1–2 existing core systems" },
+          { value: "new", label: "Builds new national-level IT infrastructure" },
+        ],
+      },
+      {
+        id: "cross",
+        label: "Does it integrate with 3+ systems or cross-border platforms?",
+        options: [
+          { value: "no", label: "No" },
+          { value: "maybe", label: "Some integration, scope unclear" },
+          { value: "yes", label: "Yes — multi-system or cross-border" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.infra || !a.cross) return null;
+      const iMap: Record<string, 1 | 2 | 3> = { existing: 1, integrate: 2, new: 3 };
+      const cMap: Record<string, 1 | 2 | 3> = { no: 1, maybe: 2, yes: 3 };
+      const score = Math.max(iMap[a.infra], cMap[a.cross]) as 1 | 2 | 3;
+      const inf = { existing: "existing infra", integrate: "integrates 1–2 systems", new: "new national IT" }[a.infra];
+      const cr = { no: "no cross-system integration", maybe: "some integration", yes: "multi-system / cross-border" }[a.cross];
+      return { score, note: `${inf}, ${cr} → score ${score}` };
+    },
+  },
+  dim4_political: {
+    questions: [
+      {
+        id: "interests",
+        label: "Does the project threaten entrenched political or economic interests?",
+        options: [
+          { value: "no", label: "No — technocratic, broad consensus" },
+          { value: "some", label: "Some stakeholders lose relative advantage" },
+          { value: "yes", label: "Yes — directly threatens vested interests" },
+        ],
+      },
+      {
+        id: "cpi",
+        label: "What is the country's Corruption Perceptions Index band?",
+        options: [
+          { value: "above_50", label: "Above 50 / 100 (stronger institutions)" },
+          { value: "between", label: "35–50 / 100" },
+          { value: "below_35", label: "Below 35 / 100 (high-risk environment)" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.interests || !a.cpi) return null;
+      const iMap: Record<string, 1 | 2 | 3> = { no: 1, some: 2, yes: 3 };
+      const cMap: Record<string, 1 | 2 | 3> = { above_50: 1, between: 2, below_35: 3 };
+      const score = Math.max(iMap[a.interests], cMap[a.cpi]) as 1 | 2 | 3;
+      const it = { no: "no vested interests threatened", some: "some friction", yes: "threatens vested interests" }[a.interests];
+      const cp = { above_50: "CPI > 50", between: "CPI 35–50", below_35: "CPI < 35" }[a.cpi];
+      return { score, note: `${it}, ${cp} → score ${score}` };
+    },
+  },
+  dim5_investment: {
+    questions: [
+      {
+        id: "secured",
+        label: "Has the total project budget been confirmed and fully secured?",
+        options: [
+          { value: "fully", label: "Yes, fully secured" },
+          { value: "partial", label: "Partially confirmed" },
+          { value: "unconfirmed", label: "No — budget unclear or unconfirmed" },
+        ],
+      },
+      {
+        id: "scale",
+        label: "What is the approximate budget scale?",
+        options: [
+          { value: "small", label: "Small (under €5M)" },
+          { value: "medium", label: "Medium (€5M–€50M)" },
+          { value: "large", label: "Large (over €50M or multi-phase)" },
+          { value: "unknown", label: "Unknown" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.secured || !a.scale) return null;
+      let score: 1 | 2 | 3;
+      if (a.secured === "fully" && (a.scale === "small" || a.scale === "medium")) score = 1;
+      else if (a.secured === "fully" && a.scale === "large") score = 2;
+      else if (a.secured === "partial") score = 2;
+      else score = 3; // unconfirmed + any, or unknown scale + unconfirmed
+      const sec = { fully: "Budget fully secured", partial: "Budget partially confirmed", unconfirmed: "Budget unconfirmed" }[a.secured];
+      const sc = { small: "small scale", medium: "medium scale", large: "large scale", unknown: "unknown scale" }[a.scale];
+      return { score, note: `${sec}, ${sc} → score ${score}` };
+    },
+  },
+};
+
+type ProxyEntry = { answers: Record<string, string>; note: string };
+
 function ScoreDetail({
   row,
   detail,
   onScoreChange,
+  proxyState,
+  onProxyAnswer,
 }: {
   row: EditableRow;
   detail: AIDetail;
   onScoreChange: (key: string, field: DimField, value: string) => void;
+  proxyState: Record<string, ProxyEntry>;
+  onProxyAnswer: (rowKey: string, field: DimField, questionId: string, value: string) => void;
 }) {
+  const AMBER = "var(--color-risk-medium)";
   return (
     <div className="space-y-4">
       <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
@@ -1003,26 +1216,32 @@ function ScoreDetail({
           const d = detail[k] as AIDimensionDetail;
           const current = (row as any)[dimField] as number | null;
           const missing = current == null;
+          const proxyKey = `${row._key}:${dimField}`;
+          const proxy = proxyState[proxyKey];
+          const isProxyScore = !missing && !!proxy && !!proxy.note;
+          const config = PROXY_CONFIGS[dimField];
+
+          const borderClass = missing
+            ? "border-[color:var(--color-risk-medium)]"
+            : isProxyScore
+              ? "border-[color:var(--color-risk-medium)]"
+              : "";
+
           return (
-            <div
-              key={k as string}
-              className={`rounded-md border bg-surface p-3 ${missing ? "border-destructive" : ""}`}
-            >
+            <div key={k as string} className={`rounded-md border bg-surface p-3 ${borderClass}`}>
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs font-medium">{label}</div>
                 <div className="flex items-center gap-2">
                   {missing ? (
-                    <input
-                      type="number"
-                      min={1}
-                      max={3}
-                      step={1}
-                      placeholder="1–3"
-                      value=""
-                      onChange={(e) => onScoreChange(row._key, dimField, e.target.value)}
-                      className="h-7 w-16 rounded border border-destructive bg-destructive/10 px-2 font-mono text-[11px] text-destructive placeholder:text-destructive/60 focus:outline-none focus:ring-1 focus:ring-destructive"
-                      aria-label={`Enter score for ${label}`}
-                    />
+                    <span
+                      className="rounded px-1.5 py-0.5 font-mono text-[11px]"
+                      style={{
+                        background: `color-mix(in oklab, ${AMBER} 18%, transparent)`,
+                        color: AMBER,
+                      }}
+                    >
+                      pending
+                    </span>
                   ) : (
                     <input
                       type="number"
@@ -1032,18 +1251,90 @@ function ScoreDetail({
                       value={current}
                       onChange={(e) => onScoreChange(row._key, dimField, e.target.value)}
                       className="h-7 w-14 rounded border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-ring"
+                      style={isProxyScore ? { borderColor: AMBER, color: AMBER } : undefined}
                       aria-label={`Edit score for ${label}`}
+                      title={isProxyScore ? "Proxy score — click to override" : "Click to edit"}
                     />
                   )}
                   <ConfidenceBadge level={d.confidence} />
                 </div>
               </div>
+
               <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
                 {d.rationale || "(no rationale provided)"}
               </div>
-              {missing && (
-                <div className="mt-2 text-[10px] font-medium text-destructive">
-                  Insufficient evidence — enter a score (1, 2, or 3) to commit.
+
+              {isProxyScore && (
+                <div className="mt-2 space-y-0.5">
+                  <div className="text-[10px] font-medium" style={{ color: AMBER }}>
+                    Proxy score — derived from user input, not document evidence.
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">{proxy!.note}</div>
+                </div>
+              )}
+
+              {missing && config && (
+                <div
+                  className="mt-3 rounded border p-2.5"
+                  style={{
+                    borderColor: AMBER,
+                    background: `color-mix(in oklab, ${AMBER} 6%, transparent)`,
+                  }}
+                >
+                  <div className="text-[10px] font-medium" style={{ color: AMBER }}>
+                    Insufficient evidence — answer to derive a proxy score:
+                  </div>
+                  <div className="mt-2 space-y-3">
+                    {config.questions.map((q) => {
+                      const selected = proxy?.answers?.[q.id] ?? "";
+                      return (
+                        <div key={q.id}>
+                          <div className="text-[11px] font-medium text-foreground">{q.label}</div>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {q.options.map((opt) => {
+                              const active = selected === opt.value;
+                              return (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => onProxyAnswer(row._key, dimField, q.id, opt.value)}
+                                  className="rounded border px-2 py-1 text-[10px] transition"
+                                  style={
+                                    active
+                                      ? {
+                                          background: AMBER,
+                                          borderColor: AMBER,
+                                          color: "white",
+                                        }
+                                      : {
+                                          borderColor: `color-mix(in oklab, ${AMBER} 35%, transparent)`,
+                                          color: "var(--color-foreground)",
+                                        }
+                                  }
+                                >
+                                  {opt.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="text-[10px] text-muted-foreground">
+                      Or type a score (1, 2, or 3):{" "}
+                      <input
+                        type="number"
+                        min={1}
+                        max={3}
+                        step={1}
+                        placeholder="—"
+                        value=""
+                        onChange={(e) => onScoreChange(row._key, dimField, e.target.value)}
+                        className="ml-1 h-6 w-12 rounded border bg-background px-1.5 font-mono text-[10px] focus:outline-none focus:ring-1 focus:ring-ring"
+                        aria-label={`Manually enter score for ${label}`}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
