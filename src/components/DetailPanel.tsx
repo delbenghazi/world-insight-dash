@@ -17,6 +17,7 @@ import {
   countryColorVar,
   countryProxyInfo,
   countryStats,
+  projectHasProxy,
   projectsByCountry,
   riskColorVar,
   useProjectStore,
