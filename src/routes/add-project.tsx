@@ -964,12 +964,12 @@ function CompositeCell({ row, issues }: { row: EditableRow; issues: Map<string, 
 }
 
 
-const DIM_LABELS: Array<[keyof AIDetail, string]> = [
-  ["d1", "D1 · Institutional Absorption Load"],
-  ["d2", "D2 · Regulatory Dependencies"],
-  ["d3", "D3 · Technical Dependencies"],
-  ["d4", "D4 · Political Sensitivity"],
-  ["d5", "D5 · Investment Needs & Funding"],
+const DIM_LABELS: Array<[keyof AIDetail, DimField, string]> = [
+  ["d1", "dim1_institutional", "D1 · Institutional Absorption Load"],
+  ["d2", "dim2_regulatory", "D2 · Regulatory Dependencies"],
+  ["d3", "dim3_technical", "D3 · Technical Dependencies"],
+  ["d4", "dim4_political", "D4 · Political Sensitivity"],
+  ["d5", "dim5_investment", "D5 · Investment Needs & Funding"],
 ];
 
 function ScoreDetail({ detail }: { detail: AIDetail }) {
