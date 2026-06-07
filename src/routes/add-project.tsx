@@ -81,7 +81,7 @@ function blankRow(): EditableRow {
     projectType: "",
     leadDonor: "",
     implementingAgency: "",
-    gtmiTier: "B",
+    gtmiTier: "" as any,
     startDate: "",
     endDate: "",
     dim1_institutional: 1,
@@ -94,11 +94,11 @@ function blankRow(): EditableRow {
     dim4_note: "",
     dim5_investment: 1,
     dim5_note: "",
-    compositeScore: 5,
-    interactionType: "Complementary",
+    compositeScore: "" as any,
+    interactionType: "" as any,
     linkedProjectIds: [],
     interactionNote: "",
-    overallRisk: "Medium",
+    overallRisk: "" as any,
   };
 }
 
@@ -202,6 +202,7 @@ function AddProject() {
       prev.map((r) => {
         if (r._key !== key) return r;
         if (field === "compositeScore") {
+          if (value === "") return { ...r, compositeScore: "" as any };
           const n = Number(value);
           return { ...r, compositeScore: Number.isFinite(n) ? n : (value as any) };
         }
@@ -344,7 +345,7 @@ function AddProject() {
                       <SelectCell row={row} field="gtmiTier" value={String(row.gtmiTier)} issues={issuesByCell} onChange={updateCell}
                         options={GTMI_TIERS as readonly string[]} />
                       <EditCell row={row} field="compositeScore" value={String(row.compositeScore)} issues={issuesByCell} onChange={updateCell}
-                        mono display={(v) => `${v}/15`} type="number" />
+                        mono display={(v) => v ? `${v}/15` : "—"} type="number" />
                       <SelectCell row={row} field="overallRisk" value={row.overallRisk} issues={issuesByCell} onChange={updateCell}
                         options={RISK_LEVELS} />
                       <SelectCell row={row} field="interactionType" value={row.interactionType} issues={issuesByCell} onChange={updateCell}
