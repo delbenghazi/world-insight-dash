@@ -148,11 +148,10 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                   ? `color-mix(in oklab, ${countryColorVar(code!)}, white 13%)`
                   : baseFill;
                 const fill = isFocus && isHovered ? hoverFill : baseFill;
-                // Clean flat style: white 1px stroke for focus, very faint gray for others.
                 const stroke = isFocus
                   ? "#ffffff"
-                  : "oklch(0.88 0.005 240)";
-                const strokeWidth = isFocus ? 1 : 0.5;
+                  : "var(--color-map-neutral-stroke)";
+                const strokeWidth = 1;
                 const fillOpacity = isFocus
                   ? isSelected || isHovered
                     ? 1
