@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import * as XLSX from "xlsx";
 import {
@@ -699,8 +699,8 @@ function AddProject() {
                       ? "bg-[color-mix(in_oklab,var(--color-risk-medium)_8%,transparent)]"
                       : "";
                     return (
-                      <>
-                        <tr key={row._key} className={`border-t align-top ${aiTint}`}>
+                      <Fragment key={row._key}>
+                        <tr className={`border-t align-top ${aiTint}`}>
                           <td className="px-2 py-2 align-top">
                             {row._aiDetail ? (
                               <button
@@ -744,7 +744,7 @@ function AddProject() {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </Fragment>
                     );
                   })}
                 </tbody>
