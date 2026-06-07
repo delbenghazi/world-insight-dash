@@ -375,6 +375,11 @@ function AddProject() {
   function commit() {
     const stripped: Project[] = rows.map(({ _key, _aiSuggested, _aiDetail, ...rest }) => ({
       ...rest,
+      dim1_institutional: rest.dim1_institutional ?? 1,
+      dim2_regulatory: rest.dim2_regulatory ?? 1,
+      dim3_technical: rest.dim3_technical ?? 1,
+      dim4_political: rest.dim4_political ?? 1,
+      dim5_investment: rest.dim5_investment ?? 1,
       compositeScore: sumDims({ ...rest, _key: "" } as EditableRow).sum,
     }));
     const merged = [
