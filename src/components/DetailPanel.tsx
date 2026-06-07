@@ -98,12 +98,15 @@ export function DetailPanel({ code }: { code: CountryCode }) {
               action={{ label: "Add a project", to: "/add-project" }}
             />
           ) : (
-            <RiskHero
-              interaction={stats.dominantInteraction}
-              composite={stats.avgScore}
-              risk={stats.overallRisk}
-              context={`Dominant interaction across ${stats.count} parallel investment${stats.count === 1 ? "" : "s"}. GTMI tier ${stats.gtmiTier}.`}
-            />
+            <>
+              <RiskHero
+                interaction={stats.dominantInteraction}
+                composite={stats.avgScore}
+                risk={stats.overallRisk}
+                context={`Dominant interaction across ${stats.count} parallel investment${stats.count === 1 ? "" : "s"}. GTMI tier ${stats.gtmiTier}.`}
+              />
+              <ProxyFlag info={countryProxyInfo(projects, code)} />
+            </>
           )}
         </section>
 
