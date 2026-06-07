@@ -200,7 +200,13 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                         <tr key={p.projectId} className="border-t align-top hover:bg-secondary/50">
                           <td className="px-3 py-2 font-mono">{p.projectId}</td>
                           <td className="px-3 py-2 font-medium">
-                            <div>{p.projectName}</div>
+                            <Link
+                              to="/project/$projectId"
+                              params={{ projectId: p.projectId }}
+                              className="hover:underline"
+                            >
+                              {p.projectName}
+                            </Link>
                             <div className="mt-1 text-[11px] text-muted-foreground">
                               {p.interactionNote}
                             </div>
@@ -219,20 +225,30 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                             </span>
                           </td>
                           <td className="px-3 py-2">
-                            <button
-                              onClick={() => {
-                                if (confirm(`Remove project "${p.projectName}"?`)) {
-                                  removeProject(p.projectId);
-                                }
-                              }}
-                              className="rounded p-1 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
-                              title="Remove project"
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Link
+                                to="/project/$projectId"
+                                params={{ projectId: p.projectId }}
+                                className="rounded px-2 py-1 text-[11px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+                              >
+                                View details →
+                              </Link>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Remove project "${p.projectName}"?`)) {
+                                    removeProject(p.projectId);
+                                  }
+                                }}
+                                className="rounded p-1 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                                title="Remove project"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
+
                       {filtered.length === 0 && (
                         <tr>
                           <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
