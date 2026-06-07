@@ -81,7 +81,7 @@ function blankRow(): EditableRow {
     projectType: "",
     leadDonor: "",
     implementingAgency: "",
-    gtmiTier: "B",
+    gtmiTier: "" as any,
     startDate: "",
     endDate: "",
     dim1_institutional: 1,
@@ -94,11 +94,11 @@ function blankRow(): EditableRow {
     dim4_note: "",
     dim5_investment: 1,
     dim5_note: "",
-    compositeScore: 5,
-    interactionType: "Complementary",
+    compositeScore: "" as any,
+    interactionType: "" as any,
     linkedProjectIds: [],
     interactionNote: "",
-    overallRisk: "Medium",
+    overallRisk: "" as any,
   };
 }
 
