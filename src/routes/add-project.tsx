@@ -345,7 +345,7 @@ function AddProject() {
                       <SelectCell row={row} field="gtmiTier" value={String(row.gtmiTier)} issues={issuesByCell} onChange={updateCell}
                         options={GTMI_TIERS as readonly string[]} />
                       <EditCell row={row} field="compositeScore" value={String(row.compositeScore)} issues={issuesByCell} onChange={updateCell}
-                        mono display={(v) => `${v}/15`} type="number" />
+                        mono display={(v) => v ? `${v}/15` : "—"} type="number" />
                       <SelectCell row={row} field="overallRisk" value={row.overallRisk} issues={issuesByCell} onChange={updateCell}
                         options={RISK_LEVELS} />
                       <SelectCell row={row} field="interactionType" value={row.interactionType} issues={issuesByCell} onChange={updateCell}
