@@ -236,9 +236,8 @@ function ProjectPage() {
               {project.proxyDimensions!.length === 1 ? "" : "s"} — based on user input, not document evidence.
             </div>
           )}
-            </div>
-          </div>
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-5">
+
             {dimensions.map((d) => (
               <div key={d.key} className="rounded-lg border bg-surface p-4">
                 <div className="flex items-baseline justify-between">
