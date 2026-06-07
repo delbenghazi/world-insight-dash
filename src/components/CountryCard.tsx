@@ -4,6 +4,7 @@ import {
   CountryCode,
   FOCUS_COUNTRIES,
   countryColorVar,
+  countryProxyInfo,
   countryStats,
   riskColorVar,
   useProjectStore,
