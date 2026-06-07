@@ -425,6 +425,33 @@ function AddProject() {
         return { ...r, [field]: clean } as EditableRow;
       })
     );
+    // Manual edit overrides any prior proxy attribution.
+    setProxyState((prev) => {
+      const k = `${key}:${field}`;
+      if (!(k in prev)) return prev;
+      const next = { ...prev };
+      delete next[k];
+      return next;
+    });
+  }
+
+  function setProxyAnswer(rowKey: string, field: DimField, questionId: string, value: string) {
+    const cfg = PROXY_CONFIGS[field];
+    if (!cfg) return;
+    const k = `${rowKey}:${field}`;
+    const prevEntry = proxyState[k]?.answers ?? {};
+    const answers = { ...prevEntry, [questionId]: value };
+    const result = cfg.score(answers);
+    setProxyState((prev) => ({
+      ...prev,
+      [k]: { answers, note: result?.note ?? "" },
+    }));
+    if (result) {
+      setImported(false);
+      setRows((prev) =>
+        prev.map((r) => (r._key === rowKey ? ({ ...r, [field]: result.score } as EditableRow) : r))
+      );
+    }
   }
 
   function deleteRow(key: string) {
