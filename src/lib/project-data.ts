@@ -89,6 +89,14 @@ export interface CountrySummary {
   updatedAt: number;
 }
 
+export interface ProjectSource {
+  projectId: string;
+  sourceType: string;
+  sourceTitle: string;
+  url?: string | null;
+  note?: string;
+}
+
 const seed: Project[] = [
   {
     "country": "HND",
@@ -359,6 +367,7 @@ const defaultSummaries: Record<CountryCode, string> = {
 interface State {
   projects: Project[];
   summaries: Record<string, CountrySummary>;
+  sources: ProjectSource[];
   selectedCountry: CountryCode | null;
   hoveredCountry: CountryCode | null;
   setSelectedCountry: (c: CountryCode | null) => void;
@@ -366,6 +375,7 @@ interface State {
   setProjects: (p: Project[]) => void;
   removeProject: (projectId: string) => void;
   updateSummary: (c: CountryCode, summary: string) => void;
+  addSources: (s: ProjectSource[]) => void;
 }
 
 const seededSummaries: Record<string, CountrySummary> = Object.fromEntries(
@@ -380,6 +390,7 @@ export const useProjectStore = create<State>()(
     (set) => ({
       projects: seed,
       summaries: seededSummaries,
+      sources: [],
       selectedCountry: null,
       hoveredCountry: null,
       setSelectedCountry: (c) => set({ selectedCountry: c }),
@@ -388,6 +399,7 @@ export const useProjectStore = create<State>()(
       removeProject: (projectId) =>
         set((s) => ({
           projects: s.projects.filter((p) => p.projectId !== projectId),
+          sources: s.sources.filter((src) => src.projectId !== projectId),
         })),
       updateSummary: (c, summary) =>
         set((s) => ({
@@ -396,8 +408,25 @@ export const useProjectStore = create<State>()(
             [c]: { code: c, summary, updatedAt: Date.now() },
           },
         })),
+      addSources: (incoming) =>
+        set((s) => {
+          const ids = new Set(incoming.map((x) => x.projectId));
+          return {
+            sources: [
+              ...s.sources.filter((x) => !ids.has(x.projectId)),
+              ...incoming,
+            ],
+          };
+        }),
     }),
-    { name: "dpi-dashboard-v4" }
+    {
+      name: "dpi-dashboard-v5",
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as object),
+        sources: (persisted as State)?.sources ?? [],
+      }),
+    }
   )
 );
 
