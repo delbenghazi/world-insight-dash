@@ -341,6 +341,7 @@ function AddProject() {
   const [analysing, setAnalysing] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [pendingSources, setPendingSources] = useState<ProjectSource[]>([]);
+  const [proxyState, setProxyState] = useState<Record<string, ProxyEntry>>({});
 
   const issues = useMemo(() => validateRows(rows), [rows]);
   const issuesByCell = useMemo(() => {
