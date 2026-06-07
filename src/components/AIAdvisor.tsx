@@ -32,13 +32,13 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   // Reset chat when active country changes — advisor is scoped to current portfolio.
   useEffect(() => {
     setMessages([]);
-  }, [selectedCountry]);
+  }, [activeCode]);
 
   function ask(q: string) {
-    if (!q.trim() || !selectedCountry) return;
+    if (!q.trim() || !activeCode) return;
     setMessages((m) => [...m, { role: "user", content: q }]);
     setInput("");
-    const ctx = summaries[selectedCountry]?.summary ?? "No saved sequencing notes yet.";
+    const ctx = summaries[activeCode]?.summary ?? "No saved sequencing notes yet.";
     setTimeout(() => {
       setMessages((m) => [
         ...m,
@@ -50,7 +50,7 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
     }, 350);
   }
 
-  const label = country ? `Advisor · ${country.name}` : "Portfolio Advisor";
+  const label = countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor";
 
   return (
     <>
