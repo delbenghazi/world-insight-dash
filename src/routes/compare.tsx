@@ -203,9 +203,9 @@ function Compare() {
   );
 }
 
-function Box({ label, value, color }: { label: string; value: string; color?: string }) {
+function Box({ label, value, color, title }: { label: string; value: string; color?: string; title?: string }) {
   return (
-    <div className="rounded-md border bg-background p-2">
+    <div className="rounded-md border bg-background p-2" title={title}>
       <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-0.5 text-sm font-semibold" style={color ? { color } : undefined}>{value}</div>
     </div>
