@@ -119,6 +119,11 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
           textRendering: "geometricPrecision",
         }}
       >
+        <defs>
+          <filter id="country-lift" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1.2" stdDeviation="1.4" floodColor="#000" floodOpacity="0.28" />
+          </filter>
+        </defs>
         <ZoomableGroup
           center={center}
           zoom={zoom}
@@ -141,14 +146,16 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                 const fill = isFocus
                   ? countryColorVar(code!)
                   : "var(--color-map-neutral)";
-                const stroke = isFocus
-                  ? "var(--color-map-border)"
+                // Focus countries get a stroke 25% darker than their fill for lift.
+                const focusStroke = isFocus
+                  ? `color-mix(in oklab, ${countryColorVar(code!)} 70%, black)`
                   : "var(--color-map-neutral-stroke)";
+                const stroke = focusStroke;
                 // Pixel-sized strokes via non-scaling-stroke — stay crisp at every zoom.
                 const strokeWidth = isFocus
                   ? isSelected
-                    ? 1.4
-                    : 1.0
+                    ? 1.8
+                    : 1.4
                   : 0.5;
                 const fillOpacity = isFocus
                   ? isSelected || isHovered
@@ -160,6 +167,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                     key={geo.rsmKey}
                     geography={geo}
                     vectorEffect="non-scaling-stroke"
+                    filter={isFocus ? "url(#country-lift)" : undefined}
                     onMouseEnter={() => isFocus && setHoveredCountry(code!)}
                     onMouseLeave={() => setHoveredCountry(null)}
                     onClick={() =>
@@ -188,9 +196,9 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                         fill,
                         fillOpacity: 1,
                         stroke: isFocus
-                          ? "var(--color-foreground)"
+                          ? `color-mix(in oklab, ${countryColorVar(code!)} 55%, black)`
                           : "var(--color-map-neutral-stroke)",
-                        strokeWidth: isFocus ? 1.6 : 0.55,
+                        strokeWidth: isFocus ? 2 : 0.55,
                         vectorEffect: "non-scaling-stroke",
                         shapeRendering: "geometricPrecision",
                         outline: "none",
@@ -205,23 +213,31 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
         </ZoomableGroup>
       </ComposableMap>
 
+      {/* Subtle inner vignette to frame the active region */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 55%, rgba(15, 23, 42, 0.18) 100%)",
+        }}
+      />
+
       <CountryCard />
 
-
-      <div className="pointer-events-auto absolute right-4 top-4 flex flex-col gap-0.5 rounded-xl p-1 panel">
+      <div className="pointer-events-auto absolute right-4 top-4 flex items-center overflow-hidden rounded-full border border-border/60 bg-background/85 shadow-sm backdrop-blur-md">
         <button
           onClick={zoomIn}
           disabled={zoom >= MAX_ZOOM - 0.01}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground/70 transition-colors duration-200 hover:bg-foreground/[0.06] hover:text-foreground active:scale-95 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center text-foreground/70 transition-colors duration-200 hover:bg-foreground/[0.06] hover:text-foreground active:scale-95 disabled:opacity-30"
           aria-label="Zoom in"
         >
           <ZoomIn size={15} />
         </button>
-        <div className="mx-1.5 h-px bg-border" />
+        <div className="h-5 w-px bg-border/70" />
         <button
           onClick={zoomOut}
           disabled={zoom <= MIN_ZOOM + 0.01}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground/70 transition-colors duration-200 hover:bg-foreground/[0.06] hover:text-foreground active:scale-95 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center text-foreground/70 transition-colors duration-200 hover:bg-foreground/[0.06] hover:text-foreground active:scale-95 disabled:opacity-30"
           aria-label="Zoom out"
         >
           <ZoomOut size={15} />
