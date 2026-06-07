@@ -310,7 +310,10 @@ function AddProject() {
   }
 
   function commit() {
-    const stripped: Project[] = rows.map(({ _key, _aiSuggested, _aiDetail, ...rest }) => rest);
+    const stripped: Project[] = rows.map(({ _key, _aiSuggested, _aiDetail, ...rest }) => ({
+      ...rest,
+      compositeScore: sumDims({ ...rest, _key: "" } as EditableRow),
+    }));
     const merged = [
       ...projects.filter((p) => !stripped.find((r) => r.projectId === p.projectId)),
       ...stripped,
