@@ -190,7 +190,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                         fill: hoverFill,
                         fillOpacity: 1,
                         stroke,
-                        strokeWidth: isFocus ? 1 : 0.5,
+                        strokeWidth: isFocus ? 1.5 : 0.5,
                         vectorEffect: "non-scaling-stroke",
                         shapeRendering: "geometricPrecision",
                         outline: "none",
