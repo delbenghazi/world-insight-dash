@@ -11,7 +11,7 @@ import {
   useProjectStore,
 } from "@/lib/project-data";
 import { normalizeCountry } from "@/lib/countries";
-import templateAsset from "@/assets/Template_Capstone.xlsx.asset.json";
+import templateAsset from "@/assets/Blank_Template.xlsx.asset.json";
 
 export const Route = createFileRoute("/add-project")({
   head: () => ({
