@@ -869,6 +869,7 @@ function CompositeCell({ row, issues }: { row: EditableRow; issues: Map<string, 
 }
 
 
+const DIM_LABELS: Array<[keyof AIDetail, string]> = [
   ["d1", "D1 · Institutional Absorption Load"],
   ["d2", "D2 · Regulatory Dependencies"],
   ["d3", "D3 · Technical Dependencies"],
