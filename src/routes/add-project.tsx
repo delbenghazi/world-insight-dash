@@ -857,7 +857,13 @@ function AddProject() {
                         {isOpen && row._aiDetail && (
                           <tr className={`border-t ${aiTint}`}>
                             <td colSpan={10} className="px-6 py-4">
-                              <ScoreDetail row={row} detail={row._aiDetail} onScoreChange={updateDim} />
+                              <ScoreDetail
+                                row={row}
+                                detail={row._aiDetail}
+                                onScoreChange={updateDim}
+                                proxyState={proxyState}
+                                onProxyAnswer={setProxyAnswer}
+                              />
                             </td>
                           </tr>
                         )}
