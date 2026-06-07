@@ -43,6 +43,7 @@ function CountryPage() {
       <div className="flex-1 overflow-hidden">
         <DetailPanel code={code} />
       </div>
+      <AIAdvisor countryCode={code} />
     </div>
   );
 }
