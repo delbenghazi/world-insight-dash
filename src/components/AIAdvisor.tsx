@@ -14,13 +14,14 @@ const SUGGESTIONS = [
   "Which projects look complementary and can be coordinated?",
 ];
 
-export function AIAdvisor() {
+export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const { selectedCountry, projects, summaries } = useProjectStore();
-  const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry] : null;
-  const portfolio = selectedCountry ? projectsByCountry(projects, selectedCountry) : [];
+  const activeCode = countryCode ?? selectedCountry;
+  const country = activeCode ? FOCUS_COUNTRIES[activeCode] : null;
+  const portfolio = activeCode ? projectsByCountry(projects, activeCode) : [];
 
   useEffect(() => {
     const handler = () => setOpen(true);
