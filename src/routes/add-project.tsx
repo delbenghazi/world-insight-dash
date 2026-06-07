@@ -274,9 +274,10 @@ function readFileAsBase64(file: File): Promise<string> {
 function mapAiToRow(p: any): EditableRow {
   const riskMap: Record<string, RiskLevel> = { L: "Low", M: "Medium", H: "High" };
   const code = normalizeCountry(p.country ?? "");
-  const dim = (v: any) => {
+  const dim = (v: any): number | null => {
+    if (v === null || v === undefined || v === "") return null;
     const n = Number(v);
-    return Number.isFinite(n) && n >= 1 && n <= 3 ? n : 1;
+    return Number.isFinite(n) && n >= 1 && n <= 3 ? n : null;
   };
   const composite = p.composite_score ?? null;
   const detail: AIDetail = {
