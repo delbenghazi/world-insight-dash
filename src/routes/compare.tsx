@@ -198,6 +198,19 @@ function Compare() {
             );
           })}
         </div>
+
+        {codes.some((code) => countryProxyInfo(projects, code).hasProxy) && (
+          <div
+            className="mt-6 rounded-md border px-3 py-2 text-[11px] italic"
+            style={{
+              borderColor: "color-mix(in oklab, var(--color-risk-medium) 40%, transparent)",
+              background: "color-mix(in oklab, var(--color-risk-medium) 8%, transparent)",
+              color: "var(--color-risk-medium)",
+            }}
+          >
+            <span className="font-mono not-italic">~</span> indicates one or more proxy-scored dimensions in the country's composite.
+          </div>
+        )}
       </main>
     </div>
   );
