@@ -211,7 +211,9 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                         <tr key={p.projectId} className="border-t align-top hover:bg-secondary/50">
                           <td className="px-3 py-2 font-mono">
                             <div className="flex items-center gap-1.5">
-                              {p.projectId}
+                              <span style={projectHasProxy(p) ? { color: "var(--color-risk-medium)" } : undefined}>
+                                {p.projectId}
+                              </span>
                               {projectHasProxy(p) && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -252,13 +254,12 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="cursor-help">
-                                    <span
-                                      className="font-bold"
-                                      style={{ color: "var(--color-risk-medium)" }}
-                                    >
+                                    <span className="font-bold text-foreground">
                                       ~
                                     </span>
-                                    {p.compositeScore}/15
+                                    <span style={{ color: "var(--color-risk-medium)" }}>
+                                      {p.compositeScore}/15
+                                    </span>
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="top">
