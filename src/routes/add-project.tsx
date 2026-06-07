@@ -972,7 +972,15 @@ const DIM_LABELS: Array<[keyof AIDetail, DimField, string]> = [
   ["d5", "dim5_investment", "D5 · Investment Needs & Funding"],
 ];
 
-function ScoreDetail({ detail }: { detail: AIDetail }) {
+function ScoreDetail({
+  row,
+  detail,
+  onScoreChange,
+}: {
+  row: EditableRow;
+  detail: AIDetail;
+  onScoreChange: (key: string, field: DimField, value: string) => void;
+}) {
   return (
     <div className="space-y-4">
       <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
@@ -991,31 +999,53 @@ function ScoreDetail({ detail }: { detail: AIDetail }) {
         </div>
       )}
       <div className="grid gap-3 md:grid-cols-2">
-        {DIM_LABELS.map(([k, label]) => {
+        {DIM_LABELS.map(([k, dimField, label]) => {
           const d = detail[k] as AIDimensionDetail;
-          const missing = d.score == null;
+          const current = (row as any)[dimField] as number | null;
+          const missing = current == null;
           return (
-            <div key={k as string} className="rounded-md border bg-surface p-3">
+            <div
+              key={k as string}
+              className={`rounded-md border bg-surface p-3 ${missing ? "border-destructive" : ""}`}
+            >
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs font-medium">{label}</div>
                 <div className="flex items-center gap-2">
-                  <span
-                    className="rounded px-1.5 py-0.5 font-mono text-[11px]"
-                    style={{
-                      background: missing
-                        ? "color-mix(in oklab, var(--color-destructive) 18%, transparent)"
-                        : "color-mix(in oklab, var(--color-risk-medium) 18%, transparent)",
-                      color: missing ? "var(--color-destructive)" : "var(--color-risk-medium)",
-                    }}
-                  >
-                    {missing ? "null" : `${d.score}/3`}
-                  </span>
+                  {missing ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={3}
+                      step={1}
+                      placeholder="1–3"
+                      value=""
+                      onChange={(e) => onScoreChange(row._key, dimField, e.target.value)}
+                      className="h-7 w-16 rounded border border-destructive bg-destructive/10 px-2 font-mono text-[11px] text-destructive placeholder:text-destructive/60 focus:outline-none focus:ring-1 focus:ring-destructive"
+                      aria-label={`Enter score for ${label}`}
+                    />
+                  ) : (
+                    <input
+                      type="number"
+                      min={1}
+                      max={3}
+                      step={1}
+                      value={current}
+                      onChange={(e) => onScoreChange(row._key, dimField, e.target.value)}
+                      className="h-7 w-14 rounded border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-ring"
+                      aria-label={`Edit score for ${label}`}
+                    />
+                  )}
                   <ConfidenceBadge level={d.confidence} />
                 </div>
               </div>
               <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
                 {d.rationale || "(no rationale provided)"}
               </div>
+              {missing && (
+                <div className="mt-2 text-[10px] font-medium text-destructive">
+                  Insufficient evidence — enter a score (1, 2, or 3) to commit.
+                </div>
+              )}
             </div>
           );
         })}
