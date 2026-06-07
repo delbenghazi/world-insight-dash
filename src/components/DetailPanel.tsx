@@ -321,6 +321,15 @@ function Select({
   );
 }
 
+function formatDimLabel(key: string) {
+  const label = DIMENSION_LABELS[key] ?? key;
+  const parts = label.split(" ");
+  if (parts.length >= 2 && /^D\d+$/.test(parts[0])) {
+    return `${parts[0]} · ${parts.slice(1).join(" ")}`;
+  }
+  return label;
+}
+
 function ProxyFlag({ info }: { info: ReturnType<typeof countryProxyInfo> }) {
   if (!info.hasProxy) return null;
   const AMBER = "var(--color-risk-medium)";
