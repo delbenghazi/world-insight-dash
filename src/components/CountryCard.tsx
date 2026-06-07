@@ -112,6 +112,14 @@ export function CountryCard() {
             />
           </tbody>
         </table>
+        {proxy.hasProxy && (
+          <div
+            className="mt-2.5 text-[10px] italic"
+            style={{ color: "var(--color-risk-medium)" }}
+          >
+            Composite includes proxy estimates.
+          </div>
+        )}
       </div>
     );
   }
