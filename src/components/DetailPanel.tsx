@@ -209,7 +209,31 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                     <tbody>
                       {filtered.map((p) => (
                         <tr key={p.projectId} className="border-t align-top hover:bg-secondary/50">
-                          <td className="px-3 py-2 font-mono">{p.projectId}</td>
+                          <td className="px-3 py-2 font-mono">
+                            <div className="flex items-center gap-1.5">
+                              {p.projectId}
+                              {projectHasProxy(p) && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span
+                                      className="inline-flex items-center justify-center rounded px-1 text-[9px] font-bold leading-none"
+                                      style={{
+                                        backgroundColor: "var(--color-risk-medium)",
+                                        color: "#1a1a1a",
+                                      }}
+                                    >
+                                      proxy
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    <p className="max-w-[200px]">
+                                      This project contains proxy-scored dimensions — review in project details.
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-3 py-2 font-medium">
                             <Link
                               to="/project/$projectId"
