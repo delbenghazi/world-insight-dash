@@ -149,9 +149,9 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                   : baseFill;
                 const fill = isFocus && isHovered ? hoverFill : baseFill;
                 const stroke = isFocus
-                  ? "#ffffff"
+                  ? "#1a1a1a"
                   : "var(--color-map-neutral-stroke)";
-                const strokeWidth = 1;
+                const strokeWidth = isFocus ? 1.5 : 1;
                 const fillOpacity = isFocus
                   ? isSelected || isHovered
                     ? 1
@@ -190,7 +190,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                         fill: hoverFill,
                         fillOpacity: 1,
                         stroke,
-                        strokeWidth: isFocus ? 1 : 0.5,
+                        strokeWidth: isFocus ? 1.5 : 0.5,
                         vectorEffect: "non-scaling-stroke",
                         shapeRendering: "geometricPrecision",
                         outline: "none",
