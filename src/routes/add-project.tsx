@@ -413,6 +413,19 @@ function AddProject() {
     );
   }
 
+  function updateDim(key: string, field: DimField, value: string) {
+    setImported(false);
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r._key !== key) return r;
+        if (value === "") return { ...r, [field]: null } as EditableRow;
+        const n = Number(value);
+        const clean = Number.isFinite(n) && n >= 1 && n <= 3 ? n : null;
+        return { ...r, [field]: clean } as EditableRow;
+      })
+    );
+  }
+
   function deleteRow(key: string) {
     setImported(false);
     setRows((prev) => prev.filter((r) => r._key !== key));
