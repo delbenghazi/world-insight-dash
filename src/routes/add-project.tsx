@@ -1,23 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import * as XLSX from "xlsx";
-import { Upload, CheckCircle2, AlertTriangle, FileSpreadsheet, Download, Trash2, Plus } from "lucide-react";
+import {
+  Upload,
+  CheckCircle2,
+  FileSpreadsheet,
+  Download,
+  Trash2,
+  Plus,
+  Sparkles,
+  Link as LinkIcon,
+  X,
+  FileText,
+  Loader2,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import {
   FOCUS_COUNTRIES,
   InteractionType,
   Project,
+  ProjectSource,
   RiskLevel,
   useProjectStore,
 } from "@/lib/project-data";
 import { normalizeCountry } from "@/lib/countries";
+import { analyzeIntake } from "@/lib/ai-intake.functions";
 import templateAsset from "@/assets/Blank_Template.xlsx.asset.json";
 
 export const Route = createFileRoute("/add-project")({
   head: () => ({
     meta: [
       { title: "Add Project — DPI Sequencing Atlas" },
-      { name: "description", content: "Import projects from Excel and validate the interaction matrix." },
+      { name: "description", content: "Import projects from documents, URLs, or Excel and validate the interaction matrix." },
     ],
   }),
   component: AddProject,
@@ -36,6 +53,9 @@ const INTERACTION_TYPES: InteractionType[] = [
   "Governance-Conflicting",
 ];
 
+const ACCEPTED_DOC_TYPES =
+  ".pdf,.docx,.xlsx,.xls,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain";
+
 interface ValidationIssue {
   rowKey: string;
   field: EditableField;
@@ -53,8 +73,34 @@ type EditableField =
   | "overallRisk"
   | "interactionType";
 
+interface AIDimensionDetail {
+  score: number | null;
+  rationale: string;
+  confidence: "High" | "Medium" | "Low";
+}
+
+interface AIDetail {
+  d1: AIDimensionDetail;
+  d2: AIDimensionDetail;
+  d3: AIDimensionDetail;
+  d4: AIDimensionDetail;
+  d5: AIDimensionDetail;
+  keyRiskFlag?: string;
+  plainLanguageSummary?: string;
+}
+
 interface EditableRow extends Project {
   _key: string;
+  _aiSuggested?: boolean;
+  _aiDetail?: AIDetail;
+}
+
+interface IntakeFile {
+  id: string;
+  name: string;
+  mediaType: string;
+  size: number;
+  base64: string;
 }
 
 function pick(r: Record<string, any>, ...keys: string[]) {
@@ -150,11 +196,83 @@ function validateRows(rows: EditableRow[]): ValidationIssue[] {
   return issues;
 }
 
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(",")[1] ?? "";
+      resolve(base64);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function mapAiToRow(p: any): EditableRow {
+  const riskMap: Record<string, RiskLevel> = { L: "Low", M: "Medium", H: "High" };
+  const code = normalizeCountry(p.country ?? "");
+  const dim = (v: any) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 1 && n <= 3 ? n : 1;
+  };
+  const composite = p.composite_score ?? null;
+  const detail: AIDetail = {
+    d1: { score: p.d1_score ?? null, rationale: p.d1_rationale ?? "", confidence: p.d1_confidence ?? "Low" },
+    d2: { score: p.d2_score ?? null, rationale: p.d2_rationale ?? "", confidence: p.d2_confidence ?? "Low" },
+    d3: { score: p.d3_score ?? null, rationale: p.d3_rationale ?? "", confidence: p.d3_confidence ?? "Low" },
+    d4: { score: p.d4_score ?? null, rationale: p.d4_rationale ?? "", confidence: p.d4_confidence ?? "Low" },
+    d5: { score: p.d5_score ?? null, rationale: p.d5_rationale ?? "", confidence: p.d5_confidence ?? "Low" },
+    keyRiskFlag: p.key_risk_flag,
+    plainLanguageSummary: p.plain_language_summary,
+  };
+  return {
+    _key: newKey(),
+    _aiSuggested: true,
+    _aiDetail: detail,
+    country: code ?? String(p.country ?? "").toUpperCase(),
+    projectId: String(p.id ?? "").trim(),
+    projectName: String(p.name ?? "").trim(),
+    projectType: String(p.type ?? "").trim(),
+    leadDonor: String(p.lead_donor ?? "").trim(),
+    implementingAgency: String(p.implementing_agency ?? "").trim(),
+    gtmiTier: String(p.gtmi_tier ?? "").trim(),
+    startDate: String(p.start_date ?? "").trim(),
+    endDate: String(p.end_date ?? "").trim(),
+    dim1_institutional: dim(p.d1_score),
+    dim1_note: detail.d1.rationale,
+    dim2_regulatory: dim(p.d2_score),
+    dim2_note: detail.d2.rationale,
+    dim3_technical: dim(p.d3_score),
+    dim3_note: detail.d3.rationale,
+    dim4_political: dim(p.d4_score),
+    dim4_note: detail.d4.rationale,
+    dim5_investment: dim(p.d5_score),
+    dim5_note: detail.d5.rationale,
+    compositeScore: (composite == null ? "" : Number(composite)) as any,
+    interactionType: (p.interaction_type ?? "") as any,
+    linkedProjectIds: Array.isArray(p.linked_project_ids) ? p.linked_project_ids : [],
+    interactionNote: String(p.interaction_note ?? "").trim(),
+    overallRisk: (riskMap[String(p.overall_risk ?? "").toUpperCase()] ?? ("" as any)) as RiskLevel,
+  };
+}
+
 function AddProject() {
-  const { projects, setProjects } = useProjectStore();
+  const { projects, setProjects, addSources } = useProjectStore();
+  const analyze = useServerFn(analyzeIntake);
+
   const [rows, setRows] = useState<EditableRow[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
   const [imported, setImported] = useState(false);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // AI intake state
+  const [intakeFiles, setIntakeFiles] = useState<IntakeFile[]>([]);
+  const [intakeUrls, setIntakeUrls] = useState<string[]>([]);
+  const [urlDraft, setUrlDraft] = useState("");
+  const [analysing, setAnalysing] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [pendingSources, setPendingSources] = useState<ProjectSource[]>([]);
 
   const issues = useMemo(() => validateRows(rows), [rows]);
   const issuesByCell = useMemo(() => {
@@ -183,16 +301,20 @@ function AddProject() {
     const sheetName = wb.SheetNames.find((s) => /interaction/i.test(s)) ?? wb.SheetNames[0];
     const sheet = wb.Sheets[sheetName];
     const raw = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: "", range: 1 });
-    setRows(parseRaw(raw));
+    setRows((prev) => [...prev, ...parseRaw(raw)]);
   }
 
   function commit() {
-    const stripped: Project[] = rows.map(({ _key, ...rest }) => rest);
+    const stripped: Project[] = rows.map(({ _key, _aiSuggested, _aiDetail, ...rest }) => rest);
     const merged = [
       ...projects.filter((p) => !stripped.find((r) => r.projectId === p.projectId)),
       ...stripped,
     ];
     setProjects(merged);
+    // Persist any AI-derived sources tied to project IDs that we just committed.
+    const committedIds = new Set(stripped.map((p) => p.projectId));
+    const sourcesToSave = pendingSources.filter((s) => committedIds.has(s.projectId));
+    if (sourcesToSave.length) addSources(sourcesToSave);
     setImported(true);
   }
 
@@ -225,6 +347,92 @@ function AddProject() {
     setRows((prev) => [...prev, blankRow()]);
   }
 
+  function toggleExpand(key: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  // ── AI Intake handlers ────────────────────────────────────────────────
+  async function addIntakeFiles(files: FileList | File[]) {
+    const incoming = Array.from(files);
+    const prepared: IntakeFile[] = [];
+    for (const f of incoming) {
+      const base64 = await readFileAsBase64(f);
+      prepared.push({
+        id: newKey(),
+        name: f.name,
+        mediaType: f.type || guessMediaType(f.name),
+        size: f.size,
+        base64,
+      });
+    }
+    setIntakeFiles((prev) => [...prev, ...prepared]);
+  }
+
+  function removeIntakeFile(id: string) {
+    setIntakeFiles((prev) => prev.filter((f) => f.id !== id));
+  }
+
+  function addUrl() {
+    const u = urlDraft.trim();
+    if (!u) return;
+    try {
+      new URL(u);
+    } catch {
+      setAiError("Please enter a valid URL (starting with http:// or https://).");
+      return;
+    }
+    setAiError(null);
+    if (!intakeUrls.includes(u)) setIntakeUrls((prev) => [...prev, u]);
+    setUrlDraft("");
+  }
+
+  function removeUrl(u: string) {
+    setIntakeUrls((prev) => prev.filter((x) => x !== u));
+  }
+
+  async function runAnalysis() {
+    if (intakeFiles.length === 0 && intakeUrls.length === 0) return;
+    setAnalysing(true);
+    setAiError(null);
+    try {
+      const result = await analyze({
+        data: {
+          files: intakeFiles.map((f) => ({
+            name: f.name,
+            mediaType: f.mediaType,
+            base64: f.base64,
+          })),
+          urls: intakeUrls,
+        },
+      });
+      const newRows = (result.projects ?? []).map(mapAiToRow);
+      setRows((prev) => [...prev, ...newRows]);
+      const sources: ProjectSource[] = (result.sources ?? []).map((s: any) => ({
+        projectId: String(s.project_id ?? "").trim(),
+        sourceType: String(s.source_type ?? "Document").trim(),
+        sourceTitle: String(s.source_title ?? "Untitled source").trim(),
+        url: s.url ? String(s.url) : null,
+        note: s.note ? String(s.note) : "",
+      }));
+      setPendingSources((prev) => [...prev, ...sources]);
+      setExpanded((prev) => {
+        const next = new Set(prev);
+        for (const r of newRows) next.add(r._key);
+        return next;
+      });
+      setImported(false);
+    } catch (e) {
+      setAiError((e as Error).message ?? "Analysis failed.");
+    } finally {
+      setAnalysing(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <WorkflowNav />
@@ -232,12 +440,159 @@ function AddProject() {
       <main className="mx-auto max-w-6xl px-6 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Import projects</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Use the official Capstone template, or add rows manually. Edit any cell inline — we
-          re-validate country names, duplicate IDs, composite-score ranges (5–15), risk levels,
-          and interaction types in real time.
+          Use AI to read your project documents and fill the matrix automatically, or upload a
+          completed template. Every cell is editable inline and re-validated in real time before
+          you commit.
         </p>
 
-        <div className="mt-8 grid gap-6 md:grid-cols-[1.2fr_1fr]">
+        {/* ───────── AI INTAKE ───────── */}
+        <section className="mt-8 rounded-xl border bg-surface-elevated p-6">
+          <div className="flex items-start gap-3">
+            <div className="rounded-md bg-primary/10 p-2 text-primary">
+              <Sparkles size={18} />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold">Analyse project documents</h2>
+              <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+                Upload any combination of project documents and URLs. The AI will read them, fill
+                the Interaction Matrix template row by row, suggest scores with codebook-based
+                rationale, and populate the Sources sheet automatically. You review and edit
+                before committing.
+              </p>
+            </div>
+          </div>
+
+          {/* Drop zone */}
+          <label className="group relative mt-5 flex h-40 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed bg-surface transition hover:border-primary hover:bg-primary-soft/40">
+            <input
+              type="file"
+              accept={ACCEPTED_DOC_TYPES}
+              multiple
+              className="hidden"
+              onChange={(e) => e.target.files && e.target.files.length > 0 && addIntakeFiles(e.target.files)}
+            />
+            <Upload size={24} className="text-muted-foreground transition group-hover:text-primary" />
+            <div className="mt-2 text-sm font-medium">Drop or select documents</div>
+            <div className="mt-1 max-w-md text-center text-[11px] text-muted-foreground">
+              Accepted: PDF, Word, Excel, plain text, and URLs — project fiches, donor reports,
+              action documents, strategy papers, legal texts, project pages.
+            </div>
+          </label>
+
+          {/* URL input */}
+          <div className="mt-4 flex items-center gap-2">
+            <div className="relative flex-1">
+              <LinkIcon
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <input
+                type="url"
+                placeholder="https://… paste a project page, fiche, or report URL"
+                value={urlDraft}
+                onChange={(e) => setUrlDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addUrl();
+                  }
+                }}
+                className="w-full rounded-md border bg-surface py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={addUrl}
+              className="rounded-md border bg-surface px-4 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
+            >
+              Add
+            </button>
+          </div>
+
+          {/* Added items */}
+          {(intakeFiles.length > 0 || intakeUrls.length > 0) && (
+            <ul className="mt-4 divide-y rounded-md border bg-surface">
+              {intakeFiles.map((f) => (
+                <li key={f.id} className="flex items-center gap-3 px-3 py-2 text-sm">
+                  <FileText size={14} className="shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                  <span className="shrink-0 rounded bg-secondary px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {fileExt(f.name)}
+                  </span>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">{formatBytes(f.size)}</span>
+                  <button
+                    onClick={() => removeIntakeFile(f.id)}
+                    className="rounded p-1 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                    aria-label="Remove file"
+                  >
+                    <X size={13} />
+                  </button>
+                </li>
+              ))}
+              {intakeUrls.map((u) => (
+                <li key={u} className="flex items-center gap-3 px-3 py-2 text-sm">
+                  <LinkIcon size={14} className="shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate font-mono text-xs">{u}</span>
+                  <span className="shrink-0 rounded bg-secondary px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    URL
+                  </span>
+                  <button
+                    onClick={() => removeUrl(u)}
+                    className="rounded p-1 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                    aria-label="Remove URL"
+                  >
+                    <X size={13} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Analyse button + state */}
+          {(intakeFiles.length > 0 || intakeUrls.length > 0) && (
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                onClick={runAnalysis}
+                disabled={analysing}
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {analysing ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                {analysing ? "Analysing…" : "Analyse documents"}
+              </button>
+              {analysing && (
+                <span className="text-xs text-muted-foreground">
+                  Reading your documents and generating scores — this may take 20–40 seconds
+                  depending on document volume.
+                </span>
+              )}
+            </div>
+          )}
+
+          {aiError && (
+            <div
+              className="mt-3 rounded-md border px-3 py-2 text-xs"
+              style={{
+                borderColor: "color-mix(in oklab, var(--color-destructive) 40%, transparent)",
+                color: "var(--color-destructive)",
+                background: "color-mix(in oklab, var(--color-destructive) 8%, transparent)",
+              }}
+            >
+              {aiError}
+            </div>
+          )}
+        </section>
+
+        {/* ───────── Divider ───────── */}
+        <div className="my-10 flex items-center gap-4">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+            Or upload a completed template manually
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* ───────── Existing manual upload (unchanged behavior) ───────── */}
+        <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
           <label className="group relative flex h-64 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-surface-elevated transition hover:border-primary hover:bg-primary-soft/40">
             <input
               type="file"
@@ -271,6 +626,7 @@ function AddProject() {
           </a>
         </div>
 
+        {/* ───────── Validation table (unchanged behaviour, AI-aware UI) ───────── */}
         <section className="mt-10">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-lg font-semibold">Validation</h2>
@@ -322,46 +678,75 @@ function AddProject() {
 
           {rows.length === 0 ? (
             <div className="mt-6 rounded-lg border border-dashed bg-surface p-10 text-center text-sm text-muted-foreground">
-              Upload a template or click <span className="font-medium text-foreground">+ Add row</span> to start.
+              Run AI analysis above, upload a template, or click{" "}
+              <span className="font-medium text-foreground">+ Add row</span> to start.
             </div>
           ) : (
             <div className="mt-4 overflow-x-auto rounded-lg border">
               <table className="w-full text-xs">
                 <thead className="bg-secondary text-muted-foreground">
                   <tr>
+                    <th className="w-6 px-2 py-2"></th>
                     {["Country", "ID", "Name", "Type", "GTMI", "Composite", "Risk", "Interaction", ""].map((h) => (
                       <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row) => (
-                    <tr key={row._key} className="border-t align-top">
-                      <EditCell row={row} field="country" value={row.country} issues={issuesByCell} onChange={updateCell}
-                        display={(v) => FOCUS_COUNTRIES[v]?.name ?? v ?? "—"} />
-                      <EditCell row={row} field="projectId" value={row.projectId} issues={issuesByCell} onChange={updateCell} mono />
-                      <EditCell row={row} field="projectName" value={row.projectName} issues={issuesByCell} onChange={updateCell} />
-                      <EditCell row={row} field="projectType" value={row.projectType} issues={issuesByCell} onChange={updateCell} />
-                      <SelectCell row={row} field="gtmiTier" value={String(row.gtmiTier)} issues={issuesByCell} onChange={updateCell}
-                        options={GTMI_TIERS as readonly string[]} />
-                      <EditCell row={row} field="compositeScore" value={String(row.compositeScore)} issues={issuesByCell} onChange={updateCell}
-                        mono display={(v) => v ? `${v}/15` : "—"} type="number" />
-                      <SelectCell row={row} field="overallRisk" value={row.overallRisk} issues={issuesByCell} onChange={updateCell}
-                        options={RISK_LEVELS} />
-                      <SelectCell row={row} field="interactionType" value={row.interactionType} issues={issuesByCell} onChange={updateCell}
-                        options={INTERACTION_TYPES} />
-                      <td className="px-2 py-2">
-                        <button
-                          onClick={() => deleteRow(row._key)}
-                          className="rounded p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
-                          aria-label="Delete row"
-                          title="Delete row"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {rows.map((row) => {
+                    const isOpen = expanded.has(row._key);
+                    const aiTint = row._aiSuggested
+                      ? "bg-[color-mix(in_oklab,var(--color-risk-medium)_8%,transparent)]"
+                      : "";
+                    return (
+                      <>
+                        <tr key={row._key} className={`border-t align-top ${aiTint}`}>
+                          <td className="px-2 py-2 align-top">
+                            {row._aiDetail ? (
+                              <button
+                                onClick={() => toggleExpand(row._key)}
+                                className="rounded p-1 text-muted-foreground transition hover:bg-secondary"
+                                aria-label="Toggle score detail"
+                                title="Score detail"
+                              >
+                                {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                              </button>
+                            ) : null}
+                          </td>
+                          <EditCell row={row} field="country" value={row.country} issues={issuesByCell} onChange={updateCell}
+                            display={(v) => FOCUS_COUNTRIES[v]?.name ?? v ?? "—"} />
+                          <EditCell row={row} field="projectId" value={row.projectId} issues={issuesByCell} onChange={updateCell} mono />
+                          <EditCell row={row} field="projectName" value={row.projectName} issues={issuesByCell} onChange={updateCell} />
+                          <EditCell row={row} field="projectType" value={row.projectType} issues={issuesByCell} onChange={updateCell} />
+                          <SelectCell row={row} field="gtmiTier" value={String(row.gtmiTier)} issues={issuesByCell} onChange={updateCell}
+                            options={GTMI_TIERS as readonly string[]} />
+                          <EditCell row={row} field="compositeScore" value={String(row.compositeScore)} issues={issuesByCell} onChange={updateCell}
+                            mono display={(v) => v ? `${v}/15` : "—"} type="number" />
+                          <SelectCell row={row} field="overallRisk" value={row.overallRisk} issues={issuesByCell} onChange={updateCell}
+                            options={RISK_LEVELS} />
+                          <SelectCell row={row} field="interactionType" value={row.interactionType} issues={issuesByCell} onChange={updateCell}
+                            options={INTERACTION_TYPES} />
+                          <td className="px-2 py-2">
+                            <button
+                              onClick={() => deleteRow(row._key)}
+                              className="rounded p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                              aria-label="Delete row"
+                              title="Delete row"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                        {isOpen && row._aiDetail && (
+                          <tr className={`border-t ${aiTint}`}>
+                            <td colSpan={10} className="px-6 py-4">
+                              <ScoreDetail detail={row._aiDetail} />
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -395,7 +780,7 @@ function EditCell({
   const shown = display ? display(value) : value || "—";
 
   return (
-    <td className={`px-3 py-2 ${hasErr ? "bg-destructive/5" : ""}`}>
+    <td className={`px-3 py-2 ${hasErr ? "bg-destructive/10" : ""}`}>
       {editing ? (
         <input
           autoFocus
@@ -412,7 +797,7 @@ function EditCell({
       ) : (
         <button
           onClick={() => { setDraft(value); setEditing(true); }}
-          className={`block w-full min-w-[6rem] text-left ${mono ? "font-mono" : ""} ${!value ? "text-muted-foreground italic" : ""}`}
+          className={`block w-full min-w-[6rem] text-left ${mono ? "font-mono" : ""} ${!value ? (hasErr ? "text-destructive italic" : "text-muted-foreground italic") : ""}`}
         >
           {shown}
         </button>
@@ -435,7 +820,7 @@ function SelectCell({
   const cellErr = cellIssues(issues, row._key, field);
   const hasErr = cellErr.some((i) => i.severity === "error");
   return (
-    <td className={`px-3 py-2 ${hasErr ? "bg-destructive/5" : ""}`}>
+    <td className={`px-3 py-2 ${hasErr ? "bg-destructive/10" : ""}`}>
       <select
         value={value}
         onChange={(e) => onChange(row._key, field, e.target.value)}
@@ -453,6 +838,111 @@ function SelectCell({
         </div>
       )}
     </td>
+  );
+}
+
+const DIM_LABELS: Array<[keyof AIDetail, string]> = [
+  ["d1", "D1 · Institutional Absorption Load"],
+  ["d2", "D2 · Regulatory Dependencies"],
+  ["d3", "D3 · Technical Dependencies"],
+  ["d4", "D4 · Political Sensitivity"],
+  ["d5", "D5 · Investment Needs & Funding"],
+];
+
+function ScoreDetail({ detail }: { detail: AIDetail }) {
+  return (
+    <div className="space-y-4">
+      <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+        AI-suggested scores · review before committing
+      </div>
+      {detail.keyRiskFlag && (
+        <div className="rounded-md border bg-surface p-3 text-xs">
+          <div className="font-mono uppercase tracking-wider text-[10px] text-muted-foreground">Key risk flag</div>
+          <div className="mt-1">{detail.keyRiskFlag}</div>
+        </div>
+      )}
+      {detail.plainLanguageSummary && (
+        <div className="rounded-md border bg-surface p-3 text-xs">
+          <div className="font-mono uppercase tracking-wider text-[10px] text-muted-foreground">Plain-language summary</div>
+          <div className="mt-1">{detail.plainLanguageSummary}</div>
+        </div>
+      )}
+      <div className="grid gap-3 md:grid-cols-2">
+        {DIM_LABELS.map(([k, label]) => {
+          const d = detail[k] as AIDimensionDetail;
+          const missing = d.score == null;
+          return (
+            <div key={k as string} className="rounded-md border bg-surface p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs font-medium">{label}</div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="rounded px-1.5 py-0.5 font-mono text-[11px]"
+                    style={{
+                      background: missing
+                        ? "color-mix(in oklab, var(--color-destructive) 18%, transparent)"
+                        : "color-mix(in oklab, var(--color-risk-medium) 18%, transparent)",
+                      color: missing ? "var(--color-destructive)" : "var(--color-risk-medium)",
+                    }}
+                  >
+                    {missing ? "null" : `${d.score}/3`}
+                  </span>
+                  <ConfidenceBadge level={d.confidence} />
+                </div>
+              </div>
+              <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                {d.rationale || "(no rationale provided)"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ConfidenceBadge({ level }: { level: "High" | "Medium" | "Low" }) {
+  const tone =
+    level === "High"
+      ? "var(--color-risk-low)"
+      : level === "Medium"
+        ? "var(--color-risk-medium)"
+        : "var(--color-risk-high)";
+  return (
+    <span
+      className="rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider"
+      style={{
+        background: `color-mix(in oklab, ${tone} 15%, transparent)`,
+        color: tone,
+      }}
+    >
+      {level}
+    </span>
+  );
+}
+
+function fileExt(name: string) {
+  const m = name.toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m ? m[1] : "file";
+}
+
+function formatBytes(n: number) {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function guessMediaType(name: string) {
+  const ext = fileExt(name);
+  return (
+    {
+      pdf: "application/pdf",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      xls: "application/vnd.ms-excel",
+      txt: "text/plain",
+      md: "text/markdown",
+    }[ext] ?? "application/octet-stream"
   );
 }
 
