@@ -95,7 +95,7 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
             </div>
 
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-              {!selectedCountry ? (
+              {!activeCode ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                     <Sparkles size={16} />
