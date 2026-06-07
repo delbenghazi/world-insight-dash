@@ -92,7 +92,7 @@ export interface CountrySummary {
 const seed: Project[] = [
   {
     "country": "HND",
-    "projectId": "H1",
+    "projectId": "HND1",
     "projectName": "VPA & Beyond: Voluntary Partnership Agreement, Forest Partnership and Green Business + \"Living Forests of Honduras\" (IICA) – SALH/TLAS Digital Traceability System",
     "projectType": "Supply Chain Traceability & Trade Compliance Digital Infrastructure",
     "leadDonor": "EU (INTPA) – €23.4M (2023 AAP) + €16M (Living Forests / IICA, 2024)",
@@ -113,15 +113,15 @@ const seed: Project[] = [
     "compositeScore": 13,
     "interactionType": "Sequentially Dependent",
     "linkedProjectIds": [
-      "H2",
-      "H3"
+      "HND2",
+      "HND3"
     ],
     "interactionNote": "SALH digital system depends on H2 (Cooperation Facility) to build ICF institutional capacity. SALH also feeds into H3 (PDCC) as timber export compliance data will ultimately link to regional trade interoperability.",
     "overallRisk": "High"
   },
   {
     "country": "HND",
-    "projectId": "H2",
+    "projectId": "HND2",
     "projectName": "Cooperation Facility for Honduras – Public Sector Institutional Strengthening & Digital Governance (2021 AAP, Annex II)",
     "projectType": "Public Sector Capacity Building & Digital Governance Enabler",
     "leadDonor": "EU (INTPA) – €11M (2021 AAP)",
@@ -142,15 +142,15 @@ const seed: Project[] = [
     "compositeScore": 11,
     "interactionType": "Complementary",
     "linkedProjectIds": [
-      "H1",
-      "H3"
+      "HND1",
+      "HND3"
     ],
     "interactionNote": "Acts as institutional enabler for H1: without stronger ICF and SEFIN capacity, SALH will stall. Also reinforces H3 (PDCC) by improving regulatory readiness for digital trade facilitation and customs reform.",
     "overallRisk": "Medium"
   },
   {
     "country": "HND",
-    "projectId": "H3",
+    "projectId": "HND3",
     "projectName": "Plataforma Digital de Comercio Centroamericana (PDCC) – Central American Digital Trade Platform (Regional GG Flagship; Honduras node)",
     "projectType": "Regional Digital Trade Interoperability Platform",
     "leadDonor": "EU (INTPA) + IDB (co-financing); regional coordination via SIECA",
@@ -171,15 +171,15 @@ const seed: Project[] = [
     "compositeScore": 10,
     "interactionType": "Complementary",
     "linkedProjectIds": [
-      "H1",
-      "H2"
+      "HND1",
+      "HND2"
     ],
     "interactionNote": "PDCC complements H1 by providing the regional export interoperability layer that SALH-certified timber will eventually feed into. Complementary to H2 as customs modernisation and regulatory harmonisation both improve platform adoption.",
     "overallRisk": "Medium"
   },
   {
     "country": "GTM",
-    "projectId": "G1",
+    "projectId": "GTM1",
     "projectName": "EU Global Gateway: Digital Inclusive Transition Initiative (GG-TDEI) — MSME Competitiveness and Trade Digitalisation",
     "projectType": "Global Gateway Team Europe digital economy initiative — MSME platform and trade digitalisation",
     "leadDonor": "EU (INTPA) / Team Europe — Germany (GIZ), Spain (COFIDES), Sweden (Swisscontact), IDB Lab, ITC (International Trade Centre)",
@@ -200,15 +200,15 @@ const seed: Project[] = [
     "compositeScore": 13,
     "interactionType": "Institutionally Competing",
     "linkedProjectIds": [
-      "G2",
-      "G3"
+      "GTM2",
+      "GTM3"
     ],
     "interactionNote": "G1 and G2 both draw on SIP's limited digital governance capacity, creating institutional competition, while G1's ITC trade-digitalisation outputs overlap with G3's PDCC interface at MINECO/VUPE, so without a joint coordination mechanism there is a high risk of parallel rather than complementary trade-facilitation platforms.",
     "overallRisk": "Medium"
   },
   {
     "country": "GTM",
-    "projectId": "G2",
+    "projectId": "GTM2",
     "projectName": "Digital Governance Enhancement in Guatemala (EU–Estonia eGA / Global Gateway)",
     "projectType": "Digital Public Administration & GovTech Enablers (Global Gateway)",
     "leadDonor": "EU (INTPA) — €2M grant | Team Europe (Estonia e-Governance Academy)",
@@ -229,15 +229,15 @@ const seed: Project[] = [
     "compositeScore": 9,
     "interactionType": "Complementary",
     "linkedProjectIds": [
-      "G1",
-      "G3"
+      "GTM1",
+      "GTM3"
     ],
     "interactionNote": "Digital Governance Enhancement provides the e-government architecture, open-data standards, and inter-institutional data-sharing layer that G1's MSME digital services and G3's customs/VUPE interoperability both depend on for reliable back-end government data; acting as an enabling GovTech layer it reinforces rather than competes with the trade-facing projects.",
     "overallRisk": "Medium"
   },
   {
     "country": "GTM",
-    "projectId": "G3",
+    "projectId": "GTM3",
     "projectName": "PDCC Guatemala National Node — Central American Digital Trade Interoperability Platform (EU Global Gateway Regional Flagship; SIECA-managed)",
     "projectType": "Global Gateway regional flagship — PDCC / regional digital trade interoperability platform",
     "leadDonor": "EU (INTPA) + IDB (co-financing, RG-T4217) — USD 9M EU contribution Phase 1, administered via IDB; SIECA as regional executing agency",
@@ -258,15 +258,15 @@ const seed: Project[] = [
     "compositeScore": 9,
     "interactionType": "Sequentially Dependent",
     "linkedProjectIds": [
-      "G1",
-      "G2"
+      "GTM1",
+      "GTM2"
     ],
     "interactionNote": "G3 is complementary to G1's trade-digitalisation component and depends on G2's RENAP-based digital identity and interoperability framework to authenticate trusted traders; if G2's DPI layer is delayed, PDCC must fall back on weaker identification mechanisms, reducing traceability and customs risk-profiling quality.",
     "overallRisk": "Medium"
   },
   {
     "country": "SLV",
-    "projectId": "ES1",
+    "projectId": "SLV1",
     "projectName": "Programa para el Desarrollo de la Infraestructura de Datos de El Salvador (IDB ES-L1168)",
     "projectType": "State Data Infrastructure & Digital Skills",
     "leadDonor": "IDB",
@@ -287,14 +287,14 @@ const seed: Project[] = [
     "compositeScore": 13,
     "interactionType": "Sequentially Dependent",
     "linkedProjectIds": [
-      "ES3"
+      "SLV3"
     ],
     "interactionNote": "The data centre depends on the BELLA cable extension (ES3) to actually deliver citizen services at scale beyond San Salvador. Without that connectivity backbone, the data centre serves a narrow urban audience.",
     "overallRisk": "High"
   },
   {
     "country": "SLV",
-    "projectId": "ES2",
+    "projectId": "SLV2",
     "projectName": "EU–El Salvador Bilateral Partnership: Multiannual Indicative Programme 2021-2027 + Annual Action Plans 2024/2025 (Team Europe, Global Gateway-aligned)",
     "projectType": "EU Bilateral Cooperation (digital transition, governance, civil society)",
     "leadDonor": "European Union (DG INTPA) + Team Europe (Member States, European DFIs)",
@@ -315,14 +315,14 @@ const seed: Project[] = [
     "compositeScore": 12,
     "interactionType": "Governance-Conflicting",
     "linkedProjectIds": [
-      "ES1"
+      "SLV1"
     ],
     "interactionNote": "The EU and Team Europe require rule-of-law standards and transparency conditions, but ES1 centralizes state data under the executive. The two can run side by side, but visible co-funding or shared platforms would put both sides in an uncomfortable position.",
     "overallRisk": "High"
   },
   {
     "country": "SLV",
-    "projectId": "ES3",
+    "projectId": "SLV3",
     "projectName": "EU-LAC Digital Alliance — BELLA Submarine Cable Extension to Central America + Digital Connectivity for El Salvador (Global Gateway flagship)",
     "projectType": "Digital Connectivity Infrastructure (Global Gateway flagship)",
     "leadDonor": "European Union + Team Europe (via GÉANT / RedCLARA consortium)",
@@ -343,7 +343,7 @@ const seed: Project[] = [
     "compositeScore": 12,
     "interactionType": "Complementary",
     "linkedProjectIds": [
-      "ES2"
+      "SLV2"
     ],
     "interactionNote": "BELLA is the connectivity backbone that the EU's broader bilateral partnership (ES2) needs to deliver digital services to schools, health centres, and public administration. Running ES2 and ES3 together reinforces both — they are designed to fit together inside Team Europe.",
     "overallRisk": "Medium"
@@ -397,7 +397,7 @@ export const useProjectStore = create<State>()(
           },
         })),
     }),
-    { name: "dpi-dashboard-v3" }
+    { name: "dpi-dashboard-v4" }
   )
 );
 
