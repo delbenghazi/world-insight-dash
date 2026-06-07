@@ -120,9 +120,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
         }}
       >
         <defs>
-          <filter id="country-lift" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="1.2" stdDeviation="1.4" floodColor="#000" floodOpacity="0.28" />
-          </filter>
+          {/* no shadow filters — flat cartographic style */}
         </defs>
         <ZoomableGroup
           center={center}
