@@ -219,9 +219,29 @@ function validateRows(rows: EditableRow[]): ValidationIssue[] {
     if (!GTMI_TIERS.includes(r.gtmiTier as any)) {
       issues.push({ rowKey: k, field: "gtmiTier", severity: "error", message: "GTMI tier must be A, B, or C." });
     }
-    const c = sumDims(r);
-    if (!Number.isFinite(c) || c < 5 || c > 15) {
-      issues.push({ rowKey: k, field: "compositeScore", severity: "error", message: "Composite (sum of D1–D5) must be between 5 and 15." });
+    const { sum, count, missing } = sumDims(r);
+    for (const m of missing) {
+      issues.push({
+        rowKey: k,
+        field: m,
+        severity: "error",
+        message: "Score required (1, 2, or 3).",
+      });
+    }
+    if (missing.length > 0) {
+      issues.push({
+        rowKey: k,
+        field: "compositeScore",
+        severity: "error",
+        message: `${missing.length} dimension${missing.length > 1 ? "s" : ""} unscored — add a score to commit.`,
+      });
+    } else if (count === 5 && (sum < 5 || sum > 15)) {
+      issues.push({
+        rowKey: k,
+        field: "compositeScore",
+        severity: "error",
+        message: "Composite (sum of D1–D5) must be between 5 and 15.",
+      });
     }
     if (!RISK_LEVELS.includes(r.overallRisk)) {
       issues.push({ rowKey: k, field: "overallRisk", severity: "error", message: "Risk must be Low, Medium, or High." });
