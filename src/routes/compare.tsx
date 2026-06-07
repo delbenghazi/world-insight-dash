@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/EmptyState";
 import {
   countriesInUse,
   countryColorVar,
+  countryProxyInfo,
   countryStats,
   FOCUS_COUNTRIES,
   projectsByCountry,
