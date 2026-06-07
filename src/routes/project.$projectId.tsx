@@ -8,6 +8,7 @@ import {
   RiskLevel,
   countryColorVar,
   projectsByCountry,
+  projectHasProxy,
   riskColorVar,
   useProjectStore,
 } from "@/lib/project-data";
