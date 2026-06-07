@@ -331,6 +331,32 @@ function Methodology() {
                 project composites for the country.
               </p>
             </div>
+
+            <div
+              className="mt-4 rounded-lg border p-4"
+              style={{
+                borderColor: "color-mix(in oklab, var(--color-risk-medium) 45%, transparent)",
+                background: "color-mix(in oklab, var(--color-risk-medium) 14%, transparent)",
+              }}
+            >
+              <div
+                className="text-[10px] font-mono uppercase tracking-[0.18em]"
+                style={{ color: "var(--color-risk-medium)" }}
+              >
+                Proxy Scores
+              </div>
+              <p className="mt-2 text-xs leading-relaxed" style={{ color: "#1a1a1a" }}>
+                When uploaded documents contain insufficient evidence to score a
+                dimension, the tool offers a guided proxy scoring process — asking
+                the user two targeted questions to derive a defensible estimate.
+                Proxy scores are flagged with a{" "}
+                <span className="font-mono font-semibold">~</span> indicator
+                throughout the platform. They are included in composite
+                calculations but should be treated as estimates pending additional
+                documentation. Proxy scores do not invalidate an assessment — they
+                make its evidence base transparent.
+              </p>
+            </div>
           </section>
         </div>
 
