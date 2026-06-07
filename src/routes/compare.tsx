@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/EmptyState";
 import {
   countriesInUse,
   countryColorVar,
+  countryProxyInfo,
   countryStats,
   FOCUS_COUNTRIES,
   projectsByCountry,
@@ -115,10 +116,12 @@ function Compare() {
             const c = FOCUS_COUNTRIES[code] ?? { name: code, region: "Other", tone: code };
             const stats = countryStats(projects, code);
             const list = projectsByCountry(projects, code);
+            const proxy = countryProxyInfo(projects, code);
             const interactions = countByKey(list, "interactionType");
             const bottlenecks = list.filter(
               (p) => p.interactionType === "Institutionally Competing" || p.interactionType === "Governance-Conflicting"
             );
+            const avgLabel = `${proxy.hasProxy ? "~" : ""}${stats.avgScore.toFixed(1)}/15`;
             return (
               <div key={code} className="rounded-xl border bg-surface p-5">
                 <div className="flex items-center gap-2">
@@ -129,7 +132,11 @@ function Compare() {
 
                 <div className="mt-4 grid grid-cols-4 gap-2 text-center">
                   <Box label="GTMI" value={stats.gtmiTier} />
-                  <Box label="Avg" value={`${stats.avgScore.toFixed(1)}/15`} />
+                  <Box
+                    label="Avg"
+                    value={avgLabel}
+                    title={proxy.hasProxy ? "Includes one or more proxy-scored dimensions" : undefined}
+                  />
                   <Box label="Projects" value={String(stats.count)} />
                   <Box label="Risk" value={stats.overallRisk} color={riskColorVar(stats.overallRisk)} />
                 </div>
@@ -191,14 +198,27 @@ function Compare() {
             );
           })}
         </div>
+
+        {codes.some((code) => countryProxyInfo(projects, code).hasProxy) && (
+          <div
+            className="mt-6 rounded-md border px-3 py-2 text-[11px] italic"
+            style={{
+              borderColor: "color-mix(in oklab, var(--color-risk-medium) 40%, transparent)",
+              background: "color-mix(in oklab, var(--color-risk-medium) 8%, transparent)",
+              color: "var(--color-risk-medium)",
+            }}
+          >
+            <span className="font-mono not-italic">~</span> indicates one or more proxy-scored dimensions in the country's composite.
+          </div>
+        )}
       </main>
     </div>
   );
 }
 
-function Box({ label, value, color }: { label: string; value: string; color?: string }) {
+function Box({ label, value, color, title }: { label: string; value: string; color?: string; title?: string }) {
   return (
-    <div className="rounded-md border bg-background p-2">
+    <div className="rounded-md border bg-background p-2" title={title}>
       <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-0.5 text-sm font-semibold" style={color ? { color } : undefined}>{value}</div>
     </div>

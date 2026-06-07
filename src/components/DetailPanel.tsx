@@ -5,10 +5,12 @@ import { RiskHero } from "./RiskHero";
 import { EmptyState } from "./EmptyState";
 import {
   CountryCode,
+  DIMENSION_LABELS,
   FOCUS_COUNTRIES,
   InteractionType,
   RiskLevel,
   countryColorVar,
+  countryProxyInfo,
   countryStats,
   projectsByCountry,
   riskColorVar,
@@ -96,12 +98,15 @@ export function DetailPanel({ code }: { code: CountryCode }) {
               action={{ label: "Add a project", to: "/add-project" }}
             />
           ) : (
-            <RiskHero
-              interaction={stats.dominantInteraction}
-              composite={stats.avgScore}
-              risk={stats.overallRisk}
-              context={`Dominant interaction across ${stats.count} parallel investment${stats.count === 1 ? "" : "s"}. GTMI tier ${stats.gtmiTier}.`}
-            />
+            <>
+              <RiskHero
+                interaction={stats.dominantInteraction}
+                composite={stats.avgScore}
+                risk={stats.overallRisk}
+                context={`Dominant interaction across ${stats.count} parallel investment${stats.count === 1 ? "" : "s"}. GTMI tier ${stats.gtmiTier}.`}
+              />
+              <ProxyFlag info={countryProxyInfo(projects, code)} />
+            </>
           )}
         </section>
 
@@ -307,5 +312,50 @@ function Select({
         ))}
       </select>
     </label>
+  );
+}
+
+function ProxyFlag({ info }: { info: ReturnType<typeof countryProxyInfo> }) {
+  const [open, setOpen] = useState(false);
+  if (!info.hasProxy) return null;
+  const AMBER = "var(--color-risk-medium)";
+  return (
+    <div className="relative mt-3">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] italic transition"
+        style={{
+          borderColor: `color-mix(in oklab, ${AMBER} 45%, transparent)`,
+          background: `color-mix(in oklab, ${AMBER} 10%, transparent)`,
+          color: AMBER,
+        }}
+        aria-expanded={open}
+      >
+        <span aria-hidden>⚑</span>
+        Score includes proxy estimates — see project details.
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 top-full z-20 mt-1 w-[320px] rounded-md border bg-surface p-3 shadow-md"
+          style={{ borderColor: `color-mix(in oklab, ${AMBER} 35%, transparent)` }}
+        >
+          <div className="mb-1.5 text-[10px] font-mono uppercase tracking-wider" style={{ color: AMBER }}>
+            Proxy-scored dimensions
+          </div>
+          <ul className="space-y-1.5 text-[11px]">
+            {info.entries.map((e) => (
+              <li key={e.projectId} className="leading-snug">
+                <span className="font-mono text-muted-foreground">{e.projectId}</span>{" "}
+                <span className="font-medium">{e.projectName}</span>
+                <div className="text-muted-foreground">
+                  {e.dimensions.map((d) => DIMENSION_LABELS[d] ?? d).join(" · ")}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }

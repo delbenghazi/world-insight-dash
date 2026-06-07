@@ -4,6 +4,7 @@ import {
   CountryCode,
   FOCUS_COUNTRIES,
   countryColorVar,
+  countryProxyInfo,
   countryStats,
   riskColorVar,
   useProjectStore,
@@ -67,6 +68,7 @@ export function CountryCard() {
   function Card({ code }: { code: CountryCode }) {
     const c = FOCUS_COUNTRIES[code];
     const s = countryStats(projects, code);
+    const proxy = countryProxyInfo(projects, code);
     const rc = s.riskCounts;
     const distParts: string[] = [];
     if (rc.High) distParts.push(`${rc.High} High`);
@@ -110,6 +112,14 @@ export function CountryCard() {
             />
           </tbody>
         </table>
+        {proxy.hasProxy && (
+          <div
+            className="mt-2.5 text-[10px] italic"
+            style={{ color: "var(--color-risk-medium)" }}
+          >
+            Composite includes proxy estimates.
+          </div>
+        )}
       </div>
     );
   }

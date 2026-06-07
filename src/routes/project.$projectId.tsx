@@ -8,6 +8,7 @@ import {
   RiskLevel,
   countryColorVar,
   projectsByCountry,
+  projectHasProxy,
   riskColorVar,
   useProjectStore,
 } from "@/lib/project-data";
@@ -226,7 +227,17 @@ function ProjectPage() {
               Composite {project.compositeScore}/15
             </div>
           </div>
+          {projectHasProxy(project) && (
+            <div
+              className="mt-1 text-right text-[11px] italic"
+              style={{ color: "var(--color-risk-medium)" }}
+            >
+              Composite includes {project.proxyDimensions!.length} proxy-scored dimension
+              {project.proxyDimensions!.length === 1 ? "" : "s"} — based on user input, not document evidence.
+            </div>
+          )}
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-5">
+
             {dimensions.map((d) => (
               <div key={d.key} className="rounded-lg border bg-surface p-4">
                 <div className="flex items-baseline justify-between">
