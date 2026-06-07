@@ -256,7 +256,7 @@ function AddProject() {
 
           <a
             href={templateAsset.url}
-            download="Template_Capstone.xlsx"
+            download="Blank_Template.xlsx"
             className="group flex h-64 flex-col items-center justify-center rounded-xl border bg-surface p-6 text-center transition hover:border-primary hover:bg-primary-soft/30"
           >
             <FileSpreadsheet size={28} className="text-muted-foreground transition group-hover:text-primary" />
