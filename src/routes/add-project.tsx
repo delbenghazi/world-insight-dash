@@ -972,6 +972,180 @@ const DIM_LABELS: Array<[keyof AIDetail, DimField, string]> = [
   ["d5", "dim5_investment", "D5 · Investment Needs & Funding"],
 ];
 
+type ProxyQuestion = {
+  id: string;
+  label: string;
+  options: Array<{ value: string; label: string }>;
+};
+
+type ProxyConfig = {
+  questions: ProxyQuestion[];
+  score: (a: Record<string, string>) => { score: 1 | 2 | 3; note: string } | null;
+};
+
+const PROXY_CONFIGS: Record<DimField, ProxyConfig> = {
+  dim1_institutional: {
+    questions: [
+      {
+        id: "agencies",
+        label: "How many distinct implementing agencies or ministries are involved?",
+        options: [
+          { value: "one", label: "One lead agency" },
+          { value: "two_three", label: "2–3 agencies" },
+          { value: "four_plus", label: "4+ agencies / cross-ministerial" },
+        ],
+      },
+      {
+        id: "coordination",
+        label: "Is a new coordination mechanism (steering committee, MoU, joint unit) required?",
+        options: [
+          { value: "none", label: "No — existing channels suffice" },
+          { value: "existing", label: "Yes — reuses an existing committee" },
+          { value: "new_permanent", label: "Yes — new permanent inter-institutional body" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.agencies || !a.coordination) return null;
+      const aMap: Record<string, 1 | 2 | 3> = { one: 1, two_three: 2, four_plus: 3 };
+      const cMap: Record<string, 1 | 2 | 3> = { none: 1, existing: 2, new_permanent: 3 };
+      const score = Math.max(aMap[a.agencies], cMap[a.coordination]) as 1 | 2 | 3;
+      const ag = { one: "single agency", two_three: "2–3 agencies", four_plus: "4+ agencies" }[a.agencies];
+      const co = { none: "no new coordination", existing: "existing committee", new_permanent: "new permanent body" }[a.coordination];
+      return { score, note: `${ag}, ${co} → score ${score}` };
+    },
+  },
+  dim2_regulatory: {
+    questions: [
+      {
+        id: "legal_basis",
+        label: "Can the project be implemented under current law?",
+        options: [
+          { value: "yes", label: "Yes — existing framework covers it" },
+          { value: "secondary", label: "Needs new secondary legislation (decrees, reglamentos)" },
+          { value: "primary", label: "Needs new primary legislation (congressional approval)" },
+        ],
+      },
+      {
+        id: "blocking",
+        label: "Is any pending legislation a precondition for implementation?",
+        options: [
+          { value: "no", label: "No" },
+          { value: "maybe", label: "Possibly — gaps flagged but not blocking" },
+          { value: "yes", label: "Yes — explicitly listed as precondition" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.legal_basis || !a.blocking) return null;
+      const lMap: Record<string, 1 | 2 | 3> = { yes: 1, secondary: 2, primary: 3 };
+      const bMap: Record<string, 1 | 2 | 3> = { no: 1, maybe: 2, yes: 3 };
+      const score = Math.max(lMap[a.legal_basis], bMap[a.blocking]) as 1 | 2 | 3;
+      const lg = { yes: "current law sufficient", secondary: "needs secondary legislation", primary: "needs primary legislation" }[a.legal_basis];
+      const bl = { no: "no blocking gap", maybe: "regulatory gap identified", yes: "pending legislation is precondition" }[a.blocking];
+      return { score, note: `${lg}, ${bl} → score ${score}` };
+    },
+  },
+  dim3_technical: {
+    questions: [
+      {
+        id: "infra",
+        label: "What technical footprint does the project require?",
+        options: [
+          { value: "existing", label: "Deploys on existing infrastructure" },
+          { value: "integrate", label: "Integrates with 1–2 existing core systems" },
+          { value: "new", label: "Builds new national-level IT infrastructure" },
+        ],
+      },
+      {
+        id: "cross",
+        label: "Does it integrate with 3+ systems or cross-border platforms?",
+        options: [
+          { value: "no", label: "No" },
+          { value: "maybe", label: "Some integration, scope unclear" },
+          { value: "yes", label: "Yes — multi-system or cross-border" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.infra || !a.cross) return null;
+      const iMap: Record<string, 1 | 2 | 3> = { existing: 1, integrate: 2, new: 3 };
+      const cMap: Record<string, 1 | 2 | 3> = { no: 1, maybe: 2, yes: 3 };
+      const score = Math.max(iMap[a.infra], cMap[a.cross]) as 1 | 2 | 3;
+      const inf = { existing: "existing infra", integrate: "integrates 1–2 systems", new: "new national IT" }[a.infra];
+      const cr = { no: "no cross-system integration", maybe: "some integration", yes: "multi-system / cross-border" }[a.cross];
+      return { score, note: `${inf}, ${cr} → score ${score}` };
+    },
+  },
+  dim4_political: {
+    questions: [
+      {
+        id: "interests",
+        label: "Does the project threaten entrenched political or economic interests?",
+        options: [
+          { value: "no", label: "No — technocratic, broad consensus" },
+          { value: "some", label: "Some stakeholders lose relative advantage" },
+          { value: "yes", label: "Yes — directly threatens vested interests" },
+        ],
+      },
+      {
+        id: "cpi",
+        label: "What is the country's Corruption Perceptions Index band?",
+        options: [
+          { value: "above_50", label: "Above 50 / 100 (stronger institutions)" },
+          { value: "between", label: "35–50 / 100" },
+          { value: "below_35", label: "Below 35 / 100 (high-risk environment)" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.interests || !a.cpi) return null;
+      const iMap: Record<string, 1 | 2 | 3> = { no: 1, some: 2, yes: 3 };
+      const cMap: Record<string, 1 | 2 | 3> = { above_50: 1, between: 2, below_35: 3 };
+      const score = Math.max(iMap[a.interests], cMap[a.cpi]) as 1 | 2 | 3;
+      const it = { no: "no vested interests threatened", some: "some friction", yes: "threatens vested interests" }[a.interests];
+      const cp = { above_50: "CPI > 50", between: "CPI 35–50", below_35: "CPI < 35" }[a.cpi];
+      return { score, note: `${it}, ${cp} → score ${score}` };
+    },
+  },
+  dim5_investment: {
+    questions: [
+      {
+        id: "secured",
+        label: "Has the total project budget been confirmed and fully secured?",
+        options: [
+          { value: "fully", label: "Yes, fully secured" },
+          { value: "partial", label: "Partially confirmed" },
+          { value: "unconfirmed", label: "No — budget unclear or unconfirmed" },
+        ],
+      },
+      {
+        id: "scale",
+        label: "What is the approximate budget scale?",
+        options: [
+          { value: "small", label: "Small (under €5M)" },
+          { value: "medium", label: "Medium (€5M–€50M)" },
+          { value: "large", label: "Large (over €50M or multi-phase)" },
+          { value: "unknown", label: "Unknown" },
+        ],
+      },
+    ],
+    score: (a) => {
+      if (!a.secured || !a.scale) return null;
+      let score: 1 | 2 | 3;
+      if (a.secured === "fully" && (a.scale === "small" || a.scale === "medium")) score = 1;
+      else if (a.secured === "fully" && a.scale === "large") score = 2;
+      else if (a.secured === "partial") score = 2;
+      else score = 3; // unconfirmed + any, or unknown scale + unconfirmed
+      const sec = { fully: "Budget fully secured", partial: "Budget partially confirmed", unconfirmed: "Budget unconfirmed" }[a.secured];
+      const sc = { small: "small scale", medium: "medium scale", large: "large scale", unknown: "unknown scale" }[a.scale];
+      return { score, note: `${sec}, ${sc} → score ${score}` };
+    },
+  },
+};
+
+type ProxyEntry = { answers: Record<string, string>; note: string };
+
 function ScoreDetail({
   row,
   detail,
