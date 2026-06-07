@@ -247,7 +247,34 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                             </div>
                           </td>
                           <td className="px-3 py-2">{p.interactionType}</td>
-                          <td className="px-3 py-2 font-mono">{p.compositeScore}/15</td>
+                          <td className="px-3 py-2 font-mono">
+                            {projectHasProxy(p) ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="cursor-help">
+                                    <span
+                                      className="font-bold"
+                                      style={{ color: "var(--color-risk-medium)" }}
+                                    >
+                                      ~
+                                    </span>
+                                    {p.compositeScore}/15
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <div className="space-y-1">
+                                    {p.proxyDimensions!.map((dimKey) => (
+                                      <p key={dimKey} className="text-xs">
+                                        {formatDimLabel(dimKey)} scored via proxy — insufficient document evidence
+                                      </p>
+                                    ))}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              `${p.compositeScore}/15`
+                            )}
+                          </td>
                           <td className="px-3 py-2">
                             <span
                               className="rounded px-1.5 py-0.5 text-[10px] font-medium"
