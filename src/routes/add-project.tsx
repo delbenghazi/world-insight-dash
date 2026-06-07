@@ -53,8 +53,12 @@ type EditableField =
   | "overallRisk"
   | "interactionType";
 
-interface EditableRow extends Project {
+interface EditableRow extends Omit<Project, "compositeScore" | "gtmiTier" | "interactionType" | "overallRisk"> {
   _key: string;
+  compositeScore: number | string;
+  gtmiTier: string;
+  interactionType: string;
+  overallRisk: string;
 }
 
 function pick(r: Record<string, any>, ...keys: string[]) {
