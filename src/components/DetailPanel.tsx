@@ -316,46 +316,50 @@ function Select({
 }
 
 function ProxyFlag({ info }: { info: ReturnType<typeof countryProxyInfo> }) {
-  const [open, setOpen] = useState(false);
   if (!info.hasProxy) return null;
   const AMBER = "var(--color-risk-medium)";
+
+  const formatDim = (key: string) => {
+    const label = DIMENSION_LABELS[key] ?? key;
+    const parts = label.split(" ");
+    if (parts.length >= 2 && /^D\d+$/.test(parts[0])) {
+      return `${parts[0]} · ${parts.slice(1).join(" ")}`;
+    }
+    return label;
+  };
+
+  const entryTexts = info.entries.map((e) => ({
+    projectId: e.projectId,
+    dimText: e.dimensions.map(formatDim).join(" · "),
+  }));
+
   return (
-    <div className="relative mt-3">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] italic transition"
-        style={{
-          borderColor: `color-mix(in oklab, ${AMBER} 45%, transparent)`,
-          background: `color-mix(in oklab, ${AMBER} 10%, transparent)`,
-          color: AMBER,
-        }}
-        aria-expanded={open}
-      >
-        <span aria-hidden>⚑</span>
-        Score includes proxy estimates — see project details.
-      </button>
-      {open && (
-        <div
-          className="absolute left-0 top-full z-20 mt-1 w-[320px] rounded-md border bg-surface p-3 shadow-md"
-          style={{ borderColor: `color-mix(in oklab, ${AMBER} 35%, transparent)` }}
-        >
-          <div className="mb-1.5 text-[10px] font-mono uppercase tracking-wider" style={{ color: AMBER }}>
-            Proxy-scored dimensions
-          </div>
-          <ul className="space-y-1.5 text-[11px]">
-            {info.entries.map((e) => (
-              <li key={e.projectId} className="leading-snug">
-                <span className="font-mono text-muted-foreground">{e.projectId}</span>{" "}
-                <span className="font-medium">{e.projectName}</span>
-                <div className="text-muted-foreground">
-                  {e.dimensions.map((d) => DIMENSION_LABELS[d] ?? d).join(" · ")}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+    <div
+      className="mt-3 inline-flex flex-wrap items-center gap-x-1 rounded-md border px-2.5 py-1 text-[11px] italic"
+      style={{
+        borderColor: `color-mix(in oklab, ${AMBER} 45%, transparent)`,
+        background: `color-mix(in oklab, ${AMBER} 10%, transparent)`,
+        color: AMBER,
+      }}
+    >
+      <span aria-hidden>⚑</span>
+      <span>Score includes proxy estimates for</span>
+      {entryTexts.map((entry, i) => (
+        <span key={entry.projectId}>
+          {i > 0 && entryTexts.length > 2 && ", "}
+          {i > 0 && i === entryTexts.length - 1 && entryTexts.length > 1 && " and "}
+          <Link
+            to="/project/$projectId"
+            params={{ projectId: entry.projectId }}
+            className="font-medium underline hover:no-underline"
+            style={{ color: AMBER }}
+          >
+            {entry.projectId}
+          </Link>
+          {" "}({entry.dimText})
+        </span>
+      ))}
+      <span>— see project details.</span>
     </div>
   );
 }
