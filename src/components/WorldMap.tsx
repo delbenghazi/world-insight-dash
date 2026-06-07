@@ -120,9 +120,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
         }}
       >
         <defs>
-          <filter id="country-lift" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="1.2" stdDeviation="1.4" floodColor="#000" floodOpacity="0.28" />
-          </filter>
+          {/* no shadow filters — flat cartographic style */}
         </defs>
         <ZoomableGroup
           center={center}
@@ -143,20 +141,18 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                 const isFocus = !!code;
                 const isSelected = code && selectedCountry === code;
                 const isHovered = code && hoveredCountry === code;
-                const fill = isFocus
+                const baseFill = isFocus
                   ? countryColorVar(code!)
                   : "var(--color-map-neutral)";
-                // Focus countries get a stroke 25% darker than their fill for lift.
-                const focusStroke = isFocus
-                  ? `color-mix(in oklab, ${countryColorVar(code!)} 70%, black)`
-                  : "var(--color-map-neutral-stroke)";
-                const stroke = focusStroke;
-                // Pixel-sized strokes via non-scaling-stroke — stay crisp at every zoom.
-                const strokeWidth = isFocus
-                  ? isSelected
-                    ? 1.8
-                    : 1.4
-                  : 0.5;
+                const hoverFill = isFocus
+                  ? `color-mix(in oklab, ${countryColorVar(code!)}, white 13%)`
+                  : baseFill;
+                const fill = isFocus && isHovered ? hoverFill : baseFill;
+                // Clean flat style: white 1px stroke for focus, very faint gray for others.
+                const stroke = isFocus
+                  ? "#ffffff"
+                  : "oklch(0.88 0.005 240)";
+                const strokeWidth = isFocus ? 1 : 0.5;
                 const fillOpacity = isFocus
                   ? isSelected || isHovered
                     ? 1
@@ -167,7 +163,6 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                     key={geo.rsmKey}
                     geography={geo}
                     vectorEffect="non-scaling-stroke"
-                    filter={isFocus ? "url(#country-lift)" : undefined}
                     onMouseEnter={() => isFocus && setHoveredCountry(code!)}
                     onMouseLeave={() => setHoveredCountry(null)}
                     onClick={() =>
@@ -189,21 +184,19 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                         shapeRendering: "geometricPrecision",
                         outline: "none",
                         transition:
-                          "fill-opacity 320ms cubic-bezier(.22,1,.36,1), stroke-width 320ms cubic-bezier(.22,1,.36,1), stroke 320ms ease",
+                          "fill 280ms cubic-bezier(.22,1,.36,1), fill-opacity 280ms cubic-bezier(.22,1,.36,1), stroke-width 280ms cubic-bezier(.22,1,.36,1), stroke 280ms ease",
                         cursor: isFocus ? "pointer" : "default",
                       },
                       hover: {
-                        fill,
+                        fill: hoverFill,
                         fillOpacity: 1,
-                        stroke: isFocus
-                          ? `color-mix(in oklab, ${countryColorVar(code!)} 55%, black)`
-                          : "var(--color-map-neutral-stroke)",
-                        strokeWidth: isFocus ? 2 : 0.55,
+                        stroke,
+                        strokeWidth: isFocus ? 1 : 0.5,
                         vectorEffect: "non-scaling-stroke",
                         shapeRendering: "geometricPrecision",
                         outline: "none",
                       },
-                      pressed: { fill, outline: "none" },
+                      pressed: { fill: hoverFill, outline: "none" },
                     }}
                   />
                 );
