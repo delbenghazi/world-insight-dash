@@ -182,9 +182,9 @@ function validateRows(rows: EditableRow[]): ValidationIssue[] {
     if (!GTMI_TIERS.includes(r.gtmiTier as any)) {
       issues.push({ rowKey: k, field: "gtmiTier", severity: "error", message: "GTMI tier must be A, B, or C." });
     }
-    const c = Number(r.compositeScore);
+    const c = sumDims(r);
     if (!Number.isFinite(c) || c < 5 || c > 15) {
-      issues.push({ rowKey: k, field: "compositeScore", severity: "error", message: "Composite must be between 5 and 15." });
+      issues.push({ rowKey: k, field: "compositeScore", severity: "error", message: "Composite (sum of D1–D5) must be between 5 and 15." });
     }
     if (!RISK_LEVELS.includes(r.overallRisk)) {
       issues.push({ rowKey: k, field: "overallRisk", severity: "error", message: "Risk must be Low, Medium, or High." });
