@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare, Globe2, Map, FileText, Info } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare, Map, FileText, Info } from "lucide-react";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import {
   countriesByRegion,
@@ -12,7 +12,6 @@ import {
 export function LeftPanel() {
   const [open, setOpen] = useState(true);
   const { projects, selectedCountry, setSelectedCountry } = useProjectStore();
-  const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry] : null;
   const groups = countriesByRegion(projects);
 
   return (
@@ -45,74 +44,7 @@ export function LeftPanel() {
             <span className="text-foreground">flag as risk</span> before commitment.
           </p>
 
-          <nav className="mt-4 flex flex-col gap-0.5 border-t pt-3">
-            {[
-              { to: "/methodology", label: "Atlas", icon: Map },
-              {
-                to: "/country/$code",
-                label: "Country Portfolio",
-                icon: FileText,
-                params: { code: selectedCountry ?? "GTM" },
-              },
-              { to: "/compare", label: "Compare", icon: GitCompare },
-              { to: "/add-project", label: "Add Project", icon: Plus },
-              { to: "/about", label: "About", icon: Info },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  params={item.params as never}
-                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-                >
-                  <Icon size={13} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedCountry ?? "none"}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18 }}
-              className="mt-5 rounded-md border bg-background p-3"
-            >
-              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                <Globe2 size={11} /> Active country
-              </div>
-              <div className="mt-1.5 flex items-center gap-2">
-                {selectedCountry && (
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ background: countryColorVar(selectedCountry) }}
-                  />
-                )}
-                <span className="text-base font-semibold tracking-tight">
-                  {country?.name ?? "None — hover the map"}
-                </span>
-              </div>
-              {country && (
-                <div className="mt-0.5 text-[11px] text-muted-foreground">{country.region}</div>
-              )}
-              {selectedCountry && (
-                <Link
-                  to="/country/$code"
-                  params={{ code: selectedCountry }}
-                  className="mt-3 inline-flex w-full items-center justify-center rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
-                >
-                  Open portfolio →
-                </Link>
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          <div className="mt-5 flex-1 space-y-3 overflow-y-auto border-t pt-4">
+          <div className="mt-5 space-y-3 overflow-y-auto border-t pt-4">
             <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
               Countries in portfolio
             </div>
@@ -155,6 +87,35 @@ export function LeftPanel() {
             ))}
           </div>
 
+          <div className="mt-auto border-t pt-3">
+            <nav className="flex flex-col gap-0.5">
+              {[
+                { to: "/methodology", label: "Atlas", icon: Map },
+                {
+                  to: "/country/$code",
+                  label: "Country Portfolio",
+                  icon: FileText,
+                  params: { code: selectedCountry ?? "GTM" },
+                },
+                { to: "/compare", label: "Compare", icon: GitCompare },
+                { to: "/add-project", label: "Add Project", icon: Plus },
+                { to: "/about", label: "About", icon: Info },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.to}
+                    params={item.params as never}
+                    className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+                  >
+                    <Icon size={13} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 pt-16">
