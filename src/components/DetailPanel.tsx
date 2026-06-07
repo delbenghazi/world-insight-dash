@@ -105,32 +105,6 @@ export function DetailPanel({ code }: { code: CountryCode }) {
           )}
         </section>
 
-        {/* Advisor CTA */}
-        {list.length > 0 && (
-          <section className="mt-5 px-6">
-            <div className="flex items-center gap-4 rounded-xl border bg-surface p-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background">
-                <Sparkles size={16} />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold">
-                  Consult the Portfolio Advisor on {country?.name ?? code}
-                </div>
-                <div className="text-[12px] text-muted-foreground">
-                  Ask sequencing, coordination, and mandate-overlap questions about this portfolio.
-                </div>
-              </div>
-              <button
-                onClick={() =>
-                  window.dispatchEvent(new CustomEvent("open-advisor"))
-                }
-                className="rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:opacity-90"
-              >
-                Open advisor →
-              </button>
-            </div>
-          </section>
-        )}
 
         {/* Country summary */}
         {list.length > 0 && (
