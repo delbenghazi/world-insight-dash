@@ -14,13 +14,14 @@ const SUGGESTIONS = [
   "Which projects look complementary and can be coordinated?",
 ];
 
-export function AIAdvisor() {
+export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const { selectedCountry, projects, summaries } = useProjectStore();
-  const country = selectedCountry ? FOCUS_COUNTRIES[selectedCountry] : null;
-  const portfolio = selectedCountry ? projectsByCountry(projects, selectedCountry) : [];
+  const activeCode = countryCode ?? selectedCountry;
+  const country = activeCode ? FOCUS_COUNTRIES[activeCode] : null;
+  const portfolio = activeCode ? projectsByCountry(projects, activeCode) : [];
 
   useEffect(() => {
     const handler = () => setOpen(true);
@@ -31,13 +32,13 @@ export function AIAdvisor() {
   // Reset chat when active country changes — advisor is scoped to current portfolio.
   useEffect(() => {
     setMessages([]);
-  }, [selectedCountry]);
+  }, [activeCode]);
 
   function ask(q: string) {
-    if (!q.trim() || !selectedCountry) return;
+    if (!q.trim() || !activeCode) return;
     setMessages((m) => [...m, { role: "user", content: q }]);
     setInput("");
-    const ctx = summaries[selectedCountry]?.summary ?? "No saved sequencing notes yet.";
+    const ctx = summaries[activeCode]?.summary ?? "No saved sequencing notes yet.";
     setTimeout(() => {
       setMessages((m) => [
         ...m,
@@ -49,7 +50,7 @@ export function AIAdvisor() {
     }, 350);
   }
 
-  const label = country ? `Advisor · ${country.name}` : "Portfolio Advisor";
+  const label = countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor";
 
   return (
     <>
@@ -76,7 +77,7 @@ export function AIAdvisor() {
               </div>
               <div>
                 <div className="text-sm font-semibold">
-                  {country ? `Advisor · ${country.name}` : "Portfolio Advisor"}
+                  {countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor"}
                 </div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                   {country
@@ -94,7 +95,7 @@ export function AIAdvisor() {
             </div>
 
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-              {!selectedCountry ? (
+              {!activeCode ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                     <Sparkles size={16} />
@@ -152,16 +153,16 @@ export function AIAdvisor() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
-                  selectedCountry
+                  activeCode
                     ? `Ask about ${country?.name}…`
                     : "Select a country first"
                 }
-                disabled={!selectedCountry}
+                disabled={!activeCode}
                 className="flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/40 focus:ring-2 disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!selectedCountry}
+                disabled={!activeCode}
                 className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground disabled:opacity-50"
               >
                 <Send size={14} />

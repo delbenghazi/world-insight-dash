@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DetailPanel } from "@/components/DetailPanel";
 import { WorkflowNav } from "@/components/WorkflowNav";
+import { AIAdvisor } from "@/components/AIAdvisor";
 import { FOCUS_COUNTRIES } from "@/lib/project-data";
 import { getCountryMeta, normalizeCountry } from "@/lib/countries";
 
@@ -42,6 +43,7 @@ function CountryPage() {
       <div className="flex-1 overflow-hidden">
         <DetailPanel code={code} />
       </div>
+      <AIAdvisor countryCode={code} />
     </div>
   );
 }
