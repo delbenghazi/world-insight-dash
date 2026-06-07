@@ -81,6 +81,36 @@ export interface Project {
   linkedProjectIds: string[];
   interactionNote: string;
   overallRisk: RiskLevel;
+  /** Dimensions whose score came from user-answered proxy questions, not document evidence. */
+  proxyDimensions?: string[];
+}
+
+export const DIMENSION_LABELS: Record<string, string> = {
+  dim1_institutional: "D1 Institutional",
+  dim2_regulatory: "D2 Regulatory",
+  dim3_technical: "D3 Technical",
+  dim4_political: "D4 Political",
+  dim5_investment: "D5 Investment",
+};
+
+export function projectHasProxy(p: Project): boolean {
+  return !!p.proxyDimensions && p.proxyDimensions.length > 0;
+}
+
+export interface CountryProxyInfo {
+  hasProxy: boolean;
+  entries: Array<{ projectId: string; projectName: string; dimensions: string[] }>;
+}
+
+export function countryProxyInfo(projects: Project[], code: CountryCode): CountryProxyInfo {
+  const entries = projects
+    .filter((p) => p.country === code && projectHasProxy(p))
+    .map((p) => ({
+      projectId: p.projectId,
+      projectName: p.projectName,
+      dimensions: p.proxyDimensions ?? [],
+    }));
+  return { hasProxy: entries.length > 0, entries };
 }
 
 export interface CountrySummary {
