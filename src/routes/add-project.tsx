@@ -71,7 +71,27 @@ type EditableField =
   | "gtmiTier"
   | "compositeScore"
   | "overallRisk"
-  | "interactionType";
+  | "interactionType"
+  | "dim1_institutional"
+  | "dim2_regulatory"
+  | "dim3_technical"
+  | "dim4_political"
+  | "dim5_investment";
+
+type DimField =
+  | "dim1_institutional"
+  | "dim2_regulatory"
+  | "dim3_technical"
+  | "dim4_political"
+  | "dim5_investment";
+
+const DIM_FIELDS: DimField[] = [
+  "dim1_institutional",
+  "dim2_regulatory",
+  "dim3_technical",
+  "dim4_political",
+  "dim5_investment",
+];
 
 interface AIDimensionDetail {
   score: number | null;
