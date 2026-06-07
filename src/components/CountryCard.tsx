@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CountryCode,
@@ -9,9 +9,14 @@ import {
   useProjectStore,
 } from "@/lib/project-data";
 
+const OFFSET = 14;
+const EDGE_PAD = 8;
+
 export function CountryCard() {
   const { hoveredCountry, projects } = useProjectStore();
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -21,16 +26,48 @@ export function CountryCard() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  useLayoutEffect(() => {
+    if (!hoveredCountry || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const { x, y } = mousePos;
+    const w = rect.width;
+    const h = rect.height;
+
+    let left: number;
+    let top: number;
+
+    // Priority: above -> right -> left
+    if (y - OFFSET - h >= EDGE_PAD) {
+      top = y - OFFSET - h;
+      left = Math.min(Math.max(x - w / 2, EDGE_PAD), vw - w - EDGE_PAD);
+    } else if (x + OFFSET + w <= vw - EDGE_PAD) {
+      left = x + OFFSET;
+      top = Math.min(Math.max(y - h / 2, EDGE_PAD), vh - h - EDGE_PAD);
+    } else {
+      left = Math.max(x - OFFSET - w, EDGE_PAD);
+      top = Math.min(Math.max(y - h / 2, EDGE_PAD), vh - h - EDGE_PAD);
+    }
+
+    setPos({ left, top });
+  }, [mousePos, hoveredCountry]);
+
   return (
     <AnimatePresence>
       {hoveredCountry && (
         <motion.div
-          initial={{ opacity: 0, y: 8, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 6, scale: 0.98 }}
+          ref={cardRef}
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="pointer-events-none fixed z-30"
-          style={{ left: mousePos.x + 16, top: mousePos.y + 16 }}
+          style={{
+            left: pos?.left ?? mousePos.x + OFFSET,
+            top: pos?.top ?? mousePos.y + OFFSET,
+            visibility: pos ? "visible" : "hidden",
+          }}
         >
           <Card code={hoveredCountry} />
         </motion.div>
