@@ -125,6 +125,7 @@ function buildDocumentTrail(p: Project) {
 function ProjectPage() {
   const { projectId } = Route.useLoaderData();
   const projects = useProjectStore((s) => s.projects);
+  const storeSources = useProjectStore((s) => s.sources);
   const project = projects.find((p) => p.projectId === projectId);
 
   if (!project) throw notFound();
@@ -136,7 +137,15 @@ function ProjectPage() {
   const siblings = projectsByCountry(projects, project.country).filter(
     (p) => p.projectId !== project.projectId
   );
-  const documents = buildDocumentTrail(project);
+  const aiSources = storeSources.filter((s) => s.projectId === project.projectId);
+  const documents =
+    aiSources.length > 0
+      ? aiSources.map((s) => ({
+          type: s.sourceType,
+          title: s.note ? `${s.sourceTitle} — ${s.note}` : s.sourceTitle,
+          link: s.url ?? null,
+        }))
+      : buildDocumentTrail(project);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
