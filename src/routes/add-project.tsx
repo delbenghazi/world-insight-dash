@@ -118,6 +118,11 @@ function newKey() {
   return `r_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function sumDims(r: EditableRow): number {
+  const vals = [r.dim1_institutional, r.dim2_regulatory, r.dim3_technical, r.dim4_political, r.dim5_investment];
+  return vals.reduce((acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0), 0);
+}
+
 function blankRow(): EditableRow {
   return {
     _key: newKey(),
