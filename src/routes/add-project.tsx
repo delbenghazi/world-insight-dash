@@ -118,6 +118,11 @@ function newKey() {
   return `r_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function sumDims(r: EditableRow): number {
+  const vals = [r.dim1_institutional, r.dim2_regulatory, r.dim3_technical, r.dim4_political, r.dim5_investment];
+  return vals.reduce((acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0), 0);
+}
+
 function blankRow(): EditableRow {
   return {
     _key: newKey(),
@@ -177,9 +182,9 @@ function validateRows(rows: EditableRow[]): ValidationIssue[] {
     if (!GTMI_TIERS.includes(r.gtmiTier as any)) {
       issues.push({ rowKey: k, field: "gtmiTier", severity: "error", message: "GTMI tier must be A, B, or C." });
     }
-    const c = Number(r.compositeScore);
+    const c = sumDims(r);
     if (!Number.isFinite(c) || c < 5 || c > 15) {
-      issues.push({ rowKey: k, field: "compositeScore", severity: "error", message: "Composite must be between 5 and 15." });
+      issues.push({ rowKey: k, field: "compositeScore", severity: "error", message: "Composite (sum of D1–D5) must be between 5 and 15." });
     }
     if (!RISK_LEVELS.includes(r.overallRisk)) {
       issues.push({ rowKey: k, field: "overallRisk", severity: "error", message: "Risk must be Low, Medium, or High." });
@@ -305,7 +310,10 @@ function AddProject() {
   }
 
   function commit() {
-    const stripped: Project[] = rows.map(({ _key, _aiSuggested, _aiDetail, ...rest }) => rest);
+    const stripped: Project[] = rows.map(({ _key, _aiSuggested, _aiDetail, ...rest }) => ({
+      ...rest,
+      compositeScore: sumDims({ ...rest, _key: "" } as EditableRow),
+    }));
     const merged = [
       ...projects.filter((p) => !stripped.find((r) => r.projectId === p.projectId)),
       ...stripped,
@@ -720,8 +728,8 @@ function AddProject() {
                           <EditCell row={row} field="projectType" value={row.projectType} issues={issuesByCell} onChange={updateCell} />
                           <SelectCell row={row} field="gtmiTier" value={String(row.gtmiTier)} issues={issuesByCell} onChange={updateCell}
                             options={GTMI_TIERS as readonly string[]} />
-                          <EditCell row={row} field="compositeScore" value={String(row.compositeScore)} issues={issuesByCell} onChange={updateCell}
-                            mono display={(v) => v ? `${v}/15` : "—"} type="number" />
+                          <CompositeCell row={row} issues={issuesByCell} />
+
                           <SelectCell row={row} field="overallRisk" value={row.overallRisk} issues={issuesByCell} onChange={updateCell}
                             options={RISK_LEVELS} />
                           <SelectCell row={row} field="interactionType" value={row.interactionType} issues={issuesByCell} onChange={updateCell}
@@ -840,6 +848,26 @@ function SelectCell({
     </td>
   );
 }
+
+function CompositeCell({ row, issues }: { row: EditableRow; issues: Map<string, ValidationIssue[]> }) {
+  const sum = sumDims(row);
+  const cellErr = cellIssues(issues, row._key, "compositeScore");
+  const hasErr = cellErr.some((i) => i.severity === "error");
+  return (
+    <td className={`px-3 py-2 ${hasErr ? "bg-destructive/10" : ""}`}>
+      <div className={`block w-full min-w-[6rem] font-mono ${hasErr ? "text-destructive" : ""}`} title="Auto-calculated from D1–D5">
+        {sum}/15
+      </div>
+      <div className="mt-0.5 text-[10px] text-muted-foreground">auto · Σ D1–D5</div>
+      {cellErr.length > 0 && (
+        <div className="mt-1 text-[10px] leading-tight" style={{ color: hasErr ? "var(--color-destructive)" : "var(--color-risk-medium)" }}>
+          {cellErr.map((i, idx) => <div key={idx}>{i.message}</div>)}
+        </div>
+      )}
+    </td>
+  );
+}
+
 
 const DIM_LABELS: Array<[keyof AIDetail, string]> = [
   ["d1", "D1 · Institutional Absorption Load"],
