@@ -138,9 +138,26 @@ function newKey() {
   return `r_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function sumDims(r: EditableRow): number {
-  const vals = [r.dim1_institutional, r.dim2_regulatory, r.dim3_technical, r.dim4_political, r.dim5_investment];
-  return vals.reduce((acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0), 0);
+function dimScore(r: EditableRow, field: DimField): number | null {
+  const v = (r as any)[field];
+  if (v === "" || v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 1 && n <= 3 ? n : null;
+}
+
+function sumDims(r: EditableRow): { sum: number; count: number; missing: DimField[] } {
+  let sum = 0;
+  let count = 0;
+  const missing: DimField[] = [];
+  for (const f of DIM_FIELDS) {
+    const s = dimScore(r, f);
+    if (s == null) missing.push(f);
+    else {
+      sum += s;
+      count += 1;
+    }
+  }
+  return { sum, count, missing };
 }
 
 function blankRow(): EditableRow {
