@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, ChevronDown, ChevronUp, Save, Trash2, Plus } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { RiskHero } from "./RiskHero";
 import { EmptyState } from "./EmptyState";
 import {
@@ -12,6 +17,7 @@ import {
   countryColorVar,
   countryProxyInfo,
   countryStats,
+  projectHasProxy,
   projectsByCountry,
   riskColorVar,
   useProjectStore,
@@ -203,7 +209,31 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                     <tbody>
                       {filtered.map((p) => (
                         <tr key={p.projectId} className="border-t align-top hover:bg-secondary/50">
-                          <td className="px-3 py-2 font-mono">{p.projectId}</td>
+                          <td className="px-3 py-2 font-mono">
+                            <div className="flex items-center gap-1.5">
+                              {p.projectId}
+                              {projectHasProxy(p) && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span
+                                      className="inline-flex items-center justify-center rounded px-1 text-[9px] font-bold leading-none"
+                                      style={{
+                                        backgroundColor: "var(--color-risk-medium)",
+                                        color: "#1a1a1a",
+                                      }}
+                                    >
+                                      proxy
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    <p className="max-w-[200px]">
+                                      This project contains proxy-scored dimensions — review in project details.
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-3 py-2 font-medium">
                             <Link
                               to="/project/$projectId"
@@ -217,7 +247,34 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                             </div>
                           </td>
                           <td className="px-3 py-2">{p.interactionType}</td>
-                          <td className="px-3 py-2 font-mono">{p.compositeScore}/15</td>
+                          <td className="px-3 py-2 font-mono">
+                            {projectHasProxy(p) ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="cursor-help">
+                                    <span
+                                      className="font-bold"
+                                      style={{ color: "var(--color-risk-medium)" }}
+                                    >
+                                      ~
+                                    </span>
+                                    {p.compositeScore}/15
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <div className="space-y-1">
+                                    {p.proxyDimensions!.map((dimKey) => (
+                                      <p key={dimKey} className="text-xs">
+                                        {formatDimLabel(dimKey)} scored via proxy — insufficient document evidence
+                                      </p>
+                                    ))}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              `${p.compositeScore}/15`
+                            )}
+                          </td>
                           <td className="px-3 py-2">
                             <span
                               className="rounded px-1.5 py-0.5 text-[10px] font-medium"
@@ -313,6 +370,15 @@ function Select({
       </select>
     </label>
   );
+}
+
+function formatDimLabel(key: string) {
+  const label = DIMENSION_LABELS[key] ?? key;
+  const parts = label.split(" ");
+  if (parts.length >= 2 && /^D\d+$/.test(parts[0])) {
+    return `${parts[0]} · ${parts.slice(1).join(" ")}`;
+  }
+  return label;
 }
 
 function ProxyFlag({ info }: { info: ReturnType<typeof countryProxyInfo> }) {
