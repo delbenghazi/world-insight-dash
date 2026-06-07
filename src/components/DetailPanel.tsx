@@ -5,10 +5,12 @@ import { RiskHero } from "./RiskHero";
 import { EmptyState } from "./EmptyState";
 import {
   CountryCode,
+  DIMENSION_LABELS,
   FOCUS_COUNTRIES,
   InteractionType,
   RiskLevel,
   countryColorVar,
+  countryProxyInfo,
   countryStats,
   projectsByCountry,
   riskColorVar,
