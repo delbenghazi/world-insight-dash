@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CountryCode,
@@ -9,65 +9,54 @@ import {
   useProjectStore,
 } from "@/lib/project-data";
 
-const OFFSET = 14;
-const EDGE_PAD = 8;
+const OFFSET = 16;
 
 export function CountryCard() {
   const { hoveredCountry, projects } = useProjectStore();
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+    const place = (e: MouseEvent | PointerEvent) => {
+      const el = cardRef.current;
+      if (!el) return;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      const x = e.clientX;
+      const y = e.clientY;
+
+      // Horizontal: right half → place left of cursor, left half → right of cursor
+      const left =
+        x > vw / 2 ? Math.max(8, x - OFFSET - w) : Math.min(vw - w - 8, x + OFFSET);
+
+      // Vertical: bottom third → above cursor, otherwise below
+      const top =
+        y > (vh * 2) / 3
+          ? Math.max(8, y - OFFSET - h)
+          : Math.min(vh - h - 8, y + OFFSET);
+
+      el.style.transform = `translate3d(${left}px, ${top}px, 0)`;
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
 
-  useLayoutEffect(() => {
-    if (!hoveredCountry || !cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const { x, y } = mousePos;
-    const w = rect.width;
-    const h = rect.height;
-
-    let left: number;
-    let top: number;
-
-    // Priority: above -> right -> left
-    if (y - OFFSET - h >= EDGE_PAD) {
-      top = y - OFFSET - h;
-      left = Math.min(Math.max(x - w / 2, EDGE_PAD), vw - w - EDGE_PAD);
-    } else if (x + OFFSET + w <= vw - EDGE_PAD) {
-      left = x + OFFSET;
-      top = Math.min(Math.max(y - h / 2, EDGE_PAD), vh - h - EDGE_PAD);
-    } else {
-      left = Math.max(x - OFFSET - w, EDGE_PAD);
-      top = Math.min(Math.max(y - h / 2, EDGE_PAD), vh - h - EDGE_PAD);
-    }
-
-    setPos({ left, top });
-  }, [mousePos, hoveredCountry]);
+    window.addEventListener("pointermove", place);
+    window.addEventListener("mousemove", place);
+    return () => {
+      window.removeEventListener("pointermove", place);
+      window.removeEventListener("mousemove", place);
+    };
+  }, [hoveredCountry]);
 
   return (
     <AnimatePresence>
       {hoveredCountry && (
         <motion.div
           ref={cardRef}
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-none fixed z-30"
-          style={{
-            left: pos?.left ?? mousePos.x + OFFSET,
-            top: pos?.top ?? mousePos.y + OFFSET,
-            visibility: pos ? "visible" : "hidden",
-          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="pointer-events-none fixed left-0 top-0 z-30 will-change-transform"
         >
           <Card code={hoveredCountry} />
         </motion.div>
