@@ -218,8 +218,8 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                                     <span
                                       className="inline-flex items-center justify-center rounded px-1 text-[9px] font-bold leading-none"
                                       style={{
-                                        backgroundColor: "var(--color-risk-medium)",
-                                        color: "#1a1a1a",
+                                        background: "color-mix(in oklab, var(--color-risk-medium) 18%, transparent)",
+                                        color: "var(--color-risk-medium)",
                                       }}
                                     >
                                       proxy
