@@ -71,7 +71,27 @@ type EditableField =
   | "gtmiTier"
   | "compositeScore"
   | "overallRisk"
-  | "interactionType";
+  | "interactionType"
+  | "dim1_institutional"
+  | "dim2_regulatory"
+  | "dim3_technical"
+  | "dim4_political"
+  | "dim5_investment";
+
+type DimField =
+  | "dim1_institutional"
+  | "dim2_regulatory"
+  | "dim3_technical"
+  | "dim4_political"
+  | "dim5_investment";
+
+const DIM_FIELDS: DimField[] = [
+  "dim1_institutional",
+  "dim2_regulatory",
+  "dim3_technical",
+  "dim4_political",
+  "dim5_investment",
+];
 
 interface AIDimensionDetail {
   score: number | null;
@@ -89,10 +109,15 @@ interface AIDetail {
   plainLanguageSummary?: string;
 }
 
-interface EditableRow extends Project {
+interface EditableRow extends Omit<Project, "dim1_institutional" | "dim2_regulatory" | "dim3_technical" | "dim4_political" | "dim5_investment"> {
   _key: string;
   _aiSuggested?: boolean;
   _aiDetail?: AIDetail;
+  dim1_institutional: number | null;
+  dim2_regulatory: number | null;
+  dim3_technical: number | null;
+  dim4_political: number | null;
+  dim5_investment: number | null;
 }
 
 interface IntakeFile {
@@ -118,9 +143,26 @@ function newKey() {
   return `r_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function sumDims(r: EditableRow): number {
-  const vals = [r.dim1_institutional, r.dim2_regulatory, r.dim3_technical, r.dim4_political, r.dim5_investment];
-  return vals.reduce((acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0), 0);
+function dimScore(r: EditableRow, field: DimField): number | null {
+  const v = (r as any)[field];
+  if (v === "" || v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 1 && n <= 3 ? n : null;
+}
+
+function sumDims(r: EditableRow): { sum: number; count: number; missing: DimField[] } {
+  let sum = 0;
+  let count = 0;
+  const missing: DimField[] = [];
+  for (const f of DIM_FIELDS) {
+    const s = dimScore(r, f);
+    if (s == null) missing.push(f);
+    else {
+      sum += s;
+      count += 1;
+    }
+  }
+  return { sum, count, missing };
 }
 
 function blankRow(): EditableRow {
@@ -182,9 +224,29 @@ function validateRows(rows: EditableRow[]): ValidationIssue[] {
     if (!GTMI_TIERS.includes(r.gtmiTier as any)) {
       issues.push({ rowKey: k, field: "gtmiTier", severity: "error", message: "GTMI tier must be A, B, or C." });
     }
-    const c = sumDims(r);
-    if (!Number.isFinite(c) || c < 5 || c > 15) {
-      issues.push({ rowKey: k, field: "compositeScore", severity: "error", message: "Composite (sum of D1–D5) must be between 5 and 15." });
+    const { sum, count, missing } = sumDims(r);
+    for (const m of missing) {
+      issues.push({
+        rowKey: k,
+        field: m,
+        severity: "error",
+        message: "Score required (1, 2, or 3).",
+      });
+    }
+    if (missing.length > 0) {
+      issues.push({
+        rowKey: k,
+        field: "compositeScore",
+        severity: "error",
+        message: `${missing.length} dimension${missing.length > 1 ? "s" : ""} unscored — add a score to commit.`,
+      });
+    } else if (count === 5 && (sum < 5 || sum > 15)) {
+      issues.push({
+        rowKey: k,
+        field: "compositeScore",
+        severity: "error",
+        message: "Composite (sum of D1–D5) must be between 5 and 15.",
+      });
     }
     if (!RISK_LEVELS.includes(r.overallRisk)) {
       issues.push({ rowKey: k, field: "overallRisk", severity: "error", message: "Risk must be Low, Medium, or High." });
@@ -217,9 +279,10 @@ function readFileAsBase64(file: File): Promise<string> {
 function mapAiToRow(p: any): EditableRow {
   const riskMap: Record<string, RiskLevel> = { L: "Low", M: "Medium", H: "High" };
   const code = normalizeCountry(p.country ?? "");
-  const dim = (v: any) => {
+  const dim = (v: any): number | null => {
+    if (v === null || v === undefined || v === "") return null;
     const n = Number(v);
-    return Number.isFinite(n) && n >= 1 && n <= 3 ? n : 1;
+    return Number.isFinite(n) && n >= 1 && n <= 3 ? n : null;
   };
   const composite = p.composite_score ?? null;
   const detail: AIDetail = {
@@ -312,7 +375,12 @@ function AddProject() {
   function commit() {
     const stripped: Project[] = rows.map(({ _key, _aiSuggested, _aiDetail, ...rest }) => ({
       ...rest,
-      compositeScore: sumDims({ ...rest, _key: "" } as EditableRow),
+      dim1_institutional: rest.dim1_institutional ?? 1,
+      dim2_regulatory: rest.dim2_regulatory ?? 1,
+      dim3_technical: rest.dim3_technical ?? 1,
+      dim4_political: rest.dim4_political ?? 1,
+      dim5_investment: rest.dim5_investment ?? 1,
+      compositeScore: sumDims({ ...rest, _key: "" } as EditableRow).sum,
     }));
     const merged = [
       ...projects.filter((p) => !stripped.find((r) => r.projectId === p.projectId)),
@@ -341,6 +409,19 @@ function AddProject() {
           return { ...r, country: normalized ?? value.toUpperCase().trim() };
         }
         return { ...r, [field]: value } as EditableRow;
+      })
+    );
+  }
+
+  function updateDim(key: string, field: DimField, value: string) {
+    setImported(false);
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r._key !== key) return r;
+        if (value === "") return { ...r, [field]: null } as EditableRow;
+        const n = Number(value);
+        const clean = Number.isFinite(n) && n >= 1 && n <= 3 ? n : null;
+        return { ...r, [field]: clean } as EditableRow;
       })
     );
   }
@@ -748,7 +829,7 @@ function AddProject() {
                         {isOpen && row._aiDetail && (
                           <tr className={`border-t ${aiTint}`}>
                             <td colSpan={10} className="px-6 py-4">
-                              <ScoreDetail detail={row._aiDetail} />
+                              <ScoreDetail row={row} detail={row._aiDetail} onScoreChange={updateDim} />
                             </td>
                           </tr>
                         )}
@@ -850,18 +931,32 @@ function SelectCell({
 }
 
 function CompositeCell({ row, issues }: { row: EditableRow; issues: Map<string, ValidationIssue[]> }) {
-  const sum = sumDims(row);
+  const { sum, count, missing } = sumDims(row);
   const cellErr = cellIssues(issues, row._key, "compositeScore");
   const hasErr = cellErr.some((i) => i.severity === "error");
+  const max = count * 3;
+  const partial = missing.length > 0;
   return (
     <td className={`px-3 py-2 ${hasErr ? "bg-destructive/10" : ""}`}>
-      <div className={`block w-full min-w-[6rem] font-mono ${hasErr ? "text-destructive" : ""}`} title="Auto-calculated from D1–D5">
-        {sum}/15
+      <div
+        className={`block w-full min-w-[6rem] font-mono ${hasErr ? "text-destructive" : ""}`}
+        title={partial ? `Partial: ${count} of 5 dimensions scored` : "Auto-calculated from D1–D5"}
+      >
+        {sum}/{partial ? max : 15}
       </div>
-      <div className="mt-0.5 text-[10px] text-muted-foreground">auto · Σ D1–D5</div>
-      {cellErr.length > 0 && (
+      <div className="mt-0.5 text-[10px] text-muted-foreground">
+        {partial ? `${count}/5 dims scored · Σ` : "auto · Σ D1–D5"}
+      </div>
+      {partial && (
+        <div className="mt-1 text-[10px] leading-tight text-destructive">
+          {missing.length} dimension{missing.length > 1 ? "s" : ""} unscored — add a score to commit.
+        </div>
+      )}
+      {cellErr.filter((i) => !partial || !i.message.includes("unscored")).length > 0 && (
         <div className="mt-1 text-[10px] leading-tight" style={{ color: hasErr ? "var(--color-destructive)" : "var(--color-risk-medium)" }}>
-          {cellErr.map((i, idx) => <div key={idx}>{i.message}</div>)}
+          {cellErr
+            .filter((i) => !partial || !i.message.includes("unscored"))
+            .map((i, idx) => <div key={idx}>{i.message}</div>)}
         </div>
       )}
     </td>
@@ -869,15 +964,23 @@ function CompositeCell({ row, issues }: { row: EditableRow; issues: Map<string, 
 }
 
 
-const DIM_LABELS: Array<[keyof AIDetail, string]> = [
-  ["d1", "D1 · Institutional Absorption Load"],
-  ["d2", "D2 · Regulatory Dependencies"],
-  ["d3", "D3 · Technical Dependencies"],
-  ["d4", "D4 · Political Sensitivity"],
-  ["d5", "D5 · Investment Needs & Funding"],
+const DIM_LABELS: Array<[keyof AIDetail, DimField, string]> = [
+  ["d1", "dim1_institutional", "D1 · Institutional Absorption Load"],
+  ["d2", "dim2_regulatory", "D2 · Regulatory Dependencies"],
+  ["d3", "dim3_technical", "D3 · Technical Dependencies"],
+  ["d4", "dim4_political", "D4 · Political Sensitivity"],
+  ["d5", "dim5_investment", "D5 · Investment Needs & Funding"],
 ];
 
-function ScoreDetail({ detail }: { detail: AIDetail }) {
+function ScoreDetail({
+  row,
+  detail,
+  onScoreChange,
+}: {
+  row: EditableRow;
+  detail: AIDetail;
+  onScoreChange: (key: string, field: DimField, value: string) => void;
+}) {
   return (
     <div className="space-y-4">
       <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
@@ -896,31 +999,53 @@ function ScoreDetail({ detail }: { detail: AIDetail }) {
         </div>
       )}
       <div className="grid gap-3 md:grid-cols-2">
-        {DIM_LABELS.map(([k, label]) => {
+        {DIM_LABELS.map(([k, dimField, label]) => {
           const d = detail[k] as AIDimensionDetail;
-          const missing = d.score == null;
+          const current = (row as any)[dimField] as number | null;
+          const missing = current == null;
           return (
-            <div key={k as string} className="rounded-md border bg-surface p-3">
+            <div
+              key={k as string}
+              className={`rounded-md border bg-surface p-3 ${missing ? "border-destructive" : ""}`}
+            >
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs font-medium">{label}</div>
                 <div className="flex items-center gap-2">
-                  <span
-                    className="rounded px-1.5 py-0.5 font-mono text-[11px]"
-                    style={{
-                      background: missing
-                        ? "color-mix(in oklab, var(--color-destructive) 18%, transparent)"
-                        : "color-mix(in oklab, var(--color-risk-medium) 18%, transparent)",
-                      color: missing ? "var(--color-destructive)" : "var(--color-risk-medium)",
-                    }}
-                  >
-                    {missing ? "null" : `${d.score}/3`}
-                  </span>
+                  {missing ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={3}
+                      step={1}
+                      placeholder="1–3"
+                      value=""
+                      onChange={(e) => onScoreChange(row._key, dimField, e.target.value)}
+                      className="h-7 w-16 rounded border border-destructive bg-destructive/10 px-2 font-mono text-[11px] text-destructive placeholder:text-destructive/60 focus:outline-none focus:ring-1 focus:ring-destructive"
+                      aria-label={`Enter score for ${label}`}
+                    />
+                  ) : (
+                    <input
+                      type="number"
+                      min={1}
+                      max={3}
+                      step={1}
+                      value={current}
+                      onChange={(e) => onScoreChange(row._key, dimField, e.target.value)}
+                      className="h-7 w-14 rounded border bg-background px-2 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-ring"
+                      aria-label={`Edit score for ${label}`}
+                    />
+                  )}
                   <ConfidenceBadge level={d.confidence} />
                 </div>
               </div>
               <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
                 {d.rationale || "(no rationale provided)"}
               </div>
+              {missing && (
+                <div className="mt-2 text-[10px] font-medium text-destructive">
+                  Insufficient evidence — enter a score (1, 2, or 3) to commit.
+                </div>
+              )}
             </div>
           );
         })}
