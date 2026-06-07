@@ -202,6 +202,7 @@ function AddProject() {
       prev.map((r) => {
         if (r._key !== key) return r;
         if (field === "compositeScore") {
+          if (value === "") return { ...r, compositeScore: "" as any };
           const n = Number(value);
           return { ...r, compositeScore: Number.isFinite(n) ? n : (value as any) };
         }
