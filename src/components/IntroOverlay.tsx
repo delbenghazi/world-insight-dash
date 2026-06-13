@@ -16,7 +16,7 @@ export function IntroOverlay() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="pointer-events-auto absolute left-6 top-6 z-20 hidden w-[360px] overflow-hidden rounded-2xl border border-white/40 bg-white/55 shadow-xl backdrop-blur-xl md:block"
+            className="pointer-events-auto absolute right-6 top-6 z-20 hidden w-[360px] overflow-hidden rounded-2xl border border-white/40 bg-white/55 shadow-xl backdrop-blur-xl md:block"
           >
             <button
               onClick={() => setOpen(false)}
@@ -45,10 +45,10 @@ export function IntroOverlay() {
                   title="Classify how they interact"
                   body={
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
-                      <Tag color="#16a34a">Complementary</Tag>
-                      <Tag color="#d97706">Sequentially dependent</Tag>
-                      <Tag color="#ea580c">Institutionally competing</Tag>
-                      <Tag color="#dc2626">Governance-conflicting</Tag>
+                      <Tag tint="#16a34a">Complementary</Tag>
+                      <Tag tint="#d97706">Sequentially dependent</Tag>
+                      <Tag tint="#ea580c">Institutionally competing</Tag>
+                      <Tag tint="#dc2626">Governance-conflicting</Tag>
                     </div>
                   }
                 />
@@ -118,11 +118,15 @@ function Step({ n, title, body }: { n: number; title: string; body: React.ReactN
   );
 }
 
-function Tag({ color, children }: { color: string; children: React.ReactNode }) {
+function Tag({ tint, children }: { tint: string; children: React.ReactNode }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
-      style={{ background: color }}
+      className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium"
+      style={{
+        background: `color-mix(in oklab, ${tint} 13%, transparent)`,
+        borderColor: `color-mix(in oklab, ${tint} 25%, transparent)`,
+        color: `color-mix(in oklab, ${tint} 78%, #000)`,
+      }}
     >
       {children}
     </span>
