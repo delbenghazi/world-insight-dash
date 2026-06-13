@@ -118,11 +118,15 @@ function Step({ n, title, body }: { n: number; title: string; body: React.ReactN
   );
 }
 
-function Tag({ color, children }: { color: string; children: React.ReactNode }) {
+function Tag({ tint, children }: { tint: string; children: React.ReactNode }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
-      style={{ background: color }}
+      className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium"
+      style={{
+        background: `color-mix(in oklab, ${tint} 13%, transparent)`,
+        borderColor: `color-mix(in oklab, ${tint} 25%, transparent)`,
+        color: `color-mix(in oklab, ${tint} 78%, #000)`,
+      }}
     >
       {children}
     </span>
