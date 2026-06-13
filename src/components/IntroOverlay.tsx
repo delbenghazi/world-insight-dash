@@ -45,10 +45,10 @@ export function IntroOverlay() {
                   title="Classify how they interact"
                   body={
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
-                      <Tag color="#16a34a">Complementary</Tag>
-                      <Tag color="#d97706">Sequentially dependent</Tag>
-                      <Tag color="#ea580c">Institutionally competing</Tag>
-                      <Tag color="#dc2626">Governance-conflicting</Tag>
+                      <Tag tint="#16a34a">Complementary</Tag>
+                      <Tag tint="#d97706">Sequentially dependent</Tag>
+                      <Tag tint="#ea580c">Institutionally competing</Tag>
+                      <Tag tint="#dc2626">Governance-conflicting</Tag>
                     </div>
                   }
                 />
