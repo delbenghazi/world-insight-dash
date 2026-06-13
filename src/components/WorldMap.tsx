@@ -164,13 +164,14 @@ export function WorldMap({ entrance = true, onCountryClick }: { entrance?: boole
                     vectorEffect="non-scaling-stroke"
                     onMouseEnter={() => isFocus && setHoveredCountry(code!)}
                     onMouseLeave={() => setHoveredCountry(null)}
-                    onClick={() =>
-                      isFocus &&
+                    onClick={() => {
+                      if (!isFocus) return;
+                      onCountryClick?.();
                       navigate({
                         to: "/country/$code",
                         params: { code: code! },
-                      })
-                    }
+                      });
+                    }}
                     style={{
                       default: {
                         fill,
