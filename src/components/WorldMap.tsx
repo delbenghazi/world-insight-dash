@@ -44,7 +44,7 @@ function computeFit(codes: CountryCode[]): { center: [number, number]; zoom: num
   return { center, zoom };
 }
 
-export function WorldMap({ entrance = true }: { entrance?: boolean }) {
+export function WorldMap({ entrance = true, onCountryClick }: { entrance?: boolean; onCountryClick?: () => void }) {
   const { projects, selectedCountry, hoveredCountry, setHoveredCountry } =
     useProjectStore();
   const navigate = useNavigate();
