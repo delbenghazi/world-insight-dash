@@ -16,7 +16,7 @@ export function IntroOverlay() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="pointer-events-auto absolute left-6 top-6 z-20 hidden w-[360px] overflow-hidden rounded-2xl border border-white/40 bg-white/55 shadow-xl backdrop-blur-xl md:block"
+            className="pointer-events-auto absolute right-6 top-6 z-20 hidden w-[360px] overflow-hidden rounded-2xl border border-white/40 bg-white/55 shadow-xl backdrop-blur-xl md:block"
           >
             <button
               onClick={() => setOpen(false)}
