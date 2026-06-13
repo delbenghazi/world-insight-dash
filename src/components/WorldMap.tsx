@@ -216,7 +216,7 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
 
       <CountryCard />
 
-      <div className="pointer-events-auto absolute right-4 top-4 flex items-center overflow-hidden rounded-full border border-border/60 bg-background/85 shadow-sm backdrop-blur-md">
+      <div className="pointer-events-auto absolute left-20 top-4 flex items-center overflow-hidden rounded-full border border-border/60 bg-background/85 shadow-sm backdrop-blur-md">
         <button
           onClick={zoomIn}
           disabled={zoom >= MAX_ZOOM - 0.01}
