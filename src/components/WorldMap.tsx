@@ -44,7 +44,7 @@ function computeFit(codes: CountryCode[]): { center: [number, number]; zoom: num
   return { center, zoom };
 }
 
-export function WorldMap({ entrance = true }: { entrance?: boolean }) {
+export function WorldMap({ entrance = true, onCountryClick }: { entrance?: boolean; onCountryClick?: () => void }) {
   const { projects, selectedCountry, hoveredCountry, setHoveredCountry } =
     useProjectStore();
   const navigate = useNavigate();
@@ -164,13 +164,14 @@ export function WorldMap({ entrance = true }: { entrance?: boolean }) {
                     vectorEffect="non-scaling-stroke"
                     onMouseEnter={() => isFocus && setHoveredCountry(code!)}
                     onMouseLeave={() => setHoveredCountry(null)}
-                    onClick={() =>
-                      isFocus &&
+                    onClick={() => {
+                      if (!isFocus) return;
+                      onCountryClick?.();
                       navigate({
                         to: "/country/$code",
                         params: { code: code! },
-                      })
-                    }
+                      });
+                    }}
                     style={{
                       default: {
                         fill,

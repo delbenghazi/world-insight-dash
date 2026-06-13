@@ -1,11 +1,16 @@
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { X, HelpCircle, ArrowUpDown, Link2, Flag } from "lucide-react";
 
-export function IntroOverlay() {
-  const [open, setOpen] = useState(true);
-
+export function IntroOverlay({
+  open,
+  onClose,
+  onReopen,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onReopen: () => void;
+}) {
   return (
     <>
       <AnimatePresence>
@@ -19,7 +24,7 @@ export function IntroOverlay() {
             className="pointer-events-auto absolute right-6 top-6 z-20 hidden w-[360px] overflow-hidden rounded-2xl border border-white/40 bg-white/55 shadow-xl backdrop-blur-xl md:block"
           >
             <button
-              onClick={() => setOpen(false)}
+              onClick={onClose}
               aria-label="Dismiss intro"
               className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-slate-700/70 transition hover:bg-black/5 hover:text-slate-900"
             >
@@ -87,9 +92,9 @@ export function IntroOverlay() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          onClick={() => setOpen(true)}
+          onClick={onReopen}
           aria-label="Reopen intro"
-          className="pointer-events-auto absolute left-6 top-6 z-20 hidden h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/70 text-slate-800 shadow-md backdrop-blur-xl transition hover:bg-white/90 md:flex"
+          className="pointer-events-auto absolute right-6 top-6 z-20 hidden h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/70 text-slate-800 shadow-md backdrop-blur-xl transition hover:bg-white/90 md:flex"
         >
           <HelpCircle size={18} />
         </motion.button>
