@@ -48,6 +48,7 @@ function Home() {
           <main className="relative flex-1">
             <section className="relative h-full w-full overflow-hidden">
               <WorldMap />
+              <IntroOverlay />
               {!hoveredCountry && (
                 <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full border bg-surface/85 px-3 py-1.5 text-[11px] font-medium text-foreground backdrop-blur">
                   Hover a highlighted country, then click to open its portfolio
