@@ -226,7 +226,7 @@ function ProjectPage() {
       ? aiSources.map((s) => ({
           type: s.sourceType,
           title: s.note ? `${s.sourceTitle} — ${s.note}` : s.sourceTitle,
-          link: s.url ?? null,
+          link: s.url ?? searchLink(`${s.sourceTitle} ${project.projectName}`),
         }))
       : buildDocumentTrail(project);
 
