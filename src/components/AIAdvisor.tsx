@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bot, Send, Sparkles, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useServerFn } from "@tanstack/react-start";
 import { useProjectStore, FOCUS_COUNTRIES, projectsByCountry } from "@/lib/project-data";
+import { evaluateAllPairs } from "@/lib/sequencing";
+import { askAdvisor } from "@/lib/advisor.functions";
 
 interface Msg {
   role: "user" | "assistant";
@@ -18,10 +21,22 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const { selectedCountry, projects, summaries } = useProjectStore();
   const activeCode = countryCode ?? selectedCountry;
   const country = activeCode ? FOCUS_COUNTRIES[activeCode] : null;
-  const portfolio = activeCode ? projectsByCountry(projects, activeCode) : [];
+  const portfolio = useMemo(
+    () => (activeCode ? projectsByCountry(projects, activeCode) : []),
+    [projects, activeCode],
+  );
+  const pairs = useMemo(
+    () => (portfolio.length >= 2 ? evaluateAllPairs(portfolio) : []),
+    [portfolio],
+  );
+
+  const ask = useServerFn(askAdvisor);
 
   useEffect(() => {
     const handler = () => setOpen(true);
@@ -32,22 +47,62 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   // Reset chat when active country changes — advisor is scoped to current portfolio.
   useEffect(() => {
     setMessages([]);
+    setError(null);
   }, [activeCode]);
 
-  function ask(q: string) {
-    if (!q.trim() || !activeCode) return;
-    setMessages((m) => [...m, { role: "user", content: q }]);
+  async function send(q: string) {
+    if (!q.trim() || !activeCode || loading) return;
+    const userMsg: Msg = { role: "user", content: q.trim() };
+    const next = [...messages, userMsg];
+    setMessages(next);
     setInput("");
-    const ctx = summaries[activeCode]?.summary ?? "No saved sequencing notes yet.";
-    setTimeout(() => {
-      setMessages((m) => [
-        ...m,
-        {
-          role: "assistant",
-          content: `Scoped to ${country?.name} (${portfolio.length} project${portfolio.length === 1 ? "" : "s"}).\n\nSequencing notes on file: ${ctx.slice(0, 240)}${ctx.length > 240 ? "…" : ""}\n\n(Live AI advisor activates once Lovable AI is wired. This is a portfolio-scoped stub.)`,
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await ask({
+        data: {
+          countryCode: activeCode,
+          countryName: country?.name ?? activeCode,
+          portfolioSummary: summaries[activeCode]?.summary ?? "",
+          projects: portfolio.map((p) => ({
+            projectId: p.projectId,
+            projectName: p.projectName,
+            projectType: p.projectType,
+            leadDonor: p.leadDonor,
+            implementingAgency: p.implementingAgency,
+            gtmiTier: String(p.gtmiTier ?? ""),
+            startDate: p.startDate,
+            endDate: p.endDate,
+            dim1_institutional: p.dim1_institutional ?? null,
+            dim2_regulatory: p.dim2_regulatory ?? null,
+            dim3_technical: p.dim3_technical ?? null,
+            dim4_political: p.dim4_political ?? null,
+            dim5_investment: p.dim5_investment ?? null,
+            compositeScore: p.compositeScore ?? null,
+            interactionType: p.interactionType ?? "",
+            interactionNote: p.interactionNote ?? "",
+            overallRisk: p.overallRisk ?? "",
+            linkedProjectIds: p.linkedProjectIds ?? [],
+          })),
+          pairs: pairs.map((pr) => ({
+            a: pr.a.projectId,
+            b: pr.b.projectId,
+            outcome: pr.outcome,
+            gate: pr.gate,
+            interactionType: pr.interactionType,
+            reason: pr.reason,
+            flags: pr.flags,
+          })),
+          messages: next.map((m) => ({ role: m.role, content: m.content })),
         },
-      ]);
-    }, 350);
+      });
+      setMessages((m) => [...m, { role: "assistant", content: result.reply }]);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Something went wrong.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const label = countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor";
@@ -125,12 +180,22 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                       {m.content}
                     </div>
                   ))}
-                  {messages.length === 0 && (
+                  {loading && (
+                    <div className="max-w-[88%] rounded-lg bg-secondary px-3 py-2 text-sm italic text-muted-foreground">
+                      Thinking…
+                    </div>
+                  )}
+                  {error && (
+                    <div className="max-w-[88%] rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                      {error}
+                    </div>
+                  )}
+                  {messages.length === 0 && !loading && (
                     <div className="space-y-1.5 pt-1">
                       {SUGGESTIONS.map((s) => (
                         <button
                           key={s}
-                          onClick={() => ask(s)}
+                          onClick={() => send(s)}
                           className="w-full rounded-md border bg-background px-3 py-2 text-left text-xs text-muted-foreground transition hover:border-primary hover:text-foreground"
                         >
                           {s}
@@ -145,7 +210,7 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                ask(input);
+                send(input);
               }}
               className="flex items-center gap-2 border-t p-3"
             >
@@ -157,12 +222,12 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                     ? `Ask about ${country?.name}…`
                     : "Select a country first"
                 }
-                disabled={!activeCode}
+                disabled={!activeCode || loading}
                 className="flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/40 focus:ring-2 disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!activeCode}
+                disabled={!activeCode || loading || !input.trim()}
                 className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground disabled:opacity-50"
               >
                 <Send size={14} />
