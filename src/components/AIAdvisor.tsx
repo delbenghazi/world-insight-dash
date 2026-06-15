@@ -186,13 +186,21 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                   {messages.map((m, i) => (
                     <div
                       key={i}
-                      className={`max-w-[88%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm leading-relaxed ${
+                      className={`${expanded ? "max-w-[80%]" : "max-w-[88%]"} rounded-lg px-3 py-2 text-sm leading-relaxed ${
                         m.role === "user"
-                          ? "ml-auto bg-primary text-primary-foreground"
+                          ? "ml-auto whitespace-pre-wrap bg-primary text-primary-foreground"
                           : "bg-secondary text-foreground"
                       }`}
                     >
-                      {m.content}
+                      {m.role === "assistant" ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1.5 prose-headings:mt-3 prose-headings:mb-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-code:rounded prose-code:bg-background/60 prose-code:px-1 prose-code:py-0.5 prose-code:text-[0.85em] prose-code:before:content-none prose-code:after:content-none prose-strong:text-foreground prose-a:text-primary">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {m.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <span className="whitespace-pre-wrap">{m.content}</span>
+                      )}
                     </div>
                   ))}
                   {loading && (
