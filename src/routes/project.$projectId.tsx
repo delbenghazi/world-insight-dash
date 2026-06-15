@@ -568,20 +568,14 @@ function ProjectPage() {
                   </div>
                   <div className="mt-0.5 text-sm">{doc.title}</div>
                 </div>
-                {doc.link ? (
-                  <a
-                    href={doc.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex shrink-0 items-center gap-1 self-center text-xs text-primary hover:underline"
-                  >
-                    Open <ExternalLink size={11} />
-                  </a>
-                ) : (
-                  <span className="shrink-0 self-center text-[11px] italic text-muted-foreground">
-                    Available on request
-                  </span>
-                )}
+                <a
+                  href={doc.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex shrink-0 items-center gap-1 self-center text-xs text-primary hover:underline"
+                >
+                  Open <ExternalLink size={11} />
+                </a>
               </li>
             ))}
           </ul>
