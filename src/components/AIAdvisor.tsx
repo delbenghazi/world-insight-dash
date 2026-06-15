@@ -21,6 +21,7 @@ const SUGGESTIONS = [
 
 export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
