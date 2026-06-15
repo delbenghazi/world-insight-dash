@@ -452,6 +452,7 @@ export const useProjectStore = create<State>()(
     }),
     {
       name: "dpi-dashboard-v6",
+      skipHydration: true,
       merge: (persisted, current) => ({
         ...current,
         ...(persisted as object),
