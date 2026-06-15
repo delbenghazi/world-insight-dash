@@ -334,11 +334,11 @@ function ProjectPage() {
               <SnapshotRow label="Project ID">
                 <span className="font-mono">{project.projectId}</span>
               </SnapshotRow>
-              <SnapshotRow label="Project Name">{project.projectName}</SnapshotRow>
-              <SnapshotRow label="Country">
-                {country?.name ?? project.country}
+              <SnapshotRow label="GTMI Tier">
+                <span className="font-mono">Tier {project.gtmiTier}</span>
               </SnapshotRow>
               <SnapshotRow label="Project Type">{project.projectType}</SnapshotRow>
+              <SnapshotRow label="Project Name">{project.projectName}</SnapshotRow>
               <SnapshotRow label="Lead Funder">{lead}</SnapshotRow>
               <SnapshotRow label="Co-Financiers">
                 {cofinanciers.length === 0 ? (
@@ -350,9 +350,6 @@ function ProjectPage() {
                     ))}
                   </ul>
                 )}
-              </SnapshotRow>
-              <SnapshotRow label="Total Budget">
-                <span className="font-mono">{totalBudget}</span>
               </SnapshotRow>
               <SnapshotRow label="Implementing Agency">{primaryAgency}</SnapshotRow>
               <SnapshotRow label="Implementing Partners">
@@ -366,14 +363,14 @@ function ProjectPage() {
                   </ul>
                 )}
               </SnapshotRow>
-              <SnapshotRow label="GTMI Tier">
-                <span className="font-mono">Tier {project.gtmiTier}</span>
-              </SnapshotRow>
-              <SnapshotRow label="Start Date">{fmtDate(project.startDate)}</SnapshotRow>
-              <SnapshotRow label="End Date">{fmtDate(project.endDate)}</SnapshotRow>
               <SnapshotRow label="Status">
                 <span style={{ color: status.tone }} className="font-medium">
                   {status.label}
+                </span>
+              </SnapshotRow>
+              <SnapshotRow label="Start – End">
+                <span className="font-mono text-[12px]">
+                  {fmtDate(project.startDate)} → {fmtDate(project.endDate)}
                 </span>
               </SnapshotRow>
               <SnapshotRow label="Interaction Type">
@@ -404,15 +401,6 @@ function ProjectPage() {
                     ))}
                   </div>
                 )}
-              </SnapshotRow>
-              <SnapshotRow label="Overall Risk">
-                <span
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                  style={{ background: risk.color }}
-                  title={`${project.overallRisk} risk`}
-                >
-                  {risk.letter}
-                </span>
               </SnapshotRow>
             </dl>
 
