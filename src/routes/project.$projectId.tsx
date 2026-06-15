@@ -282,7 +282,7 @@ function ProjectPage() {
   const { primary: primaryAgency, partners: implementingPartners } = splitAgencies(
     project.implementingAgency,
   );
-  const totalBudget = extractBudget(project.leadDonor);
+  void extractBudget;
   const status = implementationStatus(project);
   const accent = countryColorVar(project.country);
   const risk = riskBadge(project.overallRisk);
