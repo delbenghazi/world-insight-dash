@@ -240,10 +240,138 @@ function Compare() {
             <span className="font-mono not-italic">~</span> indicates one or more proxy-scored dimensions in the country's composite.
           </div>
         )}
+        </>
+        )}
       </main>
     </div>
   );
 }
+
+function CompareProjects({ projects }: { projects: Project[] }) {
+  const available = countriesInUse(projects);
+  const [country, setCountry] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string[]>([]);
+
+  const list = country ? projectsByCountry(projects, country) : [];
+
+  const pickProject = (id: string) => {
+    setPicked((prev) => {
+      if (prev.includes(id)) return prev.filter((p) => p !== id);
+      if (prev.length < 2) return [...prev, id];
+      // replace oldest
+      return [prev[1], id];
+    });
+  };
+
+  const a = list.find((p) => p.projectId === picked[0]);
+  const b = list.find((p) => p.projectId === picked[1]);
+  const result = a && b ? evaluatePair(a, b) : null;
+
+  if (available.length === 0) {
+    return (
+      <div className="mt-8">
+        <EmptyState
+          title="No projects to compare yet"
+          description="Add at least two projects to a single country, then return here to see their sequencing recommendation."
+          action={{ label: "Add a project", to: "/add-project" }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 space-y-5">
+      <div className="rounded-xl border bg-surface p-5">
+        <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+          Choose country
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {available.map((code) => {
+            const c = FOCUS_COUNTRIES[code] ?? { name: code };
+            const on = country === code;
+            return (
+              <button
+                key={code}
+                onClick={() => {
+                  setCountry(on ? null : code);
+                  setPicked([]);
+                }}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition ${on ? "border-primary bg-primary/10 text-foreground" : "bg-background hover:bg-secondary"}`}
+              >
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: countryColorVar(code) }} />
+                {c.name}
+                {on && <Check size={12} />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {country && (
+        <div className="rounded-xl border bg-surface p-5">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+              Choose projects · {picked.length}/2 selected
+            </div>
+            {picked.length > 0 && (
+              <button
+                onClick={() => setPicked([])}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <X size={12} /> Clear
+              </button>
+            )}
+          </div>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Pick exactly two projects from the same portfolio. Picking a third replaces the oldest selection.
+          </p>
+          {list.length < 2 ? (
+            <div className="mt-3 text-xs text-muted-foreground">
+              This country only has {list.length} project. Add another to compare a pair.
+            </div>
+          ) : (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {list.map((p) => {
+                const on = picked.includes(p.projectId);
+                const disabled = !on && picked.length >= 2 ? false : false; // we replace, never block
+                return (
+                  <button
+                    key={p.projectId}
+                    onClick={() => pickProject(p.projectId)}
+                    disabled={disabled}
+                    className={`flex items-start gap-3 rounded-lg border p-3 text-left transition ${
+                      on
+                        ? "border-primary bg-primary/10"
+                        : "bg-background hover:bg-secondary"
+                    }`}
+                  >
+                    <span className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                      {p.projectId}
+                    </span>
+                    <span className="flex-1 text-xs">{p.projectName}</span>
+                    {on && <Check size={14} className="mt-0.5 text-primary" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {result ? (
+        <div className="grid gap-3 md:grid-cols-2">
+          <PairCard result={result} />
+        </div>
+      ) : country && list.length >= 2 ? (
+        <EmptyState
+          title="Pick two projects"
+          description="Select two projects above to see the sequencing engine's recommendation for that pair."
+        />
+      ) : null}
+    </div>
+  );
+}
+
 
 function Box({ label, value, color, title }: { label: string; value: string; color?: string; title?: string }) {
   return (
