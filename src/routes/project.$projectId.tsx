@@ -1,7 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ExternalLink, FileText, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import { RadarChart } from "@/components/RadarChart";
+import { resolveSourceUrls } from "@/lib/source-urls.functions";
 import {
   FOCUS_COUNTRIES,
   InteractionType,
@@ -269,7 +272,7 @@ function ProjectPage() {
     (p) => p.projectId !== project.projectId
   );
   const aiSources = storeSources.filter((s) => s.projectId === project.projectId);
-  const documents =
+  const baseDocuments =
     aiSources.length > 0
       ? aiSources.map((s) => ({
           type: s.sourceType,
@@ -277,6 +280,31 @@ function ProjectPage() {
           link: s.url ?? donorPortal(project.leadDonor, project.country, FOCUS_COUNTRIES[project.country]?.name ?? project.country),
         }))
       : buildDocumentTrail(project);
+
+  const resolveFn = useServerFn(resolveSourceUrls);
+  const resolvedQuery = useQuery({
+    queryKey: ["source-urls", project.projectId, baseDocuments.map((d) => d.title).join("|")],
+    queryFn: () =>
+      resolveFn({
+        data: {
+          projectId: project.projectId,
+          projectName: project.projectName,
+          country: FOCUS_COUNTRIES[project.country]?.name ?? project.country,
+          donor: project.leadDonor,
+          agency: project.implementingAgency,
+          documents: baseDocuments.map((d) => ({ type: d.type, title: d.title })),
+        },
+      }),
+    staleTime: 1000 * 60 * 60 * 24,
+    gcTime: 1000 * 60 * 60 * 24,
+    retry: 1,
+  });
+  const documents = baseDocuments.map((d, i) => ({
+    ...d,
+    link: resolvedQuery.data?.urls[i] ?? d.link,
+    resolved: !!resolvedQuery.data?.urls[i],
+  }));
+  const resolving = resolvedQuery.isLoading;
 
   const { lead, cofinanciers } = splitFunders(project.leadDonor);
   const { primary: primaryAgency, partners: implementingPartners } = splitAgencies(
@@ -591,9 +619,16 @@ function ProjectPage() {
 
         {/* Document Trail */}
         <section className="mt-10 pb-12">
-          <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            Document trail
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+              Document trail
+            </h3>
+            {resolving && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                <Loader2 size={11} className="animate-spin" /> Resolving real URLs…
+              </span>
+            )}
+          </div>
           <ul className="mt-3 divide-y rounded-lg border bg-surface">
             {documents.map((doc, i) => (
               <li key={i} className="flex items-start gap-3 px-4 py-3">
@@ -601,8 +636,14 @@ function ProjectPage() {
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
                     {doc.type}
+                    {doc.resolved && (
+                      <span className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-[9px] text-primary">
+                        verified link
+                      </span>
+                    )}
                   </div>
                   <div className="mt-0.5 text-sm">{doc.title}</div>
+                  <div className="mt-0.5 truncate text-[10px] text-muted-foreground">{doc.link}</div>
                 </div>
                 <a
                   href={doc.link}
