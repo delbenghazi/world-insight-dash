@@ -1,5 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import * as XLSX from "xlsx";
+import { parseCodebook, buildCodebookSection } from "./codebook";
 
 const FileInput = z.object({
   name: z.string(),
@@ -12,7 +16,7 @@ const Input = z.object({
   urls: z.array(z.string().url()).max(15),
 });
 
-const SYSTEM_PROMPT = `You are an analytical scoring assistant for a digital investment interaction matrix. You will receive a set of project documents that may cover one or more projects. First, identify how many distinct projects are described in the documents and give each a suggested Project ID and name. Then for each project, score it across five dimensions using the codebook below.
+const PROMPT_PREAMBLE = `You are an analytical scoring assistant for a digital investment interaction matrix. You will receive a set of project documents that may cover one or more projects. First, identify how many distinct projects are described in the documents and give each a suggested Project ID and name. Then for each project, score it across five dimensions using the codebook below.
 
 SCORING DISCIPLINE — read carefully:
 - Always apply the decision rules and trigger conditions, not just the general definitions.
@@ -46,62 +50,23 @@ Return only valid JSON with this structure:
   "sources": [
     { "project_id": string, "source_type": string, "source_title": string, "url": string|null, "note": string }
   ]
+}`;
+
+const PROMPT_CLOSER = `Return only the JSON object — no commentary, no markdown fence.`;
+
+// Build the system prompt at request time from public/templates/master.xlsx.
+// Cached per server process; replacing master.xlsx takes effect on next deploy.
+let cachedSystemPrompt: string | null = null;
+async function buildSystemPrompt(): Promise<string> {
+  if (cachedSystemPrompt) return cachedSystemPrompt;
+  const file = path.join(process.cwd(), "public", "templates", "master.xlsx");
+  const wb = XLSX.read(await readFile(file), { type: "buffer" });
+  const sheet = wb.Sheets["Codebook"];
+  if (!sheet) throw new Error('master.xlsx is missing the "Codebook" sheet');
+  const codebook = buildCodebookSection(parseCodebook(sheet));
+  cachedSystemPrompt = `${PROMPT_PREAMBLE}\n\n${codebook}\n\n${PROMPT_CLOSER}`;
+  return cachedSystemPrompt;
 }
-
-CODEBOOK (apply triggers strictly)
-
-D1 — INSTITUTIONAL ABSORPTION LOAD
-- 1 (Low): Single lead implementing agency; no inter-ministerial coordination; no new coordination units.
-  Trigger 1: all implementation decisions can be made by one agency without external sign-off.
-- 2 (Moderate): 2–3 agencies; at least one new coordination mechanism (joint committee, MoU, working group); at least one agency needs new internal units.
-  Trigger 2: project requires a steering committee with multi-agency representation OR one agency formally delegates authority to another.
-- 3 (High): 4+ agencies/ministries; new permanent inter-institutional body; project crosses 2+ policy domains; implementing agency has documented capacity gaps.
-  Trigger 3 (any one fires): (a) action document lists 4+ named counterpart institutions, OR (b) a mid-term evaluation has flagged coordination failure, OR (c) government underwent a ministerial reshuffle during implementation.
-
-D2 — REGULATORY DEPENDENCIES
-- 1 (Low): Operates entirely within existing legal framework; at most internal procedural updates.
-  Trigger 1: legal basis for all core activities already exists in current law.
-- 2 (Moderate): Requires new secondary legislation (reglamentos, decrees, ministerial regulations) or significant updates to existing regulations; primary framework exists with material gaps; updates can be done by executive action without parliament.
-  Trigger 2: at least one specific regulatory gap is identified in the project's action document or risk matrix.
-- 3 (High): Requires new primary legislation (congressional approval); overhaul of legal framework; ratification of international agreements; or regulatory gap blocks implementation until resolved.
-  Trigger 3 (any one fires): (a) project explicitly lists pending legislation as a precondition, OR (b) project requires a new national system with no legal basis in current law, OR (c) implementation requires constitutional-level changes.
-
-D3 — TECHNICAL DEPENDENCIES
-- 1 (Low): Technically self-contained; deploys on existing national IT infrastructure; no integration with external systems; primary output is human capacity or procedural change.
-  Trigger 1: no new platforms, data centres, or APIs required; existing systems sufficient.
-- 2 (Moderate): Integration with 1–2 existing core national systems (civil registry, customs single window, payment gateway); may require API development or data-exchange protocols; builds on existing infrastructure with moderate upgrades.
-  Trigger 2: project requires connecting to national backbone systems but does not require building new backbone infrastructure.
-- 3 (High): Builds new national-level IT infrastructure from scratch; integrates with 3+ systems simultaneously; cross-border interoperability layer; depends on systems that do not yet exist; proprietary hardware deployment at scale.
-  Trigger 3 (any one fires): (a) action document specifies development of a new national IT system, OR (b) integration requires connecting to both domestic and international platforms simultaneously, OR (c) the project's technical output is a prerequisite for another project's technical layer.
-
-D4 — POLITICAL SENSITIVITY
-- 1 (Low): Technocratic; no identifiable vested interests threatened; cross-party consensus likely; implementing agency insulated from electoral cycles; no significant civil society opposition. Trade facilitation, technical standards, and connectivity projects typically score 1.
-- 2 (Moderate): Some stakeholders lose relative advantage; moderate media visibility; intersects one politically sensitive policy area (e.g. land tenure, public sector reform); implementation could be slowed but not blocked by political change.
-  Trigger 2: action document identifies political will as a risk factor but assesses it as manageable.
-- 3 (High): Directly threatens entrenched economic or political interests; country CPI < 35/100 AND project involves anti-corruption tools, public finance transparency, or resource governance; documented political interference; implementing agency changed or abolished after election.
-  Trigger 3 (any one fires): (a) CPI < 35 AND project domain is transparency/governance, OR (b) action document rates political risk as High, OR (c) documented evidence of government resistance.
-
-D5 — INVESTMENT NEEDS & FUNDING
-- 1 (Low): Total budget ≤ USD 15M AND primary implementing contract awarded; no funding gap in current phase.
-- 2 (Moderate): Budget USD 15M–50M OR multi-donor with ≥ 50% confirmed; at least one financing agreement signed; remaining tranches have confirmed pipeline; funding gap < 30% of total.
-- 3 (High): Budget > USD 50M OR significant gap in confirmed funding; funding gap > 30% of total; or project is "under preparation" with no financing agreement signed; or blended finance requires private co-financing not yet committed.
-
-INTERACTION TYPES (cite the trigger that fired in interaction_note)
-- Complementary — Different components of the same outcome; parallel execution beneficial.
-  Trigger: projects share a beneficiary group or policy objective but have distinct implementing agencies and non-overlapping technical outputs.
-- Sequentially Dependent — Project B cannot achieve objectives unless Project A reaches a milestone first.
-  Trigger: Project B's technical input is Project A's output, OR Project B's implementing agency depends on capacity built by Project A.
-- Institutionally Competing — Both projects draw on the same implementing agency or same senior counterpart officials simultaneously.
-  Trigger: both projects list the same lead agency AND combined D1 scores sum to ≥ 5 within a single country.
-- Governance-Conflicting — Contradictory rules, parallel systems for the same function, overlapping mandates, misaligned incentives.
-  Trigger: two projects create separate digital systems for the same data type, OR two projects assign the same regulatory function to different agencies.
-
-OVERALL RISK LEVEL (derive overall_risk strictly from these rules)
-- L (Low): Composite 5–7 AND no Sequentially Dependent or Governance-Conflicting interactions. Action: monitor at annual review.
-- M (Medium): Composite 8–10 OR any Institutionally Competing interaction; at least one dimension scores 3 but not across majority. Action: phased implementation, coordination mechanism before T3 investment.
-- H (High): Composite 11–15 OR any Governance-Conflicting interaction OR Sequentially Dependent with an incomplete predecessor; OR D4 = 3 AND D3 = 3 simultaneously; OR predecessor project shows disbursement < 20% of budget. Action: parallel implementation not advisable; sequencing intervention required.
-
-Return only the JSON object — no commentary, no markdown fence.`;
 
 function stripHtml(html: string) {
   return html
@@ -147,10 +112,7 @@ export const analyzeIntake = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured.");
 
     // Build the user content parts.
-    const parts: Array<
-      | { type: "text"; text: string }
-      | { type: "image_url"; image_url: { url: string } }
-    > = [];
+    const parts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [];
 
     parts.push({
       type: "text",
@@ -200,7 +162,7 @@ export const analyzeIntake = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: await buildSystemPrompt() },
           { role: "user", content: parts },
         ],
         response_format: { type: "json_object" },
@@ -209,12 +171,9 @@ export const analyzeIntake = createServerFn({ method: "POST" })
 
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
-      if (res.status === 429)
-        throw new Error("AI rate limit reached. Please retry in a moment.");
+      if (res.status === 429) throw new Error("AI rate limit reached. Please retry in a moment.");
       if (res.status === 402)
-        throw new Error(
-          "AI credits exhausted for this workspace. Add credits in Workspace → Usage."
-        );
+        throw new Error("AI credits exhausted for this workspace. Add credits in Workspace → Usage.");
       throw new Error(`AI gateway error ${res.status}: ${txt.slice(0, 300)}`);
     }
 
@@ -224,7 +183,10 @@ export const analyzeIntake = createServerFn({ method: "POST" })
     let parsed: any;
     try {
       // Strip optional ```json fences just in case.
-      const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "");
+      const cleaned = raw
+        .trim()
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/```$/, "");
       parsed = JSON.parse(cleaned);
     } catch (e) {
       throw new Error(`AI returned unparseable JSON: ${(e as Error).message}`);
