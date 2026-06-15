@@ -69,7 +69,8 @@ function Home() {
       className="page-canvas relative flex h-screen w-full flex-col overflow-hidden"
     >
       <AnimatePresence>
-        {!loaded && <LoadingGlobe onDone={() => setLoaded(true)} />}
+        {!loaded && <LoadingGlobe onDone={handleGlobeDone} />}
+
       </AnimatePresence>
 
       {loaded && (
