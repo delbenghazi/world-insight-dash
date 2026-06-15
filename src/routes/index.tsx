@@ -29,7 +29,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const [loaded, setLoaded] = useState(false);
+  // Only show the loading globe on a fresh page load (first visit or hard refresh),
+  // not when navigating back to "/" from another route within the same tab.
+  const [loaded, setLoaded] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.sessionStorage.getItem("globeShown") === "true";
+  });
   const shellRef = useRef<HTMLDivElement>(null);
   const hoveredCountry = useProjectStore((s) => s.hoveredCountry);
 
@@ -42,6 +47,14 @@ function Home() {
       setIntroOpen(true);
     }
   }, []);
+
+  const handleGlobeDone = () => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("globeShown", "true");
+    }
+    setLoaded(true);
+  };
+
 
   const markIntroSeen = () => {
     if (typeof window !== "undefined") {
