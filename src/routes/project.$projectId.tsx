@@ -156,26 +156,33 @@ function fmtDate(s: string): string {
   return new Date(t).toLocaleDateString(undefined, { year: "numeric", month: "short" });
 }
 
+function searchLink(q: string) {
+  return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+}
+
 function buildDocumentTrail(p: Project) {
+  const donor = p.leadDonor.split("—")[0].trim();
+  const agency = p.implementingAgency.split("+")[0].trim();
+  const country = FOCUS_COUNTRIES[p.country]?.name ?? p.country;
   return [
     {
       type: "Donor financing agreement",
-      title: `${p.leadDonor.split("—")[0].trim()} — financing agreement for ${p.projectId}`,
-      link: null,
+      title: `${donor} — financing agreement for ${p.projectId}`,
+      link: searchLink(`${donor} ${p.projectName} financing agreement ${country}`),
     },
     {
       type: "Project fiche / action document",
       title: `${p.projectName} — action document (${new Date(p.startDate).getFullYear() || "—"})`,
-      link: null,
+      link: searchLink(`${p.projectName} action document ${country} ${donor}`),
     },
     {
       type: "Implementer reporting",
-      title: `${p.implementingAgency.split("+")[0].trim()} — implementation reports`,
-      link: null,
+      title: `${agency} — implementation reports`,
+      link: searchLink(`${agency} ${p.projectName} implementation report`),
     },
     {
       type: "Country strategy / GTMI",
-      title: `${FOCUS_COUNTRIES[p.country]?.name ?? p.country} — GTMI tier ${p.gtmiTier} country profile`,
+      title: `${country} — GTMI tier ${p.gtmiTier} country profile`,
       link: "https://www.worldbank.org/en/programs/govtech/gtmi",
     },
   ];
@@ -219,7 +226,7 @@ function ProjectPage() {
       ? aiSources.map((s) => ({
           type: s.sourceType,
           title: s.note ? `${s.sourceTitle} — ${s.note}` : s.sourceTitle,
-          link: s.url ?? null,
+          link: s.url ?? searchLink(`${s.sourceTitle} ${project.projectName}`),
         }))
       : buildDocumentTrail(project);
 
@@ -561,20 +568,14 @@ function ProjectPage() {
                   </div>
                   <div className="mt-0.5 text-sm">{doc.title}</div>
                 </div>
-                {doc.link ? (
-                  <a
-                    href={doc.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex shrink-0 items-center gap-1 self-center text-xs text-primary hover:underline"
-                  >
-                    Open <ExternalLink size={11} />
-                  </a>
-                ) : (
-                  <span className="shrink-0 self-center text-[11px] italic text-muted-foreground">
-                    Available on request
-                  </span>
-                )}
+                <a
+                  href={doc.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex shrink-0 items-center gap-1 self-center text-xs text-primary hover:underline"
+                >
+                  Open <ExternalLink size={11} />
+                </a>
               </li>
             ))}
           </ul>
