@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useState } from "react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import { EmptyState } from "@/components/EmptyState";
+import { PairCard } from "@/components/SequencingSection";
+import { evaluatePair } from "@/lib/sequencing";
 import {
   countriesInUse,
   countryColorVar,
@@ -12,25 +14,29 @@ import {
   projectsByCountry,
   riskColorVar,
   useProjectStore,
+  type Project,
 } from "@/lib/project-data";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
-      { title: "Compare countries — DT Global GovTech Atlas" },
+      { title: "Compare — DT Global GovTech Atlas" },
       {
         name: "description",
         content:
-          "Side-by-side comparison of imported countries on DPI sequencing.",
+          "Compare country portfolios side-by-side, or pick two projects in the same country to see their sequencing recommendation.",
       },
     ],
   }),
   component: Compare,
 });
 
+type Mode = "countries" | "projects";
+
 function Compare() {
   const { projects, summaries } = useProjectStore();
   const available = countriesInUse(projects);
+  const [mode, setMode] = useState<Mode>("countries");
   const [selected, setSelected] = useState<string[]>([]);
   const [confirmed, setConfirmed] = useState(false);
   const codes = confirmed ? selected : [];
@@ -45,9 +51,9 @@ function Compare() {
 
         <h1 className="text-3xl font-semibold tracking-tight">Comparison view</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          Select the countries you want to compare side-by-side on composite scores,
-          project volume, dominant interaction types, institutional bottlenecks, and
-          sequencing implications.
+          Compare country portfolios side-by-side on composite scores, project volume,
+          dominant interactions, and bottlenecks — or pick two projects from the same
+          country to see their sequencing recommendation.
         </p>
 
         <div className="mt-8 rounded-xl border bg-surface p-5">
