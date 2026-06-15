@@ -9,6 +9,7 @@ import {
   getCountryMeta,
   normalizeCountry,
 } from "./countries";
+import { defaultSources } from "./default-sources";
 
 /** ISO 3166-1 alpha-3 country code (e.g. "GTM", "USA", "KEN"). */
 export type CountryCode = string;
@@ -421,7 +422,7 @@ export const useProjectStore = create<State>()(
     (set) => ({
       projects: seed,
       summaries: seededSummaries,
-      sources: [],
+      sources: defaultSources,
       selectedCountry: null,
       hoveredCountry: null,
       setSelectedCountry: (c) => set({ selectedCountry: c }),
@@ -452,10 +453,11 @@ export const useProjectStore = create<State>()(
     }),
     {
       name: "dpi-dashboard-v6",
+      skipHydration: true,
       merge: (persisted, current) => ({
         ...current,
         ...(persisted as object),
-        sources: (persisted as State)?.sources ?? [],
+        sources: (persisted as State)?.sources?.length ? (persisted as State).sources : defaultSources,
       }),
     }
   )

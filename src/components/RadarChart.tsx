@@ -133,12 +133,12 @@ export function RadarChart({
               key={d.abbr}
               x={lx}
               y={ly}
+              aria-label={d.label}
               textAnchor="middle"
               dominantBaseline="middle"
               className="fill-muted-foreground font-mono"
               style={{ fontSize: 10, letterSpacing: "0.06em" }}
             >
-              <title>{d.label}</title>
               {d.abbr}
             </text>
           );

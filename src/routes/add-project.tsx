@@ -371,6 +371,13 @@ function AddProject() {
     const sheet = wb.Sheets[sheetName];
     const raw = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: "", range: 1 });
     setRows((prev) => [...prev, ...parseRaw(raw)]);
+    const sourcesSheetName = wb.SheetNames.find((s) => /sources?/i.test(s));
+    const sourcesSheet = sourcesSheetName ? wb.Sheets[sourcesSheetName] : null;
+    if (sourcesSheet) {
+      const sourceRows = XLSX.utils.sheet_to_json<Record<string, any>>(sourcesSheet, { defval: "", range: 2 });
+      const sources = parseSourceRows(sourceRows);
+      if (sources.length) setPendingSources((prev) => [...prev, ...sources]);
+    }
   }
 
   function commit() {
@@ -1442,6 +1449,28 @@ function parseRaw(raw: Record<string, any>[]): EditableRow[] {
       interactionNote: String(pick(r, "Interaction Note") ?? "").trim(),
       overallRisk,
     });
+  }
+  return out;
+}
+
+function parseSourceRows(raw: Record<string, any>[]): ProjectSource[] {
+  const out: ProjectSource[] = [];
+  for (const r of raw) {
+    const rawIds = String(pick(r, "Project ID") ?? "").trim();
+    if (!rawIds) continue;
+    const ids = rawIds.split(/[,;/]|\band\b/i).map((s) => s.trim()).filter(Boolean);
+    for (const projectId of ids) {
+      const sourceTitle = String(pick(r, "Source Title", "Source Title / Description") ?? "").trim();
+      if (!sourceTitle) continue;
+      const url = String(pick(r, "URL") ?? "").trim();
+      out.push({
+        projectId,
+        sourceType: String(pick(r, "Source Type") ?? "Document").trim() || "Document",
+        sourceTitle,
+        url: url || null,
+        note: String(pick(r, "Notes", "Notes / Key Info") ?? "").trim(),
+      });
+    }
   }
   return out;
 }
