@@ -360,8 +360,42 @@ function CompareProjects({ projects }: { projects: Project[] }) {
       )}
 
       {result ? (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <PairCard result={result} />
+          {a && b && (
+            <div className="rounded-xl border bg-surface p-4">
+              <div className="mb-2 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                Overlaid radar — {a.projectId} vs {b.projectId}
+              </div>
+              <RadarChart
+                size={280}
+                showLegend
+                dimensions={[
+                  { abbr: "IL", label: "Institutional Absorption Load", score: 0 },
+                  { abbr: "RD", label: "Regulatory Dependencies", score: 0 },
+                  { abbr: "TD", label: "Technical Dependencies", score: 0 },
+                  { abbr: "PS", label: "Political Sensitivity", score: 0 },
+                  { abbr: "IN", label: "Investment Needs & Funding", score: 0 },
+                ]}
+                series={[a, b].map((p) => ({
+                  id: p.projectId,
+                  values: [
+                    p.dim1_institutional,
+                    p.dim2_regulatory,
+                    p.dim3_technical,
+                    p.dim4_political,
+                    p.dim5_investment,
+                  ],
+                }))}
+                colors={[a, b].map((p, i) => ({
+                  id: p.projectId,
+                  stroke: countryColorVar(p.country),
+                  fill: `color-mix(in oklab, ${countryColorVar(p.country)} 22%, transparent)`,
+                  dash: RADAR_DASH_STYLES[i] ?? "0",
+                }))}
+              />
+            </div>
+          )}
         </div>
       ) : country && list.length >= 2 ? (
         <EmptyState
