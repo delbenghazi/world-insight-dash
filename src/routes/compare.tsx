@@ -4,6 +4,7 @@ import { useState } from "react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import { EmptyState } from "@/components/EmptyState";
 import { PairCard } from "@/components/SequencingSection";
+import { RadarChart, RADAR_DASH_STYLES } from "@/components/RadarChart";
 import { evaluatePair } from "@/lib/sequencing";
 import {
   countriesInUse,
