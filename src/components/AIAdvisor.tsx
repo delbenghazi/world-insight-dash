@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Send, Sparkles, X } from "lucide-react";
+import { Bot, Send, Sparkles, X, Maximize2, Minimize2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useServerFn } from "@tanstack/react-start";
 import { useProjectStore, FOCUS_COUNTRIES, projectsByCountry } from "@/lib/project-data";
 import { evaluateAllPairs } from "@/lib/sequencing";
