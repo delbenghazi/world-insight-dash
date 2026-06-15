@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { RiskHero } from "./RiskHero";
 import { EmptyState } from "./EmptyState";
-import { SequencingSection } from "./SequencingSection";
+
 import {
   CountryCode,
   DIMENSION_LABELS,
@@ -339,7 +339,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
           </section>
         )}
 
-        {list.length >= 2 && <SequencingSection projects={list} />}
+        
       </div>
     </div>
   );
