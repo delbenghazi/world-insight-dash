@@ -156,26 +156,33 @@ function fmtDate(s: string): string {
   return new Date(t).toLocaleDateString(undefined, { year: "numeric", month: "short" });
 }
 
+function searchLink(q: string) {
+  return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+}
+
 function buildDocumentTrail(p: Project) {
+  const donor = p.leadDonor.split("—")[0].trim();
+  const agency = p.implementingAgency.split("+")[0].trim();
+  const country = FOCUS_COUNTRIES[p.country]?.name ?? p.country;
   return [
     {
       type: "Donor financing agreement",
-      title: `${p.leadDonor.split("—")[0].trim()} — financing agreement for ${p.projectId}`,
-      link: null,
+      title: `${donor} — financing agreement for ${p.projectId}`,
+      link: searchLink(`${donor} ${p.projectName} financing agreement ${country}`),
     },
     {
       type: "Project fiche / action document",
       title: `${p.projectName} — action document (${new Date(p.startDate).getFullYear() || "—"})`,
-      link: null,
+      link: searchLink(`${p.projectName} action document ${country} ${donor}`),
     },
     {
       type: "Implementer reporting",
-      title: `${p.implementingAgency.split("+")[0].trim()} — implementation reports`,
-      link: null,
+      title: `${agency} — implementation reports`,
+      link: searchLink(`${agency} ${p.projectName} implementation report`),
     },
     {
       type: "Country strategy / GTMI",
-      title: `${FOCUS_COUNTRIES[p.country]?.name ?? p.country} — GTMI tier ${p.gtmiTier} country profile`,
+      title: `${country} — GTMI tier ${p.gtmiTier} country profile`,
       link: "https://www.worldbank.org/en/programs/govtech/gtmi",
     },
   ];
