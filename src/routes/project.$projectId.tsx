@@ -274,7 +274,7 @@ function ProjectPage() {
       ? aiSources.map((s) => ({
           type: s.sourceType,
           title: s.note ? `${s.sourceTitle} — ${s.note}` : s.sourceTitle,
-          link: s.url ?? searchLink(`${s.sourceTitle} ${project.projectName}`),
+          link: s.url ?? donorPortal(project.leadDonor, project.country, FOCUS_COUNTRIES[project.country]?.name ?? project.country),
         }))
       : buildDocumentTrail(project);
 
