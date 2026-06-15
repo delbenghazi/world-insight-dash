@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AlertTriangle, ArrowLeft, ExternalLink, FileText } from "lucide-react";
 import { WorkflowNav } from "@/components/WorkflowNav";
+import { RadarChart } from "@/components/RadarChart";
 import {
   FOCUS_COUNTRIES,
   InteractionType,
@@ -9,7 +10,6 @@ import {
   countryColorVar,
   projectsByCountry,
   projectHasProxy,
-  riskColorVar,
   useProjectStore,
 } from "@/lib/project-data";
 
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/project/$projectId")({
       { title: `Project ${params.projectId} — DT Global GovTech Atlas` },
       {
         name: "description",
-        content: `Project ${params.projectId} detail: key risk, plain-language summary, dimension scores, and interactions.`,
+        content: `Project ${params.projectId} detail: snapshot datasheet, five-dimension radar, and analytical assessment.`,
       },
     ],
   }),
@@ -42,6 +42,7 @@ export const Route = createFileRoute("/project/$projectId")({
 
 interface DimensionEntry {
   key: string;
+  abbr: string;
   label: string;
   score: number;
   note: string;
@@ -49,11 +50,11 @@ interface DimensionEntry {
 
 function getDimensions(p: Project): DimensionEntry[] {
   return [
-    { key: "D1", label: "Institutional load", score: p.dim1_institutional, note: p.dim1_note },
-    { key: "D2", label: "Regulatory readiness", score: p.dim2_regulatory, note: p.dim2_note },
-    { key: "D3", label: "Technical complexity", score: p.dim3_technical, note: p.dim3_note },
-    { key: "D4", label: "Political sensitivity", score: p.dim4_political, note: p.dim4_note },
-    { key: "D5", label: "Investment needs", score: p.dim5_investment, note: p.dim5_note },
+    { key: "D1", abbr: "IL", label: "Institutional Absorption Load", score: p.dim1_institutional, note: p.dim1_note },
+    { key: "D2", abbr: "RD", label: "Regulatory Dependencies", score: p.dim2_regulatory, note: p.dim2_note },
+    { key: "D3", abbr: "TD", label: "Technical Dependencies", score: p.dim3_technical, note: p.dim3_note },
+    { key: "D4", abbr: "PS", label: "Political Sensitivity", score: p.dim4_political, note: p.dim4_note },
+    { key: "D5", abbr: "IN", label: "Investment Needs & Funding", score: p.dim5_investment, note: p.dim5_note },
   ];
 }
 
@@ -98,6 +99,63 @@ function calloutTone(risk: RiskLevel) {
   };
 }
 
+function riskBadge(risk: RiskLevel) {
+  const letter = risk === "Low" ? "L" : risk === "Medium" ? "M" : "H";
+  const color =
+    risk === "Low"
+      ? "var(--color-risk-low)"
+      : risk === "Medium"
+        ? "var(--color-risk-medium)"
+        : "var(--color-risk-high)";
+  return { letter, color };
+}
+
+function implementationStatus(p: Project): { label: string; tone: string } {
+  const now = Date.now();
+  const start = Date.parse(p.startDate);
+  const end = Date.parse(p.endDate);
+  if (!Number.isNaN(start) && start > now) {
+    return { label: "Under Preparation", tone: "var(--color-risk-medium)" };
+  }
+  if (!Number.isNaN(end) && end < now) {
+    return { label: "Closed", tone: "var(--muted-foreground)" };
+  }
+  if (!Number.isNaN(start)) {
+    const live = new Date(start).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+    });
+    return { label: `Active — live since ${live}`, tone: "var(--color-risk-low)" };
+  }
+  return { label: "Active", tone: "var(--color-risk-low)" };
+}
+
+function splitAgencies(raw: string): { primary: string; partners: string[] } {
+  const parts = raw.split(/\s*\+\s*/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return { primary: raw, partners: [] };
+  return { primary: parts[0], partners: parts.slice(1) };
+}
+
+function splitFunders(raw: string): { lead: string; cofinanciers: string[] } {
+  // Heuristic split on " + " and " | " — leave em-dashes (which carry budget figures) intact.
+  const parts = raw.split(/\s+(?:\+|\|)\s+/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length <= 1) return { lead: raw, cofinanciers: [] };
+  return { lead: parts[0], cofinanciers: parts.slice(1) };
+}
+
+function extractBudget(raw: string): string {
+  // Pick out currency amounts e.g. "€23.4M", "USD 9M", "$2M".
+  const matches = raw.match(/(?:€|EUR|USD|US\$|\$)\s?[\d.,]+\s?[MmBbKk]?/g);
+  if (!matches || matches.length === 0) return "Not disclosed";
+  return matches.join(" · ");
+}
+
+function fmtDate(s: string): string {
+  const t = Date.parse(s);
+  if (Number.isNaN(t)) return s || "—";
+  return new Date(t).toLocaleDateString(undefined, { year: "numeric", month: "short" });
+}
+
 function buildDocumentTrail(p: Project) {
   return [
     {
@@ -121,6 +179,23 @@ function buildDocumentTrail(p: Project) {
       link: "https://www.worldbank.org/en/programs/govtech/gtmi",
     },
   ];
+}
+
+function SnapshotRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[140px_1fr] items-baseline gap-4 border-b border-border/60 px-4 py-2.5 last:border-b-0">
+      <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="text-[13px] leading-snug text-foreground">{children}</dd>
+    </div>
+  );
 }
 
 function ProjectPage() {
@@ -148,10 +223,19 @@ function ProjectPage() {
         }))
       : buildDocumentTrail(project);
 
+  const { lead, cofinanciers } = splitFunders(project.leadDonor);
+  const { primary: primaryAgency, partners: implementingPartners } = splitAgencies(
+    project.implementingAgency,
+  );
+  const totalBudget = extractBudget(project.leadDonor);
+  const status = implementationStatus(project);
+  const accent = countryColorVar(project.country);
+  const risk = riskBadge(project.overallRisk);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <WorkflowNav />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
         <Link
           to="/country/$code"
           params={{ code: project.country }}
@@ -164,7 +248,7 @@ function ProjectPage() {
         <header className="mt-4 flex items-start gap-3">
           <span
             className="mt-2 h-3 w-3 shrink-0 rounded-full"
-            style={{ background: countryColorVar(project.country) }}
+            style={{ background: accent }}
           />
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
@@ -180,9 +264,172 @@ function ProjectPage() {
           </div>
         </header>
 
-        {/* 1. Key Risk Flag */}
+        {/* ============ SECTION 1 — PROJECT SNAPSHOT + RADAR ============ */}
+        <section className="mt-8">
+          <div className="mb-3 flex items-center gap-3">
+            <h2 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              Project snapshot
+            </h2>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+            {/* Datasheet */}
+            <dl className="overflow-hidden rounded-xl border bg-surface">
+              <SnapshotRow label="Project ID">
+                <span className="font-mono">{project.projectId}</span>
+              </SnapshotRow>
+              <SnapshotRow label="Project Name">{project.projectName}</SnapshotRow>
+              <SnapshotRow label="Country">
+                {country?.name ?? project.country}
+              </SnapshotRow>
+              <SnapshotRow label="Project Type">{project.projectType}</SnapshotRow>
+              <SnapshotRow label="Lead Funder">{lead}</SnapshotRow>
+              <SnapshotRow label="Co-Financiers">
+                {cofinanciers.length === 0 ? (
+                  <span className="italic text-muted-foreground">None recorded</span>
+                ) : (
+                  <ul className="space-y-1">
+                    {cofinanciers.map((c, i) => (
+                      <li key={i}>{c}</li>
+                    ))}
+                  </ul>
+                )}
+              </SnapshotRow>
+              <SnapshotRow label="Total Budget">
+                <span className="font-mono">{totalBudget}</span>
+              </SnapshotRow>
+              <SnapshotRow label="Implementing Agency">{primaryAgency}</SnapshotRow>
+              <SnapshotRow label="Implementing Partners">
+                {implementingPartners.length === 0 ? (
+                  <span className="italic text-muted-foreground">None recorded</span>
+                ) : (
+                  <ul className="space-y-1">
+                    {implementingPartners.map((p, i) => (
+                      <li key={i}>{p}</li>
+                    ))}
+                  </ul>
+                )}
+              </SnapshotRow>
+              <SnapshotRow label="GTMI Tier">
+                <span className="font-mono">Tier {project.gtmiTier}</span>
+              </SnapshotRow>
+              <SnapshotRow label="Start Date">{fmtDate(project.startDate)}</SnapshotRow>
+              <SnapshotRow label="End Date">{fmtDate(project.endDate)}</SnapshotRow>
+              <SnapshotRow label="Status">
+                <span style={{ color: status.tone }} className="font-medium">
+                  {status.label}
+                </span>
+              </SnapshotRow>
+              <SnapshotRow label="Interaction Type">
+                <span
+                  className="rounded px-2 py-0.5 text-[11px] font-medium"
+                  style={{
+                    background: interactionTone(project.interactionType).bg,
+                    color: interactionTone(project.interactionType).fg,
+                  }}
+                >
+                  {project.interactionType}
+                </span>
+              </SnapshotRow>
+              <SnapshotRow label="Linked Projects">
+                {project.linkedProjectIds.length === 0 ? (
+                  <span className="italic text-muted-foreground">None</span>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {project.linkedProjectIds.map((id) => (
+                      <Link
+                        key={id}
+                        to="/project/$projectId"
+                        params={{ projectId: id }}
+                        className="rounded border bg-background px-2 py-0.5 font-mono text-[11px] hover:bg-secondary"
+                      >
+                        {id}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </SnapshotRow>
+              <SnapshotRow label="Overall Risk">
+                <span
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                  style={{ background: risk.color }}
+                  title={`${project.overallRisk} risk`}
+                >
+                  {risk.letter}
+                </span>
+              </SnapshotRow>
+            </dl>
+
+            {/* Radar + composite */}
+            <aside className="flex flex-col items-center gap-3 rounded-xl border bg-surface p-4">
+              <RadarChart
+                dimensions={dimensions.map((d) => ({
+                  abbr: d.abbr,
+                  label: d.label,
+                  score: d.score,
+                  note: d.note,
+                }))}
+                colors={[
+                  {
+                    id: project.projectId,
+                    stroke: accent,
+                    fill: `color-mix(in oklab, ${accent} 35%, transparent)`,
+                    dash: "0",
+                  },
+                ]}
+                series={[
+                  {
+                    id: project.projectId,
+                    values: dimensions.map((d) => d.score),
+                  },
+                ]}
+                size={240}
+              />
+              <div className="w-full border-t pt-3 text-center">
+                <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                  Composite Score
+                </div>
+                <div className="mt-0.5 text-2xl font-bold tabular-nums">
+                  {project.compositeScore} <span className="text-muted-foreground">/ 15</span>
+                </div>
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Overall Risk
+                  </span>
+                  <span
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                    style={{ background: risk.color }}
+                  >
+                    {risk.letter}
+                  </span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        {/* ============ SECTION 2 — ANALYTICAL ASSESSMENT ============ */}
+        <div className="mt-12 flex items-center gap-3">
+          <h2 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            Analytical assessment
+          </h2>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* Plain Language Summary */}
+        <section className="mt-6">
+          <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+            What this project does
+          </h3>
+          <p className="mt-3 text-base leading-relaxed text-foreground">
+            {plainLanguageSummary(project)}
+          </p>
+        </section>
+
+        {/* Key Risk Flag */}
         <section
-          className="mt-6 rounded-xl border-l-4 p-5"
+          className="mt-8 rounded-xl border-l-4 p-5"
           style={{
             background: callout.bg,
             borderLeftColor: callout.fg,
@@ -198,7 +445,7 @@ function ProjectPage() {
                 className="text-[10px] font-mono uppercase tracking-[0.18em]"
                 style={{ color: callout.fg }}
               >
-                {callout.label} · {keyDim.label}
+                Key risk · {callout.label} · {keyDim.label}
               </div>
               <p className="mt-1.5 text-[15px] font-medium leading-snug text-foreground">
                 {keyDim.note}
@@ -207,22 +454,12 @@ function ProjectPage() {
           </div>
         </section>
 
-        {/* 2. Plain Language Summary */}
-        <section className="mt-8">
-          <h2 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            What this project does
-          </h2>
-          <p className="mt-3 text-base leading-relaxed text-foreground">
-            {plainLanguageSummary(project)}
-          </p>
-        </section>
-
-        {/* 3. Five Dimension Scores */}
+        {/* Per-dimension rationale */}
         <section className="mt-10">
           <div className="flex items-end justify-between">
-            <h2 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
-              Five-dimension scoring
-            </h2>
+            <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+              Per-dimension scoring rationale
+            </h3>
             <div className="font-mono text-xs text-muted-foreground">
               Composite {project.compositeScore}/15
             </div>
@@ -237,12 +474,11 @@ function ProjectPage() {
             </div>
           )}
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-5">
-
             {dimensions.map((d) => (
               <div key={d.key} className="rounded-lg border bg-surface p-4">
                 <div className="flex items-baseline justify-between">
                   <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {d.key}
+                    {d.abbr}
                   </span>
                   <span className="font-mono text-2xl font-semibold tabular-nums">{d.score}</span>
                 </div>
@@ -253,11 +489,11 @@ function ProjectPage() {
           </div>
         </section>
 
-        {/* 4. Interaction Panel */}
+        {/* Interaction Panel */}
         <section className="mt-10">
-          <h2 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+          <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
             Interactions in this portfolio
-          </h2>
+          </h3>
           {siblings.length === 0 ? (
             <div className="mt-3 rounded-lg border border-dashed bg-surface/50 p-6 text-center text-sm text-muted-foreground">
               No other projects in {country?.name ?? project.country} yet — no interactions to assess.
@@ -310,11 +546,11 @@ function ProjectPage() {
           )}
         </section>
 
-        {/* 5. Document Trail */}
+        {/* Document Trail */}
         <section className="mt-10 pb-12">
-          <h2 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+          <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
             Document trail
-          </h2>
+          </h3>
           <ul className="mt-3 divide-y rounded-lg border bg-surface">
             {documents.map((doc, i) => (
               <li key={i} className="flex items-start gap-3 px-4 py-3">
