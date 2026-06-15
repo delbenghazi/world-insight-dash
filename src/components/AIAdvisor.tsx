@@ -127,7 +127,11 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-40 flex h-[520px] w-[400px] flex-col overflow-hidden rounded-xl border bg-surface shadow-2xl"
+            className={`fixed bottom-24 right-6 z-40 flex flex-col overflow-hidden rounded-xl border bg-surface shadow-2xl ${
+              expanded
+                ? "h-[80vh] w-[70vw] max-w-[70vw]"
+                : "h-[520px] w-[400px]"
+            }`}
           >
             <div className="flex items-center gap-2 border-b px-4 py-3">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background">
@@ -144,13 +148,21 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                 </div>
               </div>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => setExpanded((e) => !e)}
                 className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                aria-label={expanded ? "Collapse advisor" : "Expand advisor"}
+              >
+                {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
                 aria-label="Close advisor"
               >
                 <X size={14} />
               </button>
             </div>
+
 
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
               {!activeCode ? (
