@@ -56,6 +56,29 @@ function Compare() {
           country to see their sequencing recommendation.
         </p>
 
+        <div className="mt-6 inline-flex rounded-lg border bg-surface p-1">
+          {([
+            { id: "countries", label: "Compare countries" },
+            { id: "projects", label: "Compare projects" },
+          ] as Array<{ id: Mode; label: string }>).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setMode(t.id)}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                mode === t.id
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {mode === "projects" ? (
+          <CompareProjects projects={projects} />
+        ) : (
+        <>
         <div className="mt-8 rounded-xl border bg-surface p-5">
           <div className="flex items-center justify-between">
             <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
