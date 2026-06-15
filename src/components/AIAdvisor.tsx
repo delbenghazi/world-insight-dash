@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Send, Sparkles, X } from "lucide-react";
+import { Bot, Send, Sparkles, X, Maximize2, Minimize2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useServerFn } from "@tanstack/react-start";
 import { useProjectStore, FOCUS_COUNTRIES, projectsByCountry } from "@/lib/project-data";
 import { evaluateAllPairs } from "@/lib/sequencing";
@@ -19,6 +21,7 @@ const SUGGESTIONS = [
 
 export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
@@ -124,7 +127,11 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-40 flex h-[520px] w-[400px] flex-col overflow-hidden rounded-xl border bg-surface shadow-2xl"
+            className={`fixed bottom-24 right-6 z-40 flex flex-col overflow-hidden rounded-xl border bg-surface shadow-2xl ${
+              expanded
+                ? "h-[80vh] w-[70vw] max-w-[70vw]"
+                : "h-[520px] w-[400px]"
+            }`}
           >
             <div className="flex items-center gap-2 border-b px-4 py-3">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background">
@@ -141,13 +148,21 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                 </div>
               </div>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => setExpanded((e) => !e)}
                 className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                aria-label={expanded ? "Collapse advisor" : "Expand advisor"}
+              >
+                {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
                 aria-label="Close advisor"
               >
                 <X size={14} />
               </button>
             </div>
+
 
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
               {!activeCode ? (
@@ -171,13 +186,21 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                   {messages.map((m, i) => (
                     <div
                       key={i}
-                      className={`max-w-[88%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm leading-relaxed ${
+                      className={`${expanded ? "max-w-[80%]" : "max-w-[88%]"} rounded-lg px-3 py-2 text-sm leading-relaxed ${
                         m.role === "user"
-                          ? "ml-auto bg-primary text-primary-foreground"
+                          ? "ml-auto whitespace-pre-wrap bg-primary text-primary-foreground"
                           : "bg-secondary text-foreground"
                       }`}
                     >
-                      {m.content}
+                      {m.role === "assistant" ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1.5 prose-headings:mt-3 prose-headings:mb-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-code:rounded prose-code:bg-background/60 prose-code:px-1 prose-code:py-0.5 prose-code:text-[0.85em] prose-code:before:content-none prose-code:after:content-none prose-strong:text-foreground prose-a:text-primary">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {m.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <span className="whitespace-pre-wrap">{m.content}</span>
+                      )}
                     </div>
                   ))}
                   {loading && (
