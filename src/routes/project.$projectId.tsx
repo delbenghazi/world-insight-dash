@@ -272,7 +272,7 @@ function ProjectPage() {
     (p) => p.projectId !== project.projectId
   );
   const aiSources = storeSources.filter((s) => s.projectId === project.projectId);
-  const documents =
+  const baseDocuments =
     aiSources.length > 0
       ? aiSources.map((s) => ({
           type: s.sourceType,
@@ -280,6 +280,31 @@ function ProjectPage() {
           link: s.url ?? donorPortal(project.leadDonor, project.country, FOCUS_COUNTRIES[project.country]?.name ?? project.country),
         }))
       : buildDocumentTrail(project);
+
+  const resolveFn = useServerFn(resolveSourceUrls);
+  const resolvedQuery = useQuery({
+    queryKey: ["source-urls", project.projectId, baseDocuments.map((d) => d.title).join("|")],
+    queryFn: () =>
+      resolveFn({
+        data: {
+          projectId: project.projectId,
+          projectName: project.projectName,
+          country: FOCUS_COUNTRIES[project.country]?.name ?? project.country,
+          donor: project.leadDonor,
+          agency: project.implementingAgency,
+          documents: baseDocuments.map((d) => ({ type: d.type, title: d.title })),
+        },
+      }),
+    staleTime: 1000 * 60 * 60 * 24,
+    gcTime: 1000 * 60 * 60 * 24,
+    retry: 1,
+  });
+  const documents = baseDocuments.map((d, i) => ({
+    ...d,
+    link: resolvedQuery.data?.urls[i] ?? d.link,
+    resolved: !!resolvedQuery.data?.urls[i],
+  }));
+  const resolving = resolvedQuery.isLoading;
 
   const { lead, cofinanciers } = splitFunders(project.leadDonor);
   const { primary: primaryAgency, partners: implementingPartners } = splitAgencies(
