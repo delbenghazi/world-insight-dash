@@ -619,9 +619,16 @@ function ProjectPage() {
 
         {/* Document Trail */}
         <section className="mt-10 pb-12">
-          <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            Document trail
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+              Document trail
+            </h3>
+            {resolving && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                <Loader2 size={11} className="animate-spin" /> Resolving real URLs…
+              </span>
+            )}
+          </div>
           <ul className="mt-3 divide-y rounded-lg border bg-surface">
             {documents.map((doc, i) => (
               <li key={i} className="flex items-start gap-3 px-4 py-3">
@@ -629,8 +636,14 @@ function ProjectPage() {
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
                     {doc.type}
+                    {doc.resolved && (
+                      <span className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-[9px] text-primary">
+                        verified link
+                      </span>
+                    )}
                   </div>
                   <div className="mt-0.5 text-sm">{doc.title}</div>
+                  <div className="mt-0.5 truncate text-[10px] text-muted-foreground">{doc.link}</div>
                 </div>
                 <a
                   href={doc.link}
