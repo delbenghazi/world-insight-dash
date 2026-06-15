@@ -146,15 +146,15 @@ const seed: Project[] = [
     "dim3_note": "Requires building a new national IT system for timber tracking (QR-based monitoring, government databases, transport licensing module) from scratch, plus integration with EU FLEGT licensing and EU Deforestation Regulation due-diligence systems.",
     "dim4_political": 2,
     "dim4_note": "Medium sensitivity: VPA is internationally binding and broadly supported, but timber sector interests (illegal logging networks linked to drug trafficking) and indigenous land rights create implementation friction at field level.",
-    "dim5_investment": 2,
-    "dim5_note": "€39.4M total EU funding committed and financing agreements signed (March + June 2024). Budget is secured for current phase; scaling SALH nationally post-pilot will require additional funding rounds.",
-    "compositeScore": 13,
+    "dim5_investment": 1,
+    "dim5_note": "€39.4M total declared (2023 AAP €23.4M + Living Forests/IICA €16M). Both financing agreements signed Mar and Jun 2024; ~0% funding gap. Supports D5 score 1 (secure).",
+    "compositeScore": 12,
     "interactionType": "Sequentially Dependent",
     "linkedProjectIds": [
       "HND2",
       "HND3"
     ],
-    "interactionNote": "SALH digital system depends on H2 (Cooperation Facility) to build ICF institutional capacity. SALH also feeds into H3 (PDCC) as timber export compliance data will ultimately link to regional trade interoperability.",
+    "interactionNote": "SALH digital system depends on HND2 (Cooperation Facility) to build ICF institutional capacity. SALH also feeds into HND3 (PDCC) as timber export compliance data will ultimately link to regional trade interoperability.",
     "overallRisk": "High"
   },
   {
@@ -176,14 +176,14 @@ const seed: Project[] = [
     "dim4_political": 3,
     "dim4_note": "High sensitivity: transparency and anti-corruption tools directly threaten entrenched patronage networks. Honduras scored 22/100 on CPI 2024 (TI). Castro government used amnesties for officials with corruption cases pending, signalling resistance to accountability mechanisms.",
     "dim5_investment": 1,
-    "dim5_note": "€11M fully committed and contracted under 2021 AAP. Relatively small budget focused on TA; no significant funding gap for current phase.",
+    "dim5_note": "€11M committed and contracted under the 2021 AAP. Fully financed TA budget with no funding gap for the current phase. Supports D5 score 1 (secure).",
     "compositeScore": 11,
     "interactionType": "Complementary",
     "linkedProjectIds": [
       "HND1",
       "HND3"
     ],
-    "interactionNote": "Acts as institutional enabler for H1: without stronger ICF and SEFIN capacity, SALH will stall. Also reinforces H3 (PDCC) by improving regulatory readiness for digital trade facilitation and customs reform.",
+    "interactionNote": "Acts as institutional enabler for HND1: without stronger ICF and SEFIN capacity, SALH will stall. Also reinforces HND3 (PDCC) by improving regulatory readiness for digital trade facilitation and customs reform.",
     "overallRisk": "Medium"
   },
   {
@@ -204,15 +204,15 @@ const seed: Project[] = [
     "dim3_note": "Honduras must connect its national customs IT system, single foreign trade window, and migration database to the regional SIECA node. 2025 PDCC–Algeciras Port PCS interoperability adds a further EU-side integration layer.",
     "dim4_political": 1,
     "dim4_note": "Low political sensitivity: trade facilitation is technocratic in nature. Honduras benefits from reduced trade costs (projected -3.2%). No major vested interests threatened, though illegal timber exporters may resist traceability links.",
-    "dim5_investment": 2,
-    "dim5_note": "Core EU funding committed and platform already live (Dec 2023). PDCC 2.0 expansion co-financed by IDB (RG-T4217). Honduras national adaptation costs are low; no significant funding gap.",
-    "compositeScore": 10,
+    "dim5_investment": 1,
+    "dim5_note": "EU contribution committed and PDCC live since Dec 2023; PDCC 2.0 co-financing IDB board-approved (RG-T4217). No funding gap. Supports D5 score 1 (secure).",
+    "compositeScore": 9,
     "interactionType": "Complementary",
     "linkedProjectIds": [
       "HND1",
       "HND2"
     ],
-    "interactionNote": "PDCC complements H1 by providing the regional export interoperability layer that SALH-certified timber will eventually feed into. Complementary to H2 as customs modernisation and regulatory harmonisation both improve platform adoption.",
+    "interactionNote": "PDCC complements HND1 by providing the regional export interoperability layer that SALH-certified timber will eventually feed into. Complementary to HND2 as customs modernisation and regulatory harmonisation both improve platform adoption.",
     "overallRisk": "Medium"
   },
   {
@@ -233,15 +233,15 @@ const seed: Project[] = [
     "dim3_note": "The initiative relies on existing fintech infrastructure (mobile POS, APIs) and GIZ's INATrace traceability tool, avoiding new state infrastructure build-out; integration with MINECO's business registration systems and the Guatecompras e-procurement platform is required for trade-facilitation components, creating moderate interoperability demands on legacy systems.",
     "dim4_political": 2,
     "dim4_note": "The Arévalo government has positioned digital transformation as a reform priority, lending political buy-in to MSME-focused components; implementation in indigenous and rural communities — over 40% of the population — introduces logistical and political complexity not fully captured in the programme design as launched.",
-    "dim5_investment": 3,
-    "dim5_note": "Per-project budgets within the Team Europe envelope are not publicly disaggregated; core MIP funding is committed but the absence of transparent, component-level budget data and the acknowledged need to scale digital inclusion beyond the current envelope justify a score of 3 for investment needs.",
-    "compositeScore": 13,
+    "dim5_investment": 2,
+    "dim5_note": "€82M Digital and Inclusive Transition Team Europe Initiative. Global Gateway Forum (2025) confirms its \"already supporting Guatemala,\"  but component budgets remain undisaggregated and no private leverage (COFIDES, IDB Lab) is referenced; Supports D5 score 2 (partly secured)",
+    "compositeScore": 12,
     "interactionType": "Institutionally Competing",
     "linkedProjectIds": [
       "GTM2",
       "GTM3"
     ],
-    "interactionNote": "G1 and G2 both draw on SIP's limited digital governance capacity, creating institutional competition, while G1's ITC trade-digitalisation outputs overlap with G3's PDCC interface at MINECO/VUPE, so without a joint coordination mechanism there is a high risk of parallel rather than complementary trade-facilitation platforms.",
+    "interactionNote": "GTM1 and GTM2 both draw on SIP's limited digital governance capacity, creating institutional competition, while GTM1's ITC trade-digitalisation outputs overlap with GTM3's PDCC interface at MINECO/VUPE, so without a joint coordination mechanism there is a high risk of parallel rather than complementary trade-facilitation platforms.",
     "overallRisk": "Medium"
   },
   {
@@ -252,8 +252,8 @@ const seed: Project[] = [
     "leadDonor": "EU (INTPA) — €2M grant | Team Europe (Estonia e-Governance Academy)",
     "implementingAgency": "Comisión Presidencial de Gobierno Abierto y Electrónico (GAE) — lead + inter-institutional group of strategic ministries and secretariats",
     "gtmiTier": "B",
-    "startDate": "2025-01-09 00:00:00",
-    "endDate": "2029-01-03 00:00:00",
+    "startDate": "01/09/2025",
+    "endDate": "01/03/2029",
     "dim1_institutional": 2,
     "dim1_note": "GAE leads an inter-institutional group spanning multiple ministries and secretariats; coordination burden is real but modest given the TA-focused nature of the project and the Comisionado's cross-cutting mandate. No new permanent body required.",
     "dim2_regulatory": 2,
@@ -263,14 +263,14 @@ const seed: Project[] = [
     "dim4_political": 2,
     "dim4_note": "Governance reform and transparency tools can generate political friction in Guatemala's low-trust institutional environment (CPI 25/100); however, the Arévalo government's explicit pro-digital-governance agenda and Estonia's neutral technical image lower short-term political exposure.",
     "dim5_investment": 1,
-    "dim5_note": "€2M EU grant committed and financing agreement signed September 2025; budget is fully secured for the 42-month implementation period with no identified funding gap.",
+    "dim5_note": "€2M EU grant committed, financing agreement signed Sep 2025. Budget fully secured for the 42-month period with no funding gap. Supports D5 score 1 (secure).",
     "compositeScore": 9,
     "interactionType": "Complementary",
     "linkedProjectIds": [
       "GTM1",
       "GTM3"
     ],
-    "interactionNote": "Digital Governance Enhancement provides the e-government architecture, open-data standards, and inter-institutional data-sharing layer that G1's MSME digital services and G3's customs/VUPE interoperability both depend on for reliable back-end government data; acting as an enabling GovTech layer it reinforces rather than competes with the trade-facing projects.",
+    "interactionNote": "Digital Governance Enhancement provides the e-government architecture, open-data standards, and inter-institutional data-sharing layer that GTM1's MSME digital services and GTM3's customs/VUPE interoperability both depend on for reliable back-end government data; acting as an enabling GovTech layer it reinforces rather than competes with the trade-facing projects.",
     "overallRisk": "Medium"
   },
   {
@@ -292,43 +292,44 @@ const seed: Project[] = [
     "dim4_political": 1,
     "dim4_note": "Trade facilitation is broadly technocratic and supported across the political spectrum in Guatemala, Central America's largest exporter; projected GDP gains of 0.20–0.39% and export growth of 1.67–3.28% generate distributable benefits with few clear domestic losers.",
     "dim5_investment": 1,
-    "dim5_note": "Core EU funding (USD 9M, Phase 1) committed and PDCC live since November 2023; PDCC 2.0 co-financed by IDB (RG-T4217) with Guatemala's national node adaptation costs borne within the regional programme — no significant funding gap for the current implementation phase.",
+    "dim5_note": "$9M EU contribution (Phase 1) committed and PDCC live since Nov 2023; PDCC 2.0 co-financed by IDB (RG-T4217), node adaptation borne within the regional programme. No funding gap. Supports D5 score 1 (secure).",
     "compositeScore": 9,
     "interactionType": "Sequentially Dependent",
     "linkedProjectIds": [
       "GTM1",
       "GTM2"
     ],
-    "interactionNote": "G3 is complementary to G1's trade-digitalisation component and depends on G2's RENAP-based digital identity and interoperability framework to authenticate trusted traders; if G2's DPI layer is delayed, PDCC must fall back on weaker identification mechanisms, reducing traceability and customs risk-profiling quality.",
+    "interactionNote": "GTM3 is complementary to GTM1's trade-digitalisation component and depends on GTM2's RENAP-based digital identity and interoperability framework to authenticate trusted traders; if GTM2's DPI layer is delayed, PDCC must fall back on weaker identification mechanisms, reducing traceability and customs risk-profiling quality.",
     "overallRisk": "Medium"
   },
   {
     "country": "SLV",
     "projectId": "SLV1",
-    "projectName": "Programa para el Desarrollo de la Infraestructura de Datos de El Salvador (IDB ES-L1168)",
-    "projectType": "State Data Infrastructure & Digital Skills",
-    "leadDonor": "IDB",
-    "implementingAgency": "Secretaría de Innovación de la Presidencia (across 57 government institutions)",
+    "projectName": "Technical Assistance for the Digital Civil Registry System of El Salvador (EU-LAC Digital Alliance)",
+    "projectType": "Digital Civil Registration & Identity Infrastructure (EU Technical Assistance)",
+    "leadDonor": "EU (INTPA) / EU-LAC Digital Alliance (Global Gateway framework, EUR 172M total envelope)",
+    "implementingAgency": "Altair Asesores (EU TA contractor) + Registro Nacional de Personas Naturales (RNPN) + Secretaria de Innovacion de la Presidencia",
     "gtmiTier": "B",
-    "startDate": "01/01/2024",
-    "endDate": "01/12/2029",
-    "dim1_institutional": 3,
-    "dim1_note": "The program touches 57 government institutions and trains over 11,000 staff. Even with the Secretaría de Innovación in charge, coordinating that many ministries at once is the main challenge.",
+    "startDate": "03/01/2026",
+    "endDate": "03/01/2029",
+    "dim1_institutional": 2,
+    "dim1_note": "Implementation is managed by Altair Asesores as EU TA contractor, working with RNPN and the Secretaria de Innovacion de la Presidencia. Coordination burden is moderate: two key national counterparts with a clear lead institution (RNPN) and EU Delegation oversight. No broad cross-ministerial coordination is required.",
     "dim2_regulatory": 2,
-    "dim2_note": "The Data Protection Law (Decreto 144) came into force in November 2024, but the implementing rules are not ready yet and the cybersecurity agency (ACE) is still being set up.",
-    "dim3_technical": 3,
-    "dim3_note": "Builds a new state data centre, moves services to the cloud, and connects existing government systems. That is a lot of new infrastructure to plug together.",
+    "dim2_note": "RNPN operates under an established legal mandate and the REVFA civil records system already exists. Full digital interoperability and cross-border e-signature recognition require secondary legislation updates and full implementation of the Data Protection Law (Decreto 144/2024), whose implementing rules remain pending. Legal framework is largely in place but not yet complete.",
+    "dim3_technical": 2,
+    "dim3_note": "Primarily technical assistance for digitalisation and interoperability of the REVFA system, integration with the simple.sv government platform, and alignment with EU digital identity and e-signature standards. RNPN has already digitised 18 million historical records, so remaining work focuses on system consolidation and cross-border interoperability rather than new infrastructure build-out.",
     "dim4_political": 3,
-    "dim4_note": "It is one of the president's flagship digital projects. High visibility at home and international observers are watching closely because it centralizes state data.",
-    "dim5_investment": 3,
-    "dim5_note": "The $60M IDB loan is approved (25-year repayment, 5.5-year grace period). Training and citizen-services expansion may need extra funding later.",
-    "compositeScore": 13,
-    "interactionType": "Sequentially Dependent",
+    "dim4_note": "The May 2024 leak of 5.1 million Salvadorans personal data (including facial images) on the dark web raises the stakes for any centralised civil registry project. The Bukele government's track record of using data infrastructure for executive control adds scrutiny from civil society and IACHR. EU funding provides accountability safeguards but also creates international visibility and conditionality exposure.",
+    "dim5_investment": 1,
+    "dim5_note": "TA contract (~€1M) funded within the EU-LAC Digital Alliance €172M envelope; fully committed, no capital expenditure or sovereign debt. Supports D5 score 1 (secure).",
+    "compositeScore": 10,
+    "interactionType": "Complementary",
     "linkedProjectIds": [
+      "SLV2",
       "SLV3"
     ],
-    "interactionNote": "The data centre depends on the BELLA cable extension (ES3) to actually deliver citizen services at scale beyond San Salvador. Without that connectivity backbone, the data centre serves a narrow urban audience.",
-    "overallRisk": "High"
+    "interactionNote": "SLV1 directly implements the civil digital registration component identified as a regulatory dependency in SLV2 (EU bilateral MIP), making the two complementary rather than conflicting.SLV3's BELLA connectivity backbone enables online civil registry services to reach citizens and institutions outside San Salvador. Together the three projects form an integrated EU digital governance and identity stack for El Salvador.",
+    "overallRisk": "Medium"
   },
   {
     "country": "SLV",
@@ -349,13 +350,13 @@ const seed: Project[] = [
     "dim4_political": 3,
     "dim4_note": "The EU only funds projects that meet rule-of-law standards. Reports from the IACHR (2023) and Human Rights Watch (2025) show a difficult rights environment, which puts a ceiling on how visible the partnership can be.",
     "dim5_investment": 3,
-    "dim5_note": "About €49.5M in bilateral grants for 2021-2024 plus €22M planned for 2025-2027, with regional Global Gateway and blended finance on top. Many instruments and partners — medium fund complexity.",
-    "compositeScore": 12,
+    "dim5_note": "€49.5M bilateral grants committed 2021–24 plus €22M planned 2025–27 (not confirmed) and blended finance on top. ~31% of the declared envelope unconfirmed plus uncommitted private co-financing. Supports D5 score 3 (at risk).",
+    "compositeScore": 13,
     "interactionType": "Governance-Conflicting",
     "linkedProjectIds": [
       "SLV1"
     ],
-    "interactionNote": "The EU and Team Europe require rule-of-law standards and transparency conditions, but ES1 centralizes state data under the executive. The two can run side by side, but visible co-funding or shared platforms would put both sides in an uncomfortable position.",
+    "interactionNote": "The EU and Team Europe require rule-of-law standards and transparency conditions, but SLV1 centralizes state data under the executive. The two can run side by side, but visible co-funding or shared platforms would put both sides in an uncomfortable position.",
     "overallRisk": "High"
   },
   {
@@ -376,14 +377,14 @@ const seed: Project[] = [
     "dim3_note": "Heavy infrastructure: submarine cable terrestrial extension, landing-station strengthening, 20 Gbps operational capacity, plus connectivity to public schools and health centres. Foundational layer for the country's whole digital agenda.",
     "dim4_political": 2,
     "dim4_note": "Connectivity is politically popular across the spectrum and has low contestation. The biggest political risk is procurement delays, not opposition.",
-    "dim5_investment": 2,
-    "dim5_note": "Funded through Global Gateway / EU-LAC Digital Alliance flagship envelopes, plus member-state co-financing through GÉANT. Multiple regional instruments make disbursement medium-complex. 30M$",
-    "compositeScore": 12,
+    "dim5_investment": 3,
+    "dim5_note": "EC contribution €13M over 48 months; RedCLARA to raise at least €15M more from governments, private companies and banks, not yet committed (~€28M total, ~46% gap). Supports D5 score 3 (at risk).",
+    "compositeScore": 13,
     "interactionType": "Complementary",
     "linkedProjectIds": [
       "SLV2"
     ],
-    "interactionNote": "BELLA is the connectivity backbone that the EU's broader bilateral partnership (ES2) needs to deliver digital services to schools, health centres, and public administration. Running ES2 and ES3 together reinforces both — they are designed to fit together inside Team Europe.",
+    "interactionNote": "BELLA is the connectivity backbone that the EU's broader bilateral partnership (SLV2) needs to deliver digital services to schools, health centres, and public administration. Running SLV2 and SLV3 together reinforces both — they are designed to fit together inside Team Europe.",
     "overallRisk": "Medium"
   }
 ] as Project[];
@@ -450,7 +451,7 @@ export const useProjectStore = create<State>()(
         }),
     }),
     {
-      name: "dpi-dashboard-v5",
+      name: "dpi-dashboard-v6",
       merge: (persisted, current) => ({
         ...current,
         ...(persisted as object),
