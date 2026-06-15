@@ -54,7 +54,7 @@ export function RadarChart({
   } | null>(null);
 
   const n = dimensions.length;
-  const padding = 36;
+  const padding = 48;
   const radius = (size - padding * 2) / 2;
   const cx = size / 2;
   const cy = size / 2;
