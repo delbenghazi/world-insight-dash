@@ -126,8 +126,8 @@ export function RadarChart({
           const [x, y] = point(i, max);
           const dx = x - cx;
           const dy = y - cy;
-          const lx = cx + dx * 1.16;
-          const ly = cy + dy * 1.16;
+          const lx = cx + dx * 1.28;
+          const ly = cy + dy * 1.28;
           return (
             <text
               key={d.abbr}
