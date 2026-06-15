@@ -1,42 +1,67 @@
 ## Goal
-Reshape the platform from a "data dashboard" feel into a focused advisory tool that walks an advisor through: **methodology → country → projects/interactions → AI advisor → add project**. Every screen should make the interaction classification and composite risk score the visual anchor.
 
-## 1. Homepage entry point (`src/routes/index.tsx` + `LeftPanel`)
-- Replace the current ambient map intro with a **clear hero band** above the map: one-line tool definition + two primary CTAs ("Select a country" / "Add a project to run an assessment"). The map remains the country selector but is reframed as "Step 2: pick a country".
-- Remove the decorative "World Map" mono label and the always-loading globe overlay on repeat visits (keep first-load only).
-- Trim `LeftPanel`: keep purpose statement, but move secondary nav (Compare, Methodology) into a top app-bar so the panel is purely *"where are you working?"* (selected country + portfolio summary).
+Stop generating `google.com/search?q=...` links (which get blocked by the iframe preview) and instead point each document trail entry to a real, embeddable source URL keyed off the donor / agency / country.
 
-## 2. Workflow navigation
-- Add a thin **top WorkflowNav** component rendered from `__root.tsx` with 5 numbered steps: Methodology · Country · Portfolio · AI Advisor · Add Project. Current step highlighted from route; each step shows a tiny "next" affordance.
-- Each leaf route (country, add-project, methodology) gets a "Next: …" footer link mirroring the flow.
+## Approach
 
-## 3. Visual hierarchy on country/project views (`country.$code.tsx`, `DetailPanel.tsx`)
-- Promote **Interaction Classification badge** and **Composite Risk Score** to a hero strip at the top of the country view (large type, colored chip per classification, score as a single big number with qualitative label).
-- Demote raw tables to a collapsed "Project details" section below.
-- Same treatment in `DetailPanel`: classification + score first, metadata after.
+Rewrite `buildDocumentTrail()` in `src/routes/project.$projectId.tsx` so each of the four document types resolves to an actual landing page on the responsible institution's site. No business logic changes elsewhere; only the link targets and a small lookup helper.
 
-## 4. Reduce cognitive load
-- Audit `DetailPanel`, `CountryCard`, `methodology`, `compare`: remove redundant labels ("Region / Country" double headers), decorative mono tags, duplicated counts. Hide advanced fields (indicator breakdowns, raw scores) behind a "Show detail" disclosure.
-- Standardize spacing and drop ornamental dividers that don't separate decisions.
+### 1. Donor → financing portal map
 
-## 5. Empty states
-- Add a shared `EmptyState` component (`src/components/EmptyState.tsx`) with icon + message + CTA.
-- Wire into: country with 0 projects (CTA → Add Project pre-filled with country), compare page with <2 countries, AI advisor with no portfolio selected, homepage map when no projects exist.
+Add a `DONOR_PORTALS` lookup that maps donor short names found in `project.leadDonor` to their public project/finance database:
 
-## 6. AI Advisor repositioning (`AIAdvisor.tsx`)
-- Rename floating widget to **"Portfolio Advisor"** and bind its title to the active country ("Advisor · Guatemala portfolio").
-- Move the launcher button into the country view as a prominent "Consult the Advisor on this portfolio" CTA after the hero strip; keep a smaller floating fallback on other pages.
-- When no country selected, advisor opens with the empty state "Select a country first" instead of accepting general queries.
+| Donor pattern        | URL                                                          |
+| -------------------- | ------------------------------------------------------------ |
+| EU / European Union  | `https://international-partnerships.ec.europa.eu/policies/programming/programmes_en` |
+| World Bank / IBRD / IDA | `https://projects.worldbank.org/en/projects-operations/projects-list?countrycode_exact={ISO3}` |
+| UNDP                 | `https://open.undp.org/projects?country={ISO3}`              |
+| GIZ                  | `https://www.giz.de/en/worldwide/{country-slug}.html`        |
+| USAID                | `https://www.usaid.gov/{country-slug}`                       |
+| AFD                  | `https://www.afd.fr/en/page-region-pays/{country-slug}`      |
+| AfDB                 | `https://projectsportal.afdb.org/dataportal/VProject/listProjects?country={ISO3}` |
+| Default fallback     | OECD Creditor Reporting System: `https://stats.oecd.org/Index.aspx?DataSetCode=CRS1` |
 
-## Technical notes
-- No data model changes. All edits are presentation-layer.
-- New files: `src/components/WorkflowNav.tsx`, `src/components/EmptyState.tsx`, `src/components/RiskHero.tsx` (shared classification + score hero).
-- Edits: `__root.tsx`, `routes/index.tsx`, `routes/country.$code.tsx`, `routes/add-project.tsx`, `routes/methodology.tsx`, `routes/compare.tsx`, `components/LeftPanel.tsx`, `components/DetailPanel.tsx`, `components/CountryCard.tsx`, `components/AIAdvisor.tsx`.
-- Keep existing design tokens in `src/styles.css`; add semantic classification color tokens if missing.
+### 2. Implementer → reporting site map
+
+Add `AGENCY_SITES` for the primary implementer parsed from `project.implementingAgency`:
+
+| Agency             | URL                                              |
+| ------------------ | ------------------------------------------------ |
+| UNDP               | `https://www.undp.org/{country-slug}`            |
+| GIZ                | `https://www.giz.de/en/worldwide/{country-slug}.html` |
+| World Bank         | same as donor entry above                        |
+| Ministry of …      | country e-gov portal from a small country lookup |
+| Default fallback   | ReliefWeb country page: `https://reliefweb.int/country/{iso3-lower}` |
+
+### 3. Project fiche
+
+Use the donor's project database search filtered by country instead of Google:
+- EU: `https://international-partnerships.ec.europa.eu/countries/{country-slug}_en`
+- World Bank: country project list URL above
+- Others: same as donor portal entry
+
+### 4. Country GTMI
+
+Keep the existing `https://www.worldbank.org/en/programs/govtech/gtmi` link (already a real URL).
+
+### 5. `aiSources` branch
+
+In the `aiSources.length > 0` map, replace the `searchLink(...)` fallback with the same donor/agency resolver so AI-provided sources without a `url` still get a real institutional link rather than a Google query.
+
+### 6. Cleanup
+
+Delete the `searchLink()` helper once no caller remains.
 
 ## Out of scope
-- Backend / data schema changes
-- New analytics or scoring logic
-- Map interaction behavior (already redone)
 
-Approve and I'll implement in one pass, verifying via the preview afterward.
+- No data model changes (no new fields on `Project` or `Source`).
+- No new country metadata beyond what's already in `FOCUS_COUNTRIES` (ISO3 + name + slug derived from name).
+- Radar chart, snapshot grid, AI panel, and styling are untouched.
+
+## Files
+
+- `src/routes/project.$projectId.tsx` — update `buildDocumentTrail`, add `DONOR_PORTALS` / `AGENCY_SITES` lookups, update `aiSources` fallback, remove `searchLink`.
+
+## Open question
+
+Want me to keep a "Search the web" secondary link (opening in a new tab via `duckduckgo.com/?q=...`, which is iframe-friendly) as a backup next to each real URL, or just the single institutional link?

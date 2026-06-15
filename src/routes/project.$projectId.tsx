@@ -156,29 +156,77 @@ function fmtDate(s: string): string {
   return new Date(t).toLocaleDateString(undefined, { year: "numeric", month: "short" });
 }
 
-function searchLink(q: string) {
-  return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+function countrySlug(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+/** Resolve a donor / funder string to a real institutional landing page. */
+function donorPortal(donorRaw: string, iso3: string, countryName: string): string {
+  const d = donorRaw.toLowerCase();
+  const slug = countrySlug(countryName);
+  if (/\beu\b|european union|european commission|intpa|dg /.test(d))
+    return `https://international-partnerships.ec.europa.eu/countries/${slug}_en`;
+  if (/world bank|ibrd|\bida\b|wbg/.test(d))
+    return `https://projects.worldbank.org/en/projects-operations/projects-list?countrycode_exact=${iso3}`;
+  if (/undp/.test(d)) return `https://open.undp.org/projects?country=${iso3}`;
+  if (/\bgiz\b|deutsche gesellschaft/.test(d))
+    return `https://www.giz.de/en/worldwide/worldwide.html`;
+  if (/usaid/.test(d)) return `https://www.usaid.gov/${slug}`;
+  if (/\bafd\b|agence française/.test(d))
+    return `https://www.afd.fr/en/page-region-pays/${slug}`;
+  if (/afdb|african development bank/.test(d))
+    return `https://projectsportal.afdb.org/dataportal/VProject/listProjects?country=${iso3}`;
+  if (/\badb\b|asian development bank/.test(d))
+    return `https://www.adb.org/projects/country/${iso3.toLowerCase()}`;
+  if (/iadb|inter-american development bank/.test(d))
+    return `https://www.iadb.org/en/projects-search?country=${iso3}`;
+  if (/kfw/.test(d)) return `https://www.kfw-entwicklungsbank.de/International-financing/KfW-Development-Bank/`;
+  if (/gates foundation|bmgf/.test(d)) return `https://www.gatesfoundation.org/`;
+  if (/\bfcdo\b|foreign, commonwealth/.test(d))
+    return `https://devtracker.fcdo.gov.uk/countries/${iso3}/projects`;
+  return `https://stats.oecd.org/Index.aspx?DataSetCode=CRS1`;
+}
+
+/** Resolve an implementing agency to its reporting / country presence page. */
+function agencySite(agencyRaw: string, iso3: string, countryName: string): string {
+  const a = agencyRaw.toLowerCase();
+  const slug = countrySlug(countryName);
+  if (/undp/.test(a)) return `https://www.undp.org/${slug}`;
+  if (/\bgiz\b/.test(a)) return `https://www.giz.de/en/worldwide/worldwide.html`;
+  if (/world bank|ibrd|\bida\b/.test(a))
+    return `https://projects.worldbank.org/en/projects-operations/projects-list?countrycode_exact=${iso3}`;
+  if (/unicef/.test(a)) return `https://www.unicef.org/${slug}`;
+  if (/unesco/.test(a)) return `https://www.unesco.org/en/countries/${iso3.toLowerCase()}`;
+  if (/\bilo\b/.test(a)) return `https://www.ilo.org/`;
+  if (/\bfao\b/.test(a)) return `https://www.fao.org/countryprofiles/index/en/?iso3=${iso3}`;
+  if (/\bwfp\b/.test(a)) return `https://www.wfp.org/countries/${slug}`;
+  if (/\bwho\b/.test(a)) return `https://www.who.int/countries/${iso3.toLowerCase()}`;
+  if (/ministry|government of/.test(a))
+    return `https://reliefweb.int/country/${iso3.toLowerCase()}`;
+  return `https://reliefweb.int/country/${iso3.toLowerCase()}`;
 }
 
 function buildDocumentTrail(p: Project) {
   const donor = p.leadDonor.split("—")[0].trim();
   const agency = p.implementingAgency.split("+")[0].trim();
   const country = FOCUS_COUNTRIES[p.country]?.name ?? p.country;
+  const donorUrl = donorPortal(donor, p.country, country);
+  const agencyUrl = agencySite(agency, p.country, country);
   return [
     {
       type: "Donor financing agreement",
       title: `${donor} — financing agreement for ${p.projectId}`,
-      link: searchLink(`${donor} ${p.projectName} financing agreement ${country}`),
+      link: donorUrl,
     },
     {
       type: "Project fiche / action document",
       title: `${p.projectName} — action document (${new Date(p.startDate).getFullYear() || "—"})`,
-      link: searchLink(`${p.projectName} action document ${country} ${donor}`),
+      link: donorUrl,
     },
     {
       type: "Implementer reporting",
       title: `${agency} — implementation reports`,
-      link: searchLink(`${agency} ${p.projectName} implementation report`),
+      link: agencyUrl,
     },
     {
       type: "Country strategy / GTMI",
@@ -226,7 +274,7 @@ function ProjectPage() {
       ? aiSources.map((s) => ({
           type: s.sourceType,
           title: s.note ? `${s.sourceTitle} — ${s.note}` : s.sourceTitle,
-          link: s.url ?? searchLink(`${s.sourceTitle} ${project.projectName}`),
+          link: s.url ?? donorPortal(project.leadDonor, project.country, FOCUS_COUNTRIES[project.country]?.name ?? project.country),
         }))
       : buildDocumentTrail(project);
 
