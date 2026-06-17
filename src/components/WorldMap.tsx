@@ -3,6 +3,7 @@ import {
   ComposableMap,
   Geographies,
   Geography,
+  Marker,
   ZoomableGroup,
 } from "react-simple-maps";
 import { motion } from "framer-motion";
@@ -10,12 +11,26 @@ import { useNavigate } from "@tanstack/react-router";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import {
   CountryCode,
-  countryColorVar,
   countriesInUse,
+  countryStats,
+  projectsByCountry,
+  RiskLevel,
   useProjectStore,
 } from "@/lib/project-data";
 import { CountryCard } from "@/components/CountryCard";
 import { getCountryMeta, isoNumericToIso3 } from "@/lib/countries";
+
+const RISK_COLOR: Record<RiskLevel, string> = {
+  High: "#C0392B",
+  Medium: "#E07060",
+  Low: "#F2C4BC",
+};
+
+// Diameter in CSS px: 1 project => 40, 5+ => 80, linear in between.
+function bubbleDiameter(count: number): number {
+  const clamped = Math.max(1, Math.min(5, count));
+  return 40 + ((clamped - 1) / 4) * 40;
+}
 
 const TOPO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
