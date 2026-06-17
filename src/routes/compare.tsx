@@ -1,11 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { useState } from "react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import { EmptyState } from "@/components/EmptyState";
-import { PairCard } from "@/components/SequencingSection";
-import { RadarChart, RADAR_DASH_STYLES } from "@/components/RadarChart";
-import { evaluatePair } from "@/lib/sequencing";
+import { PortfolioAdvisor } from "@/components/PortfolioAdvisor";
 import {
   countriesInUse,
   countryColorVar,
