@@ -3,6 +3,7 @@ import {
   ComposableMap,
   Geographies,
   Geography,
+  Marker,
   ZoomableGroup,
 } from "react-simple-maps";
 import { motion } from "framer-motion";
@@ -10,12 +11,26 @@ import { useNavigate } from "@tanstack/react-router";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import {
   CountryCode,
-  countryColorVar,
   countriesInUse,
+  countryStats,
+  projectsByCountry,
+  RiskLevel,
   useProjectStore,
 } from "@/lib/project-data";
 import { CountryCard } from "@/components/CountryCard";
 import { getCountryMeta, isoNumericToIso3 } from "@/lib/countries";
+
+const RISK_COLOR: Record<RiskLevel, string> = {
+  High: "#C0392B",
+  Medium: "#E07060",
+  Low: "#F2C4BC",
+};
+
+// Diameter in CSS px: 1 project => 40, 5+ => 80, linear in between.
+function bubbleDiameter(count: number): number {
+  const clamped = Math.max(1, Math.min(5, count));
+  return 40 + ((clamped - 1) / 4) * 40;
+}
 
 const TOPO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -142,11 +157,9 @@ export function WorldMap({ entrance = true, onCountryClick }: { entrance?: boole
                 const isSelected = code && selectedCountry === code;
                 const isHovered = code && hoveredCountry === code;
                 const baseFill = isFocus
-                  ? countryColorVar(code!)
+                  ? "#E5E7EB"
                   : "var(--color-map-neutral)";
-                const hoverFill = isFocus
-                  ? `color-mix(in oklab, ${countryColorVar(code!)}, white 13%)`
-                  : baseFill;
+                const hoverFill = isFocus ? "#F1F5F9" : baseFill;
                 const fill = isFocus && isHovered ? hoverFill : baseFill;
                 const stroke = isFocus
                   ? "#1a1a1a"
@@ -203,6 +216,71 @@ export function WorldMap({ entrance = true, onCountryClick }: { entrance?: boole
               })
             }
           </Geographies>
+
+          {/* Risk bubbles per country, sized by project count */}
+          {activeCountries.map((code) => {
+            const meta = getCountryMeta(code);
+            if (!meta) return null;
+            const [lat, lng] = meta.latlng;
+            const count = projectsByCountry(projects, code).length;
+            const risk = countryStats(projects, code).overallRisk;
+            const diameterPx = bubbleDiameter(count);
+            // ComposableMap is rendered at 800x500 SVG units by default; markers
+            // live in projection space and scale with ZoomableGroup zoom.
+            // Divide by zoom so the bubble stays at roughly its target px size.
+            const r = (diameterPx / 2) / Math.max(zoom, 0.5);
+            const fontSize = Math.max(9, diameterPx * 0.32) / Math.max(zoom, 0.5);
+            const fill = RISK_COLOR[risk];
+            const isHov = hoveredCountry === code;
+            return (
+              <Marker
+                key={`bubble-${code}`}
+                coordinates={[lng, lat]}
+                onMouseEnter={() => setHoveredCountry(code)}
+                onMouseLeave={() => setHoveredCountry(null)}
+                onClick={() => {
+                  onCountryClick?.();
+                  navigate({ to: "/country/$code", params: { code } });
+                }}
+                style={{
+                  default: { cursor: "pointer" },
+                  hover: { cursor: "pointer" },
+                  pressed: { cursor: "pointer" },
+                }}
+              >
+                <circle
+                  r={r}
+                  fill={fill}
+                  fillOpacity={isHov ? 1 : 0.92}
+                  stroke="#1a1a1a"
+                  strokeWidth={1.25 / Math.max(zoom, 0.5)}
+                  vectorEffect="non-scaling-stroke"
+                  style={{
+                    transition:
+                      "fill-opacity 220ms ease, r 220ms cubic-bezier(.22,1,.36,1)",
+                  }}
+                />
+                <text
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={fontSize}
+                  fontWeight={700}
+                  fill="#ffffff"
+                  style={{
+                    pointerEvents: "none",
+                    fontFamily:
+                      "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+                    letterSpacing: "0.04em",
+                    paintOrder: "stroke",
+                    stroke: "rgba(0,0,0,0.35)",
+                    strokeWidth: 0.6 / Math.max(zoom, 0.5),
+                  }}
+                >
+                  {code}
+                </text>
+              </Marker>
+            );
+          })}
         </ZoomableGroup>
       </ComposableMap>
 
@@ -216,6 +294,16 @@ export function WorldMap({ entrance = true, onCountryClick }: { entrance?: boole
       />
 
       <CountryCard />
+
+      {/* Bubble size legend */}
+      <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-border/60 bg-background/85 px-3 py-1.5 text-[11px] text-foreground/75 shadow-sm backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <span className="inline-block rounded-full bg-[#C0392B]" style={{ width: 10, height: 10 }} />
+          <span className="inline-block rounded-full bg-[#C0392B]" style={{ width: 14, height: 14 }} />
+          <span className="inline-block rounded-full bg-[#C0392B]" style={{ width: 18, height: 18 }} />
+          <span className="ml-1">Bubble size = number of projects (1 → 5+)</span>
+        </div>
+      </div>
 
       <div className="pointer-events-auto absolute left-20 top-4 flex items-center overflow-hidden rounded-full border border-border/60 bg-background/85 shadow-sm backdrop-blur-md">
         <button
