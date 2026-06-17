@@ -1,11 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { useState } from "react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import { EmptyState } from "@/components/EmptyState";
-import { PairCard } from "@/components/SequencingSection";
-import { RadarChart, RADAR_DASH_STYLES } from "@/components/RadarChart";
-import { evaluatePair } from "@/lib/sequencing";
+import { PortfolioAdvisor } from "@/components/PortfolioAdvisor";
 import {
   countriesInUse,
   countryColorVar,
@@ -60,7 +58,7 @@ function Compare() {
         <div className="mt-6 inline-flex rounded-lg border bg-surface p-1">
           {([
             { id: "countries", label: "Compare countries" },
-            { id: "projects", label: "Compare projects" },
+            { id: "projects", label: "Portfolio advisor" },
           ] as Array<{ id: Mode; label: string }>).map((t) => (
             <button
               key={t.id}
@@ -251,29 +249,14 @@ function Compare() {
 function CompareProjects({ projects }: { projects: Project[] }) {
   const available = countriesInUse(projects);
   const [country, setCountry] = useState<string | null>(null);
-  const [picked, setPicked] = useState<string[]>([]);
-
   const list = country ? projectsByCountry(projects, country) : [];
-
-  const pickProject = (id: string) => {
-    setPicked((prev) => {
-      if (prev.includes(id)) return prev.filter((p) => p !== id);
-      if (prev.length < 2) return [...prev, id];
-      // replace oldest
-      return [prev[1], id];
-    });
-  };
-
-  const a = list.find((p) => p.projectId === picked[0]);
-  const b = list.find((p) => p.projectId === picked[1]);
-  const result = a && b ? evaluatePair(a, b) : null;
 
   if (available.length === 0) {
     return (
       <div className="mt-8">
         <EmptyState
-          title="No projects to compare yet"
-          description="Add at least two projects to a single country, then return here to see their sequencing recommendation."
+          title="No projects to advise on yet"
+          description="Add at least two projects to a single country, then return here to see the portfolio sequencing advisor."
           action={{ label: "Add a project", to: "/add-project" }}
         />
       </div>
@@ -284,7 +267,7 @@ function CompareProjects({ projects }: { projects: Project[] }) {
     <div className="mt-8 space-y-5">
       <div className="rounded-xl border bg-surface p-5">
         <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          Choose country
+          Choose country portfolio
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {available.map((code) => {
@@ -293,10 +276,7 @@ function CompareProjects({ projects }: { projects: Project[] }) {
             return (
               <button
                 key={code}
-                onClick={() => {
-                  setCountry(on ? null : code);
-                  setPicked([]);
-                }}
+                onClick={() => setCountry(on ? null : code)}
                 className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition ${on ? "border-primary bg-primary/10 text-foreground" : "bg-background hover:bg-secondary"}`}
               >
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: countryColorVar(code) }} />
@@ -306,106 +286,27 @@ function CompareProjects({ projects }: { projects: Project[] }) {
             );
           })}
         </div>
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          The advisor reads every pair in the portfolio but only surfaces
+          decision-relevant insights — implementation waves, the critical path,
+          bottlenecks, and conflicts. Raw pairwise relationships live in the
+          Evidence tab.
+        </p>
       </div>
 
-      {country && (
-        <div className="rounded-xl border bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-              Choose projects · {picked.length}/2 selected
-            </div>
-            {picked.length > 0 && (
-              <button
-                onClick={() => setPicked([])}
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <X size={12} /> Clear
-              </button>
-            )}
-          </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Pick exactly two projects from the same portfolio. Picking a third replaces the oldest selection.
-          </p>
-          {list.length < 2 ? (
-            <div className="mt-3 text-xs text-muted-foreground">
-              This country only has {list.length} project. Add another to compare a pair.
-            </div>
-          ) : (
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((p) => {
-                const on = picked.includes(p.projectId);
-                const disabled = !on && picked.length >= 2 ? false : false; // we replace, never block
-                return (
-                  <button
-                    key={p.projectId}
-                    onClick={() => pickProject(p.projectId)}
-                    disabled={disabled}
-                    className={`flex items-start gap-3 rounded-lg border p-3 text-left transition ${
-                      on
-                        ? "border-primary bg-primary/10"
-                        : "bg-background hover:bg-secondary"
-                    }`}
-                  >
-                    <span className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                      {p.projectId}
-                    </span>
-                    <span className="flex-1 text-xs">{p.projectName}</span>
-                    {on && <Check size={14} className="mt-0.5 text-primary" />}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {result ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          <PairCard result={result} />
-          {a && b && (
-            <div className="rounded-xl border bg-surface p-4">
-              <div className="mb-2 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                Overlaid radar — {a.projectId} vs {b.projectId}
-              </div>
-              <RadarChart
-                size={280}
-                showLegend
-                dimensions={[
-                  { abbr: "IL", label: "Institutional Absorption Load", score: 0 },
-                  { abbr: "RD", label: "Regulatory Dependencies", score: 0 },
-                  { abbr: "TD", label: "Technical Dependencies", score: 0 },
-                  { abbr: "PS", label: "Political Sensitivity", score: 0 },
-                  { abbr: "IN", label: "Investment Needs & Funding", score: 0 },
-                ]}
-                series={[a, b].map((p) => ({
-                  id: p.projectId,
-                  values: [
-                    p.dim1_institutional,
-                    p.dim2_regulatory,
-                    p.dim3_technical,
-                    p.dim4_political,
-                    p.dim5_investment,
-                  ],
-                }))}
-                colors={[a, b].map((p, i) => ({
-                  id: p.projectId,
-                  stroke: countryColorVar(p.country),
-                  fill: `color-mix(in oklab, ${countryColorVar(p.country)} 22%, transparent)`,
-                  dash: RADAR_DASH_STYLES[i] ?? "0",
-                }))}
-              />
-            </div>
-          )}
-        </div>
-      ) : country && list.length >= 2 ? (
+      {country ? (
+        <PortfolioAdvisor projects={list} />
+      ) : (
         <EmptyState
-          title="Pick two projects"
-          description="Select two projects above to see the sequencing engine's recommendation for that pair."
+          title="Pick a portfolio"
+          description="Select a country above to see its recommended implementation roadmap, dependency graph, and conflict center."
         />
-      ) : null}
+      )}
     </div>
   );
 }
+
+
 
 
 function Box({ label, value, color, title }: { label: string; value: string; color?: string; title?: string }) {
