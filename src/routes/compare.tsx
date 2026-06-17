@@ -58,7 +58,7 @@ function Compare() {
         <div className="mt-6 inline-flex rounded-lg border bg-surface p-1">
           {([
             { id: "countries", label: "Compare countries" },
-            { id: "projects", label: "Compare projects" },
+            { id: "projects", label: "Portfolio advisor" },
           ] as Array<{ id: Mode; label: string }>).map((t) => (
             <button
               key={t.id}
