@@ -575,7 +575,7 @@ function WhatIfView({ analysis }: { analysis: PortfolioAnalysis }) {
 
 function EvidenceView({ analysis }: { analysis: PortfolioAnalysis }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const grouped: Record<string, PairResult[]> = {
+  const grouped: Record<keyof typeof OUTCOME_META, PairResult[]> = {
     Redesign: [],
     Sequence: [],
     Coordinate: [],
