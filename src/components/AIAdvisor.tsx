@@ -178,13 +178,13 @@ export function AIAdvisor({
                 <Bot size={14} />
               </div>
               <div>
-                <div className="text-sm font-semibold">
-                  {countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor"}
-                </div>
+                <div className="text-sm font-semibold">{label}</div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {country
-                    ? `Scoped to ${portfolio.length} project${portfolio.length === 1 ? "" : "s"}`
-                    : "Select a country to scope this advisor"}
+                  {portfolioMode
+                    ? `Region-wide · ${portfolio.length} project${portfolio.length === 1 ? "" : "s"} across ${Object.keys(FOCUS_COUNTRIES).length} countries`
+                    : country
+                      ? `Scoped to ${portfolio.length} project${portfolio.length === 1 ? "" : "s"}`
+                      : "Select a country to scope this advisor"}
                 </div>
               </div>
               <button
