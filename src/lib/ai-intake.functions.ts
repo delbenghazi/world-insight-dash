@@ -149,7 +149,7 @@ export const analyzeIntake = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: await buildSystemPrompt() },
+          { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: parts },
         ],
         response_format: { type: "json_object" },
