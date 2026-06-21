@@ -159,7 +159,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
 
         {/* Projects — collapsed by default */}
         {list.length > 0 && (
-          <section className="mt-6 px-6 pb-10">
+          <section className="mt-6 px-6 pb-28">
             <button
               onClick={() => setShowDetails((s) => !s)}
               className="flex w-full items-center justify-between rounded-md border bg-surface px-4 py-3 text-sm font-medium hover:bg-secondary"
