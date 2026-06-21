@@ -1,9 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import * as XLSX from "xlsx";
-import { parseCodebook, buildCodebookSection } from "./codebook";
+import { CODEBOOK_SECTION } from "./codebook-content";
+
 
 const FileInput = z.object({
   name: z.string(),
@@ -54,19 +52,8 @@ Return only valid JSON with this structure:
 
 const PROMPT_CLOSER = `Return only the JSON object — no commentary, no markdown fence.`;
 
-// Build the system prompt at request time from public/templates/master.xlsx.
-// Cached per server process; replacing master.xlsx takes effect on next deploy.
-let cachedSystemPrompt: string | null = null;
-async function buildSystemPrompt(): Promise<string> {
-  if (cachedSystemPrompt) return cachedSystemPrompt;
-  const file = path.join(process.cwd(), "public", "templates", "master.xlsx");
-  const wb = XLSX.read(await readFile(file), { type: "buffer" });
-  const sheet = wb.Sheets["Codebook"];
-  if (!sheet) throw new Error('master.xlsx is missing the "Codebook" sheet');
-  const codebook = buildCodebookSection(parseCodebook(sheet));
-  cachedSystemPrompt = `${PROMPT_PREAMBLE}\n\n${codebook}\n\n${PROMPT_CLOSER}`;
-  return cachedSystemPrompt;
-}
+const SYSTEM_PROMPT = `${PROMPT_PREAMBLE}\n\n${CODEBOOK_SECTION}\n\n${PROMPT_CLOSER}`;
+
 
 function stripHtml(html: string) {
   return html
@@ -162,7 +149,7 @@ export const analyzeIntake = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: await buildSystemPrompt() },
+          { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: parts },
         ],
         response_format: { type: "json_object" },
