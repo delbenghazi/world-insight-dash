@@ -11,7 +11,7 @@ import {
 
 export function LeftPanel() {
   const [open, setOpen] = useState(true);
-  const { projects, selectedCountry, setSelectedCountry } = useProjectStore();
+  const { projects, selectedCountry } = useProjectStore();
   const groups = countriesByRegion(projects);
 
   return (
