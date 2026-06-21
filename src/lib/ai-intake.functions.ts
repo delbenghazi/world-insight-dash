@@ -1,9 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import * as XLSX from "xlsx";
-import { parseCodebook, buildCodebookSection } from "./codebook";
+import { CODEBOOK_SECTION } from "./codebook-content";
+
 
 const FileInput = z.object({
   name: z.string(),
