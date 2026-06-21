@@ -114,19 +114,19 @@ const INTERACTIONS: Interaction[] = [
 const RISK_ZONES = [
   {
     label: "Low risk",
-    range: "< 2.5",
+    range: "5 – 7",
     icon: CheckCircle2,
     color: "oklch(0.62 0.15 145)",
   },
   {
     label: "Medium risk",
-    range: "2.5 – 3.49",
+    range: "8 – 10",
     icon: AlertTriangle,
     color: "oklch(0.75 0.15 80)",
   },
   {
     label: "High risk",
-    range: "≥ 3.5",
+    range: "11 – 15",
     icon: AlertCircle,
     color: "oklch(0.58 0.22 25)",
   },
@@ -325,10 +325,11 @@ function Methodology() {
               </div>
 
               <p className="mt-5 border-t pt-4 text-xs leading-relaxed text-muted-foreground">
-                Composite score is the unweighted mean of the five dimensions (1
-                = low, 5 = high). Overall risk is then bucketed: Low (&lt; 2.5),
-                Medium (2.5–3.49), High (≥ 3.5). Country aggregates average the
-                project composites for the country.
+                Composite score is the sum of the five dimension scores (D1–D5),
+                each scored 1 (low) to 3 (high). The composite therefore ranges
+                from 5 (lowest risk) to 15 (highest risk). Overall risk is then
+                bucketed: Low (5–7), Medium (8–10), High (11–15). Country
+                aggregates average the project composites for the country.
               </p>
             </div>
 
