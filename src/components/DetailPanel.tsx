@@ -84,7 +84,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
         />
         <div>
           <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            {country?.region}
+            {country?.region ?? "Unknown region"}
           </div>
           <div className="text-lg font-semibold tracking-tight">
             {country?.name ?? code} portfolio

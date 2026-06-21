@@ -144,12 +144,6 @@ function splitFunders(raw: string): { lead: string; cofinanciers: string[] } {
   return { lead: parts[0], cofinanciers: parts.slice(1) };
 }
 
-function extractBudget(raw: string): string {
-  // Pick out currency amounts e.g. "€23.4M", "USD 9M", "$2M".
-  const matches = raw.match(/(?:€|EUR|USD|US\$|\$)\s?[\d.,]+\s?[MmBbKk]?/g);
-  if (!matches || matches.length === 0) return "Not disclosed";
-  return matches.join(" · ");
-}
 
 function fmtDate(s: string): string {
   const t = Date.parse(s);
@@ -283,7 +277,7 @@ function ProjectPage() {
   const { primary: primaryAgency, partners: implementingPartners } = splitAgencies(
     project.implementingAgency,
   );
-  void extractBudget;
+  
   const [showAllDocs, setShowAllDocs] = useState(false);
   const visibleDocs = showAllDocs ? documents : documents.slice(0, 2);
   const status = implementationStatus(project);
@@ -309,7 +303,7 @@ function ProjectPage() {
               className="h-2 w-2 rounded-full"
               style={{ background: accent }}
             />
-            <span>{country?.region}</span>
+            <span>{country?.region ?? "Unknown region"}</span>
             <span>·</span>
             <span>{country?.name ?? project.country}</span>
             <span>·</span>
