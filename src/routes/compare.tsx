@@ -190,7 +190,7 @@ function Compare() {
                     Sequencing implications
                   </div>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    {summaries[code]?.summary}
+                    {summaries[code]?.summary ?? "No sequencing notes yet."}
                   </p>
                 </div>
               </div>

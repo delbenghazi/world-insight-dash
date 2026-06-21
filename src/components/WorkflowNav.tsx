@@ -19,7 +19,7 @@ export function WorkflowNav() {
 
   const mainItems: NavItem[] = [
     { label: "Home", to: "/", icon: Home, match: (p) => p === "/" },
-    { label: "Atlas", to: "/methodology", icon: Map, match: (p) => p.startsWith("/methodology") },
+    { label: "Methodology", to: "/methodology", icon: Map, match: (p) => p.startsWith("/methodology") },
     {
       label: "Country Portfolio",
       to: "/country/$code",
