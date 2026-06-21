@@ -213,7 +213,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
     const nextPath = steps[next].path;
     if (nextPath !== pathname) {
       intentionalNavRef.current = true;
-      navigate({ to: nextPath });
+      navigate({ to: nextPath as never });
     }
   }, [index, steps, pathname, navigate]);
 
@@ -223,7 +223,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
     const prevPath = steps[prev].path;
     if (prevPath !== pathname) {
       intentionalNavRef.current = true;
-      navigate({ to: prevPath });
+      navigate({ to: prevPath as never });
     }
   }, [index, steps, pathname, navigate]);
 
