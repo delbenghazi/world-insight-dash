@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare, Map, FileText, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, BookOpen, GitCompare, Map, FileText, Info, Workflow } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import {
@@ -96,6 +96,7 @@ export function LeftPanel() {
                   icon: FileText,
                   params: { code: selectedCountry ?? "GTM" },
                 },
+                { to: "/portfolio-advisor", label: "Portfolio Advisor", icon: Workflow },
                 { to: "/compare", label: "Compare", icon: GitCompare },
                 { to: "/add-project", label: "Add Project", icon: Plus },
                 { to: "/about", label: "About", icon: Info },
