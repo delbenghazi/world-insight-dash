@@ -53,7 +53,7 @@ export function PortfolioAdvisor({ projects }: { projects: Project[] }) {
     <div className="mt-6 space-y-5">
       <SummaryBar analysis={analysis} />
 
-      <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-surface p-1">
+      <div data-tour="roadmap" className="flex flex-wrap items-center gap-1 rounded-lg border bg-surface p-1">
         {VIEWS.map((v) => {
           const Icon = v.icon;
           const on = view === v.id;

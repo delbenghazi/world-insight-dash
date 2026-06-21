@@ -63,7 +63,7 @@ function Home() {
         <div className="flex min-h-0 flex-1 w-full">
           <LeftPanel />
           <main className="relative flex-1">
-            <section className="relative h-full w-full overflow-hidden">
+            <section data-tour="world-map" className="relative h-full w-full overflow-hidden">
               <WorldMap onCountryClick={markIntroSeen} />
               <IntroOverlay
                 open={introOpen}

@@ -49,7 +49,7 @@ function Compare() {
           dominant interactions, and bottlenecks.
         </p>
 
-        <div className="mt-8 rounded-xl border bg-surface p-5">
+        <div data-tour="country-checkboxes" className="mt-8 rounded-xl border bg-surface p-5">
           <div className="flex items-center justify-between">
             <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
               Choose countries · {selected.length} selected
