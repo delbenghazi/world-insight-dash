@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Map, FileText, GitCompare, Plus, Info } from "lucide-react";
+import { Home, Map, FileText, GitCompare, Plus, Info, Workflow } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useProjectStore } from "@/lib/project-data";
 
@@ -26,6 +26,7 @@ export function WorkflowNav() {
       params: { code: countryCode },
       match: (p) => p.startsWith("/country"),
     },
+    { label: "Portfolio Advisor", to: "/portfolio-advisor", icon: Workflow, match: (p) => p.startsWith("/portfolio-advisor") },
     { label: "Compare", to: "/compare", icon: GitCompare, match: (p) => p.startsWith("/compare") },
     { label: "Add Project", to: "/add-project", icon: Plus, match: (p) => p.startsWith("/add-project") },
   ];

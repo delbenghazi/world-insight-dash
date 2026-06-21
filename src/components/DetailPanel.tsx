@@ -330,7 +330,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
             <div className="mt-6 flex items-center justify-between rounded-md border border-dashed bg-surface/40 px-4 py-3 text-xs text-muted-foreground">
               <span>Next: compare this country with others</span>
               <Link
-                to="/compare"
+                to="/portfolio-advisor"
                 className="rounded-md bg-foreground px-3 py-1.5 font-medium text-background hover:opacity-90"
               >
                 Open compare →

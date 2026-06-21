@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PortfolioAdvisorRouteImport } from './routes/portfolio-advisor'
 import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AddProjectRouteImport } from './routes/add-project'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectProjectIdRouteImport } from './routes/project.$projectId'
 import { Route as CountryCodeRouteImport } from './routes/country.$code'
 
+const PortfolioAdvisorRoute = PortfolioAdvisorRouteImport.update({
+  id: '/portfolio-advisor',
+  path: '/portfolio-advisor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MethodologyRoute = MethodologyRouteImport.update({
   id: '/methodology',
   path: '/methodology',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/add-project': typeof AddProjectRoute
   '/compare': typeof CompareRoute
   '/methodology': typeof MethodologyRoute
+  '/portfolio-advisor': typeof PortfolioAdvisorRoute
   '/country/$code': typeof CountryCodeRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/add-project': typeof AddProjectRoute
   '/compare': typeof CompareRoute
   '/methodology': typeof MethodologyRoute
+  '/portfolio-advisor': typeof PortfolioAdvisorRoute
   '/country/$code': typeof CountryCodeRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/add-project': typeof AddProjectRoute
   '/compare': typeof CompareRoute
   '/methodology': typeof MethodologyRoute
+  '/portfolio-advisor': typeof PortfolioAdvisorRoute
   '/country/$code': typeof CountryCodeRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/add-project'
     | '/compare'
     | '/methodology'
+    | '/portfolio-advisor'
     | '/country/$code'
     | '/project/$projectId'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/add-project'
     | '/compare'
     | '/methodology'
+    | '/portfolio-advisor'
     | '/country/$code'
     | '/project/$projectId'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/add-project'
     | '/compare'
     | '/methodology'
+    | '/portfolio-advisor'
     | '/country/$code'
     | '/project/$projectId'
   fileRoutesById: FileRoutesById
@@ -117,12 +129,20 @@ export interface RootRouteChildren {
   AddProjectRoute: typeof AddProjectRoute
   CompareRoute: typeof CompareRoute
   MethodologyRoute: typeof MethodologyRoute
+  PortfolioAdvisorRoute: typeof PortfolioAdvisorRoute
   CountryCodeRoute: typeof CountryCodeRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/portfolio-advisor': {
+      id: '/portfolio-advisor'
+      path: '/portfolio-advisor'
+      fullPath: '/portfolio-advisor'
+      preLoaderRoute: typeof PortfolioAdvisorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/methodology': {
       id: '/methodology'
       path: '/methodology'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   AddProjectRoute: AddProjectRoute,
   CompareRoute: CompareRoute,
   MethodologyRoute: MethodologyRoute,
+  PortfolioAdvisorRoute: PortfolioAdvisorRoute,
   CountryCodeRoute: CountryCodeRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,
 }
