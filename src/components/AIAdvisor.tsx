@@ -205,7 +205,7 @@ export function AIAdvisor({
 
 
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-              {!activeCode ? (
+              {!canChat ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                     <Sparkles size={16} />
@@ -219,8 +219,17 @@ export function AIAdvisor({
                 <>
                   {messages.length === 0 && (
                     <div className="rounded-md bg-secondary px-3 py-2 text-sm leading-relaxed text-foreground">
-                      Ready to advise on{" "}
-                      <span className="font-semibold">{country?.name}</span>. Ask about sequencing, mandate overlaps, or coordination risks across this portfolio.
+                      {portfolioMode ? (
+                        <>
+                          Ready to advise on the{" "}
+                          <span className="font-semibold">regional portfolio</span>. Ask about cross-country sequencing, donor overlaps, or coordination risks across all projects.
+                        </>
+                      ) : (
+                        <>
+                          Ready to advise on{" "}
+                          <span className="font-semibold">{country?.name}</span>. Ask about sequencing, mandate overlaps, or coordination risks across this portfolio.
+                        </>
+                      )}
                     </div>
                   )}
                   {messages.map((m, i) => (
@@ -255,7 +264,7 @@ export function AIAdvisor({
                   )}
                   {messages.length === 0 && !loading && (
                     <div className="space-y-1.5 pt-1">
-                      {SUGGESTIONS.map((s) => (
+                      {suggestions.map((s) => (
                         <button
                           key={s}
                           onClick={() => send(s)}
