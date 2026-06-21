@@ -1,27 +1,30 @@
-# Move "Take a tour" to home + clearer guidance steps
+## Audit results
 
-## 1. Relocate the tour trigger
-- Remove `TourTriggerButton` from `src/components/WorkflowNav.tsx` (top navigation bar).
-- Add `TourTriggerButton` to `src/routes/index.tsx` (home page) as a prominent CTA — placed near the top of the hero/intro area so it's the first thing a new user sees.
-- Keep the "Exit tour" control available while the tour is active. Since the button is no longer globally visible, the in-tooltip "Exit"/X control inside `TourOverlay` becomes the primary exit affordance during the tour (already exists). No floating global exit needed.
+I walked through every route and shared component. Here's what's worth fixing, grouped by impact. Tell me which to address (default: all 🔴 + 🟠).
 
-## 2. Improve the Portfolio Advisor step
-Current step just spotlights the roadmap. Update it to actively instruct the user:
-- Copy: **"Select a country from the dropdown to generate a tailored sequencing roadmap and see prioritized recommendations."**
-- Target stays on the advisor's country selector (switch `data-tour="roadmap"` target to the country selector element, or add a new `data-tour="advisor-country-select"` and point the step there).
+### 🔴 Broken (recommend fix)
+1. **WorkflowNav "Atlas" label points to `/methodology`** (`src/components/WorkflowNav.tsx:22`). Misleading. Either rename the label to "Methodology" or change the link to `/`. My recommendation: rename to **"Methodology"** since `/` is already covered by another nav item.
 
-## 3. Improve the Compare step
-Update the final compare step copy:
-- Copy: **"Tick two or more country checkboxes here to compare their portfolios side by side. The comparison view updates as you add countries."**
-- Target remains the `data-tour="country-checkboxes"` element.
+### 🟠 Minor UX gaps
+2. **Blank country region/name** when a URL uses a code outside `FOCUS_COUNTRIES` (`src/routes/project.$projectId.tsx:265`, `src/components/DetailPanel.tsx:38`). Add a safe fallback like `"Unknown region"` / `code.toUpperCase()`.
+3. **Empty `<p>` on Compare** when a country has no summary (`src/routes/compare.tsx:193`). Add fallback copy: "No sequencing notes yet."
+4. **Dead `extractBudget` function** in project detail (`src/routes/project.$projectId.tsx:147,286`). Either surface the budget in the UI or delete the function + `void` line.
 
-## 4. No changes to
-- Tour state machine, persistence, navigation between pages, or step ordering/count.
-- Any other page's tour steps or copy.
-- Layout/styling outside the home hero and the two updated tooltip strings.
+### 🟡 Nits (optional)
+5. Remove `console.error(error)` in root error boundary (`src/routes/__root.tsx:41`) — already reported via `reportLovableError`.
+6. WorkflowNav fallback `countryCode = "GTM"` (`src/components/WorkflowNav.tsx:14`) — use first country from store, or disable the link when none selected.
+7. Local `DetailPanel` inside `PortfolioAdvisor.tsx` shadows the shared component name — rename for clarity.
 
-## Files touched
-- `src/components/WorkflowNav.tsx` — remove trigger button.
-- `src/routes/index.tsx` — add trigger button to home.
-- `src/components/Tour.tsx` — update step copy for advisor and compare; possibly adjust advisor target selector.
-- `src/components/PortfolioAdvisor.tsx` — if retargeting, add `data-tour` to country selector.
+### Not bugs
+- No broken `<Link to=…>` paths.
+- No runtime errors in the current session.
+- No missing alt text (no `<img>` tags).
+
+## Proposed changes (default scope: 🔴 + 🟠)
+
+- `WorkflowNav.tsx`: change `label: "Atlas"` → `label: "Methodology"`.
+- `project.$projectId.tsx`: replace `country?.name` / `country?.region` reads with `country?.name ?? project.country` and `country?.region ?? "Unknown region"`. Decide on `extractBudget`: I'll **delete** it unless you want it surfaced.
+- `DetailPanel.tsx`: same fallback pattern for `country?.region`.
+- `compare.tsx`: `{summaries[code]?.summary ?? "No sequencing notes yet."}`.
+
+Reply with anything to adjust (e.g. "include nits", "keep extractBudget and show budget", "rename to Atlas instead") or approve to implement.
