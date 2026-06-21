@@ -6,6 +6,7 @@ import { WorldMap } from "@/components/WorldMap";
 import { LeftPanel } from "@/components/LeftPanel";
 import { AIAdvisor } from "@/components/AIAdvisor";
 import { IntroOverlay } from "@/components/IntroOverlay";
+import { TourTriggerButton } from "@/components/Tour";
 import { useProjectStore } from "@/lib/project-data";
 
 export const Route = createFileRoute("/")({
@@ -75,6 +76,9 @@ function Home() {
                   Hover a highlighted country, then click to open its portfolio
                 </div>
               )}
+              <div className="absolute right-4 top-3 z-10">
+                <TourTriggerButton />
+              </div>
             </section>
           </main>
         </div>
