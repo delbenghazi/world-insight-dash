@@ -174,7 +174,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
 
   const start = useCallback(() => {
     // Pick first available country with projects, else fall back to selectedCountry/GTM.
-    const codesWithProjects = Array.from(new Set(projects.map((p) => p.countryCode)));
+    const codesWithProjects = Array.from(new Set(projects.map((p) => p.country)));
     const code = codesWithProjects[0] ?? selectedCountry ?? "GTM";
     setCountryCode(code);
     setIndex(0);
