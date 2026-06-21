@@ -76,7 +76,7 @@ function Home() {
                   Hover a highlighted country, then click to open its portfolio
                 </div>
               )}
-              <div className="absolute right-4 top-3 z-10">
+              <div className="absolute right-4 bottom-4 z-10">
                 <TourTriggerButton />
               </div>
             </section>
