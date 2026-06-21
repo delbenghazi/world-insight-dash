@@ -64,7 +64,7 @@ function CompareProjects({ projects }: { projects: Project[] }) {
 
   return (
     <div className="mt-8 space-y-5">
-      <div className="rounded-xl border bg-surface p-5">
+      <div data-tour="advisor-country-select" className="rounded-xl border bg-surface p-5">
         <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
           Choose country portfolio
         </div>
