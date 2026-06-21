@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Map, FileText, GitCompare, Plus, Info, Workflow } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useProjectStore } from "@/lib/project-data";
-import { TourTriggerButton } from "@/components/Tour";
+
 
 interface NavItem {
   label: string;
@@ -63,7 +63,6 @@ export function WorkflowNav() {
         <nav className="ml-2 flex flex-1 items-center gap-1 overflow-x-auto">
           {mainItems.map(renderItem)}
           <div className="ml-auto flex items-center gap-2">
-            <TourTriggerButton />
             {renderItem(aboutItem)}
           </div>
         </nav>

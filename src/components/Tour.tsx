@@ -76,15 +76,15 @@ function buildSteps(countryCode: string): TourStep[] {
     },
     {
       path: "/portfolio-advisor",
-      selector: '[data-tour="roadmap"]',
-      title: "Implementation roadmap",
-      body: "The advisor sequences every project pair into a recommended implementation order.",
+      selector: '[data-tour="advisor-country-select"]',
+      title: "Pick a country to advise on",
+      body: "Select a country here to load its portfolio. The advisor will then sequence every project pair into implementation waves, surface the critical path, and flag bottlenecks and conflicts.",
     },
     {
       path: "/compare",
       selector: '[data-tour="country-checkboxes"]',
-      title: "Choose country portfolios",
-      body: "Select two or more countries to compare their portfolios side by side.",
+      title: "Compare country portfolios",
+      body: "Tick two or more country checkboxes to compare their portfolios side by side. The comparison view updates automatically as you add or remove countries.",
     },
   ];
 }
