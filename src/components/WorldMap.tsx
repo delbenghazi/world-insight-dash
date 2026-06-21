@@ -149,9 +149,9 @@ export function WorldMap({ entrance = true, onCountryClick }: { entrance?: boole
                   : baseFill;
                 const fill = isFocus && isHovered ? hoverFill : baseFill;
                 const stroke = isFocus
-                  ? "#1a1a1a"
+                  ? "#000000"
                   : "var(--color-map-neutral-stroke)";
-                const strokeWidth = isFocus ? 1.5 : 1;
+                const strokeWidth = isFocus ? 2 : 1;
                 const fillOpacity = isFocus
                   ? isSelected || isHovered
                     ? 1
