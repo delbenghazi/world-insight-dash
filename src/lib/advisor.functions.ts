@@ -102,8 +102,9 @@ export const askAdvisor = createServerFn({ method: "POST" })
 
     const contextBlock = buildContext(data);
 
+    const system = data.countryCode === "ALL" ? SYSTEM_PORTFOLIO : SYSTEM_COUNTRY;
     const messages = [
-      { role: "system", content: SYSTEM },
+      { role: "system", content: system },
       { role: "system", content: `PORTFOLIO CONTEXT\n${contextBlock}` },
       ...data.messages.map((m) => ({ role: m.role, content: m.content })),
     ];
