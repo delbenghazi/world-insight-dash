@@ -96,6 +96,7 @@ export function LeftPanel() {
                   icon: FileText,
                   params: { code: selectedCountry ?? "GTM" },
                 },
+                { to: "/portfolio-advisor", label: "Portfolio Advisor", icon: Workflow },
                 { to: "/compare", label: "Compare", icon: GitCompare },
                 { to: "/add-project", label: "Add Project", icon: Plus },
                 { to: "/about", label: "About", icon: Info },
