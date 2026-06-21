@@ -274,11 +274,21 @@ function useTargetRect(selector: string): Rect | null {
     const measure = () => {
       const el = document.querySelector(selector) as HTMLElement | null;
       if (!el) {
-        setRect(null);
+        setRect((prev) => (prev === null ? prev : null));
         return;
       }
       const r = el.getBoundingClientRect();
-      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+      setRect((prev) => {
+        if (
+          prev &&
+          prev.top === r.top &&
+          prev.left === r.left &&
+          prev.width === r.width &&
+          prev.height === r.height
+        )
+          return prev;
+        return { top: r.top, left: r.left, width: r.width, height: r.height };
+      });
     };
 
     const tick = () => {
