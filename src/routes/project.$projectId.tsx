@@ -572,10 +572,10 @@ function ProjectPage() {
                       </p>
                     </div>
                     <Link
-                      to="/compare"
+                      to="/portfolio-advisor"
                       className="shrink-0 self-start rounded-md border px-2.5 py-1 text-[11px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
                     >
-                      View in Compare →
+                      View in Portfolio Advisor →
                     </Link>
                   </li>
                 );
