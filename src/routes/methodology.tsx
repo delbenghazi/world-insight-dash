@@ -375,7 +375,7 @@ function Methodology() {
             to="/"
             className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
           >
-            Open atlas <ArrowRight size={12} />
+            Open home <ArrowRight size={12} />
           </Link>
         </div>
       </main>
