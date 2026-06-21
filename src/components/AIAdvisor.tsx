@@ -13,13 +13,25 @@ interface Msg {
   content: string;
 }
 
-const SUGGESTIONS = [
+const SUGGESTIONS_COUNTRY = [
   "What should be sequenced first in this portfolio?",
   "Where do mandates compete inside this country?",
   "Which projects look complementary and can be coordinated?",
 ];
 
-export function AIAdvisor({ countryCode }: { countryCode?: string }) {
+const SUGGESTIONS_PORTFOLIO = [
+  "Which countries have the highest coordination risk right now?",
+  "Where are donors most likely to overlap across the region?",
+  "What cross-country sequencing themes stand out?",
+];
+
+export function AIAdvisor({
+  countryCode,
+  portfolioMode = false,
+}: {
+  countryCode?: string;
+  portfolioMode?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
@@ -28,11 +40,18 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const { selectedCountry, projects, summaries } = useProjectStore();
-  const activeCode = countryCode ?? selectedCountry;
+  // In portfolio mode, advisor is region-wide and IGNORES per-country hover/selection.
+  const activeCode = portfolioMode ? null : (countryCode ?? selectedCountry);
   const country = activeCode ? FOCUS_COUNTRIES[activeCode] : null;
   const portfolio = useMemo(
-    () => (activeCode ? projectsByCountry(projects, activeCode) : []),
-    [projects, activeCode],
+    () => {
+      if (portfolioMode) {
+        const codes = Object.keys(FOCUS_COUNTRIES);
+        return codes.flatMap((c) => projectsByCountry(projects, c));
+      }
+      return activeCode ? projectsByCountry(projects, activeCode) : [];
+    },
+    [projects, activeCode, portfolioMode],
   );
   const pairs = useMemo(
     () => (portfolio.length >= 2 ? evaluateAllPairs(portfolio) : []),
