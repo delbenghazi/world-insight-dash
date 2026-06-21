@@ -284,6 +284,8 @@ function ProjectPage() {
     project.implementingAgency,
   );
   void extractBudget;
+  const [showAllDocs, setShowAllDocs] = useState(false);
+  const visibleDocs = showAllDocs ? documents : documents.slice(0, 2);
   const status = implementationStatus(project);
   const accent = countryColorVar(project.country);
   const risk = riskBadge(project.overallRisk);
