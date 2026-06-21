@@ -11,7 +11,7 @@ import {
 
 export function LeftPanel() {
   const [open, setOpen] = useState(true);
-  const { projects, selectedCountry, setSelectedCountry } = useProjectStore();
+  const { projects, selectedCountry } = useProjectStore();
   const groups = countriesByRegion(projects);
 
   return (
@@ -65,7 +65,6 @@ export function LeftPanel() {
                       key={code}
                       to="/country/$code"
                       params={{ code }}
-                      onMouseEnter={() => setSelectedCountry(code)}
                       className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition hover:bg-secondary ${
                         selectedCountry === code
                           ? "border-foreground/30 bg-secondary"

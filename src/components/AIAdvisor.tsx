@@ -13,13 +13,25 @@ interface Msg {
   content: string;
 }
 
-const SUGGESTIONS = [
+const SUGGESTIONS_COUNTRY = [
   "What should be sequenced first in this portfolio?",
   "Where do mandates compete inside this country?",
   "Which projects look complementary and can be coordinated?",
 ];
 
-export function AIAdvisor({ countryCode }: { countryCode?: string }) {
+const SUGGESTIONS_PORTFOLIO = [
+  "Which countries have the highest coordination risk right now?",
+  "Where are donors most likely to overlap across the region?",
+  "What cross-country sequencing themes stand out?",
+];
+
+export function AIAdvisor({
+  countryCode,
+  portfolioMode = false,
+}: {
+  countryCode?: string;
+  portfolioMode?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
@@ -28,11 +40,18 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const { selectedCountry, projects, summaries } = useProjectStore();
-  const activeCode = countryCode ?? selectedCountry;
+  // In portfolio mode, advisor is region-wide and IGNORES per-country hover/selection.
+  const activeCode = portfolioMode ? null : (countryCode ?? selectedCountry);
   const country = activeCode ? FOCUS_COUNTRIES[activeCode] : null;
   const portfolio = useMemo(
-    () => (activeCode ? projectsByCountry(projects, activeCode) : []),
-    [projects, activeCode],
+    () => {
+      if (portfolioMode) {
+        const codes = Object.keys(FOCUS_COUNTRIES);
+        return codes.flatMap((c) => projectsByCountry(projects, c));
+      }
+      return activeCode ? projectsByCountry(projects, activeCode) : [];
+    },
+    [projects, activeCode, portfolioMode],
   );
   const pairs = useMemo(
     () => (portfolio.length >= 2 ? evaluateAllPairs(portfolio) : []),
@@ -53,8 +72,11 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
     setError(null);
   }, [activeCode]);
 
+  // In portfolio mode the chat is always available — there's no per-country gate.
+  const canChat = portfolioMode || !!activeCode;
+
   async function send(q: string) {
-    if (!q.trim() || !activeCode || loading) return;
+    if (!q.trim() || !canChat || loading) return;
     const userMsg: Msg = { role: "user", content: q.trim() };
     const next = [...messages, userMsg];
     setMessages(next);
@@ -62,11 +84,24 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
     setError(null);
     setLoading(true);
     try {
+      const payloadCountryCode = portfolioMode ? "ALL" : activeCode!;
+      const payloadCountryName = portfolioMode
+        ? "Central America regional portfolio (GTM, HND, SLV)"
+        : (country?.name ?? activeCode!);
+      const payloadSummary = portfolioMode
+        ? Object.keys(FOCUS_COUNTRIES)
+            .map((c) => {
+              const s = summaries[c]?.summary?.trim();
+              return s ? `${FOCUS_COUNTRIES[c]?.name ?? c}: ${s}` : "";
+            })
+            .filter(Boolean)
+            .join("\n\n")
+        : (summaries[activeCode!]?.summary ?? "");
       const result = await ask({
         data: {
-          countryCode: activeCode,
-          countryName: country?.name ?? activeCode,
-          portfolioSummary: summaries[activeCode]?.summary ?? "",
+          countryCode: payloadCountryCode,
+          countryName: payloadCountryName,
+          portfolioSummary: payloadSummary,
           projects: portfolio.map((p) => ({
             projectId: p.projectId,
             projectName: p.projectName,
@@ -108,7 +143,12 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
     }
   }
 
-  const label = countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor";
+  const label = portfolioMode
+    ? "AI Advisor · Regional portfolio"
+    : countryCode && country
+      ? `AI Advisor · ${country.name}`
+      : "AI Advisor";
+  const suggestions = portfolioMode ? SUGGESTIONS_PORTFOLIO : SUGGESTIONS_COUNTRY;
 
   return (
     <>
@@ -138,13 +178,13 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                 <Bot size={14} />
               </div>
               <div>
-                <div className="text-sm font-semibold">
-                  {countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor"}
-                </div>
+                <div className="text-sm font-semibold">{label}</div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {country
-                    ? `Scoped to ${portfolio.length} project${portfolio.length === 1 ? "" : "s"}`
-                    : "Select a country to scope this advisor"}
+                  {portfolioMode
+                    ? `Region-wide · ${portfolio.length} project${portfolio.length === 1 ? "" : "s"} across ${Object.keys(FOCUS_COUNTRIES).length} countries`
+                    : country
+                      ? `Scoped to ${portfolio.length} project${portfolio.length === 1 ? "" : "s"}`
+                      : "Select a country to scope this advisor"}
                 </div>
               </div>
               <button
@@ -165,7 +205,7 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
 
 
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-              {!activeCode ? (
+              {!canChat ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                     <Sparkles size={16} />
@@ -179,8 +219,17 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                 <>
                   {messages.length === 0 && (
                     <div className="rounded-md bg-secondary px-3 py-2 text-sm leading-relaxed text-foreground">
-                      Ready to advise on{" "}
-                      <span className="font-semibold">{country?.name}</span>. Ask about sequencing, mandate overlaps, or coordination risks across this portfolio.
+                      {portfolioMode ? (
+                        <>
+                          Ready to advise on the{" "}
+                          <span className="font-semibold">regional portfolio</span>. Ask about cross-country sequencing, donor overlaps, or coordination risks across all projects.
+                        </>
+                      ) : (
+                        <>
+                          Ready to advise on{" "}
+                          <span className="font-semibold">{country?.name}</span>. Ask about sequencing, mandate overlaps, or coordination risks across this portfolio.
+                        </>
+                      )}
                     </div>
                   )}
                   {messages.map((m, i) => (
@@ -215,7 +264,7 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                   )}
                   {messages.length === 0 && !loading && (
                     <div className="space-y-1.5 pt-1">
-                      {SUGGESTIONS.map((s) => (
+                      {suggestions.map((s) => (
                         <button
                           key={s}
                           onClick={() => send(s)}
@@ -241,16 +290,18 @@ export function AIAdvisor({ countryCode }: { countryCode?: string }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
-                  activeCode
-                    ? `Ask about ${country?.name}…`
-                    : "Select a country first"
+                  portfolioMode
+                    ? "Ask about the regional portfolio…"
+                    : activeCode
+                      ? `Ask about ${country?.name}…`
+                      : "Select a country first"
                 }
-                disabled={!activeCode || loading}
+                disabled={!canChat || loading}
                 className="flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/40 focus:ring-2 disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!activeCode || loading || !input.trim()}
+                disabled={!canChat || loading || !input.trim()}
                 className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground disabled:opacity-50"
               >
                 <Send size={14} />

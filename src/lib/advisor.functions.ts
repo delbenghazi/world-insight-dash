@@ -41,12 +41,12 @@ const Input = z.object({
   countryCode: z.string().min(2).max(8),
   countryName: z.string().min(1).max(120),
   portfolioSummary: z.string().max(8000).optional().default(""),
-  projects: z.array(ProjectLite).max(40),
-  pairs: z.array(PairLite).max(200),
+  projects: z.array(ProjectLite).max(120),
+  pairs: z.array(PairLite).max(400),
   messages: z.array(Msg).min(1).max(40),
 });
 
-const SYSTEM = `You are the DPI-Atlas portfolio advisor. You explain — you do not invent.
+const SYSTEM_COUNTRY = `You are the DPI-Atlas portfolio advisor. You explain — you do not invent.
 
 GROUND RULES
 - You are SCOPED to a single country portfolio. Do not speculate about other countries.
@@ -54,6 +54,15 @@ GROUND RULES
 - Composite scores (5–15) and dimension scores (D1–D5) come from the codebook. Don't recompute them; cite the values provided.
 - If the user asks something you don't have data for, say so plainly. Do not fabricate projects, donors, dates, or scores.
 - Be concise. Prefer short paragraphs and bullet lists. Cite project IDs (e.g. GTM1, HND2) explicitly.`;
+
+const SYSTEM_PORTFOLIO = `You are the DPI-Atlas portfolio advisor. You explain — you do not invent.
+
+GROUND RULES
+- You are scoped to a REGIONAL portfolio spanning multiple countries (e.g. Guatemala, Honduras, El Salvador). When useful, compare across countries and call out cross-country patterns. Do not invent countries outside the provided list.
+- Sequencing outcomes (Redesign / Sequence / Coordinate / Parallel) are decided by a deterministic four-gate engine in code. NEVER second-guess them. Quote the engine's outcome and reasoning verbatim when asked about a pair.
+- Composite scores (5–15) and dimension scores (D1–D5) come from the codebook. Don't recompute them; cite the values provided.
+- If the user asks something you don't have data for, say so plainly. Do not fabricate projects, donors, dates, or scores.
+- Be concise. Prefer short paragraphs and bullet lists. Cite project IDs (e.g. GTM1, HND2) explicitly, and prefix country when ambiguous.`;
 
 function buildContext(data: z.infer<typeof Input>): string {
   const lines: string[] = [];
@@ -93,8 +102,9 @@ export const askAdvisor = createServerFn({ method: "POST" })
 
     const contextBlock = buildContext(data);
 
+    const system = data.countryCode === "ALL" ? SYSTEM_PORTFOLIO : SYSTEM_COUNTRY;
     const messages = [
-      { role: "system", content: SYSTEM },
+      { role: "system", content: system },
       { role: "system", content: `PORTFOLIO CONTEXT\n${contextBlock}` },
       ...data.messages.map((m) => ({ role: m.role, content: m.content })),
     ];
