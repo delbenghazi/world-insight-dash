@@ -290,16 +290,18 @@ export function AIAdvisor({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
-                  activeCode
-                    ? `Ask about ${country?.name}…`
-                    : "Select a country first"
+                  portfolioMode
+                    ? "Ask about the regional portfolio…"
+                    : activeCode
+                      ? `Ask about ${country?.name}…`
+                      : "Select a country first"
                 }
-                disabled={!activeCode || loading}
+                disabled={!canChat || loading}
                 className="flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none ring-ring/40 focus:ring-2 disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!activeCode || loading || !input.trim()}
+                disabled={!canChat || loading || !input.trim()}
                 className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground disabled:opacity-50"
               >
                 <Send size={14} />
