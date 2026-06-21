@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, ArrowLeft, ChevronDown, ChevronUp, ExternalLink, FileText } from "lucide-react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import { RadarChart } from "@/components/RadarChart";
 import {
@@ -283,6 +284,8 @@ function ProjectPage() {
     project.implementingAgency,
   );
   void extractBudget;
+  const [showAllDocs, setShowAllDocs] = useState(false);
+  const visibleDocs = showAllDocs ? documents : documents.slice(0, 2);
   const status = implementationStatus(project);
   const accent = countryColorVar(project.country);
   const risk = riskBadge(project.overallRisk);
@@ -598,7 +601,7 @@ function ProjectPage() {
             </span>
           </div>
           <ul className="mt-3 divide-y rounded-lg border bg-surface">
-            {documents.map((doc, i) => (
+            {visibleDocs.map((doc, i) => (
               <li key={i} className="flex items-start gap-3 px-4 py-3">
                 <FileText size={14} className="mt-1 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
@@ -621,6 +624,22 @@ function ProjectPage() {
               </li>
             ))}
           </ul>
+          {documents.length > 2 && (
+            <button
+              onClick={() => setShowAllDocs((v) => !v)}
+              className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg border bg-surface py-2 text-xs font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+            >
+              {showAllDocs ? (
+                <>
+                  Show less <ChevronUp size={14} />
+                </>
+              ) : (
+                <>
+                  Show all {documents.length} documents <ChevronDown size={14} />
+                </>
+              )}
+            </button>
+          )}
         </section>
       </main>
     </div>
