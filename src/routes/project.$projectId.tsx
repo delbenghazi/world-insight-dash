@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { AlertTriangle, ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ChevronDown, ChevronUp, ExternalLink, FileText } from "lucide-react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import { RadarChart } from "@/components/RadarChart";
 import {
