@@ -46,7 +46,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
 
   const [draft, setDraft] = useState(summaries[code]?.summary ?? "");
   const [saved, setSaved] = useState(true);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
 
   useEffect(() => {
     setDraft(summaries[code]?.summary ?? "");
