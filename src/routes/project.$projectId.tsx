@@ -300,23 +300,21 @@ function ProjectPage() {
         </Link>
 
         {/* Header */}
-        <header className="mt-4 flex items-start gap-3">
-          <span
-            className="mt-2 h-3 w-3 shrink-0 rounded-full"
-            style={{ background: accent }}
-          />
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-              <span>{country?.region}</span>
-              <span>·</span>
-              <span>{country?.name ?? project.country}</span>
-              <span>·</span>
-              <span>Project {project.projectId}</span>
-            </div>
-            <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-tight">
-              {project.projectName}
-            </h1>
+        <header className="mt-10">
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground/80">
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ background: accent }}
+            />
+            <span>{country?.region}</span>
+            <span>·</span>
+            <span>{country?.name ?? project.country}</span>
+            <span>·</span>
+            <span>{project.projectId}</span>
           </div>
+          <h1 className="mt-3 text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground">
+            {project.projectName}
+          </h1>
         </header>
 
         {/* ============ SECTION 1 — PROJECT SNAPSHOT + RADAR ============ */}
