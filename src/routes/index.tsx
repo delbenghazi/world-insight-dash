@@ -80,7 +80,7 @@ function Home() {
         </div>
       )}
 
-      {loaded && <AIAdvisor />}
+      {loaded && <AIAdvisor portfolioMode />}
     </div>
   );
 }
