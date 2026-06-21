@@ -70,10 +70,10 @@ function About() {
         <div className="mt-10 flex items-center justify-between rounded-md border border-dashed bg-surface/40 px-4 py-3 text-sm text-muted-foreground">
           <span>Next: learn the methodology or select a country</span>
           <Link
-            to="/"
+            to="/methodology"
             className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
           >
-            Open atlas <ArrowRight size={12} />
+            Open methodology <ArrowRight size={12} />
           </Link>
         </div>
       </main>
