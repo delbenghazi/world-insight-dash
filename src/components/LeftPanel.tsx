@@ -44,7 +44,7 @@ export function LeftPanel() {
             <span className="text-foreground">flag as risk</span> before commitment.
           </p>
 
-          <div className="mt-5 space-y-3 overflow-y-auto border-t pt-4">
+          <div data-tour="countries-list" className="mt-5 space-y-3 overflow-y-auto border-t pt-4">
             <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
               Countries in portfolio
             </div>

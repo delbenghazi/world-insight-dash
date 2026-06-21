@@ -176,7 +176,7 @@ function Methodology() {
         {/* Three-column framework */}
         <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
           {/* INPUTS */}
-          <section>
+          <section data-tour="dimensions">
             <StageLabel>Inputs</StageLabel>
             <h2 className="mt-1 text-lg font-semibold">
               Five assessed dimensions
@@ -221,7 +221,7 @@ function Methodology() {
           <FlowArrow />
 
           {/* PROCESS */}
-          <section>
+          <section data-tour="interactions">
             <StageLabel>Process</StageLabel>
             <h2 className="mt-1 text-lg font-semibold">Interaction types</h2>
             <div className="mt-4 space-y-3">
@@ -272,7 +272,7 @@ function Methodology() {
           <FlowArrow />
 
           {/* OUTPUT */}
-          <section>
+          <section data-tour="risk-classification">
             <StageLabel>Output</StageLabel>
             <h2 className="mt-1 text-lg font-semibold">
               Composite score and risk

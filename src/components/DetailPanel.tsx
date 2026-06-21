@@ -106,7 +106,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
               action={{ label: "Add a project", to: "/add-project" }}
             />
           ) : (
-            <>
+            <div data-tour="composite">
               <RiskHero
                 interaction={stats.dominantInteraction}
                 composite={stats.avgScore}
@@ -114,14 +114,14 @@ export function DetailPanel({ code }: { code: CountryCode }) {
                 context={`Dominant interaction across ${stats.count} parallel investment${stats.count === 1 ? "" : "s"}. GTMI tier ${stats.gtmiTier}.`}
               />
               <ProxyFlag info={countryProxyInfo(projects, code)} />
-            </>
+            </div>
           )}
         </section>
 
 
         {/* Country summary */}
         {list.length > 0 && (
-          <section className="mt-6 px-6">
+          <section data-tour="sequencing" className="mt-6 px-6">
             <div className="rounded-xl border bg-surface p-5">
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Sequencing implications</h3>
@@ -160,7 +160,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
 
         {/* Projects — collapsed by default */}
         {list.length > 0 && (
-          <section className="mt-6 px-6 pb-28">
+          <section data-tour="project-table" className="mt-6 px-6 pb-28">
             <button
               onClick={() => setShowDetails((s) => !s)}
               className="flex w-full items-center justify-between rounded-md border bg-surface px-4 py-3 text-sm font-medium hover:bg-secondary"
