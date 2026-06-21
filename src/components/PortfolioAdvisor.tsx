@@ -647,12 +647,14 @@ function DetailPanel({
 }) {
   if (!selected) {
     return (
-      <aside className="sticky top-4 hidden h-fit rounded-xl border bg-surface p-4 text-xs text-muted-foreground lg:block">
-        <div className="mb-2 inline-flex items-center gap-1.5 font-mono uppercase tracking-wider">
+      <aside className="sticky top-4 hidden h-fit rounded-xl border bg-surface p-4 lg:block">
+        <div className="mb-2 inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-foreground">
           <Info size={12} /> Explainability
         </div>
-        Click any project, edge, or roadmap item to inspect why the engine
-        placed it where it did, with confidence and original evidence.
+        <p className="text-xs text-muted-foreground">
+          Click any project, edge, or roadmap item to inspect why the engine
+          placed it where it did, with confidence and original evidence.
+        </p>
       </aside>
     );
   }
