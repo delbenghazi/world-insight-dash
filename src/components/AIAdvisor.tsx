@@ -72,8 +72,11 @@ export function AIAdvisor({
     setError(null);
   }, [activeCode]);
 
+  // In portfolio mode the chat is always available — there's no per-country gate.
+  const canChat = portfolioMode || !!activeCode;
+
   async function send(q: string) {
-    if (!q.trim() || !activeCode || loading) return;
+    if (!q.trim() || !canChat || loading) return;
     const userMsg: Msg = { role: "user", content: q.trim() };
     const next = [...messages, userMsg];
     setMessages(next);
@@ -81,11 +84,24 @@ export function AIAdvisor({
     setError(null);
     setLoading(true);
     try {
+      const payloadCountryCode = portfolioMode ? "ALL" : activeCode!;
+      const payloadCountryName = portfolioMode
+        ? "Central America regional portfolio (GTM, HND, SLV)"
+        : (country?.name ?? activeCode!);
+      const payloadSummary = portfolioMode
+        ? Object.keys(FOCUS_COUNTRIES)
+            .map((c) => {
+              const s = summaries[c]?.summary?.trim();
+              return s ? `${FOCUS_COUNTRIES[c]?.name ?? c}: ${s}` : "";
+            })
+            .filter(Boolean)
+            .join("\n\n")
+        : (summaries[activeCode!]?.summary ?? "");
       const result = await ask({
         data: {
-          countryCode: activeCode,
-          countryName: country?.name ?? activeCode,
-          portfolioSummary: summaries[activeCode]?.summary ?? "",
+          countryCode: payloadCountryCode,
+          countryName: payloadCountryName,
+          portfolioSummary: payloadSummary,
           projects: portfolio.map((p) => ({
             projectId: p.projectId,
             projectName: p.projectName,
@@ -127,7 +143,12 @@ export function AIAdvisor({
     }
   }
 
-  const label = countryCode && country ? `AI Advisor · ${country.name}` : "AI Advisor";
+  const label = portfolioMode
+    ? "AI Advisor · Regional portfolio"
+    : countryCode && country
+      ? `AI Advisor · ${country.name}`
+      : "AI Advisor";
+  const suggestions = portfolioMode ? SUGGESTIONS_PORTFOLIO : SUGGESTIONS_COUNTRY;
 
   return (
     <>
