@@ -127,6 +127,15 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        if (window.localStorage.getItem("dpi-dashboard-v6") !== null) {
+          window.localStorage.removeItem("dpi-dashboard-v6");
+        }
+      } catch {
+        // ignore storage access errors
+      }
+    }
     useProjectStore.persist.rehydrate();
   }, []);
 
