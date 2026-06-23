@@ -177,12 +177,11 @@ export function evaluatePair(a: Project, b: Project): PairResult {
   }
 
   // Gate 2 — Sequence
-  // Only fires on a REAL directional dependency between THIS pair:
-  //   (a) interaction type is "Sequentially Dependent", OR
-  //   (b) one project's note explicitly ties a precondition to the partner.
+  // Only fires when the pair is explicitly classified as "Sequentially Dependent".
+  // Complementary / Institutionally Competing / Governance-Conflicting pairs
+  // never produce a sequencing edge, even if their notes mention dependency cues.
   const seqByType = baseType === "Sequentially Dependent";
-  const crossDep = hasCrossDependency(a, b);
-  if (seqByType || crossDep) {
+  if (seqByType) {
     const direction = inferDirection(a, b);
     const detail = pNote || "an unmet regulatory or technical precondition links the two";
     let reason: string;
