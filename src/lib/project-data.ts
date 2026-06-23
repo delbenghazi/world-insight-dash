@@ -151,10 +151,7 @@ const seed: Project[] = [
     "dim5_note": "€39.4M total declared (2023 AAP €23.4M + Living Forests/IICA €16M). Both financing agreements signed Mar and Jun 2024; ~0% funding gap. Supports D5 score 1 (secure).",
     "compositeScore": 12,
     "interactionType": "Sequentially Dependent",
-    "linkedProjectIds": [
-      "HND2",
-      "HND3"
-    ],
+    "linkedProjectIds": ["HND2", "HND3"],
     "interactionNote": "SALH digital system depends on HND2 (Cooperation Facility) to build ICF institutional capacity. SALH also feeds into HND3 (PDCC) as timber export compliance data will ultimately link to regional trade interoperability.",
     "overallRisk": "High"
   },
@@ -180,10 +177,7 @@ const seed: Project[] = [
     "dim5_note": "€11M committed and contracted under the 2021 AAP. Fully financed TA budget with no funding gap for the current phase. Supports D5 score 1 (secure).",
     "compositeScore": 11,
     "interactionType": "Complementary",
-    "linkedProjectIds": [
-      "HND1",
-      "HND3"
-    ],
+    "linkedProjectIds": ["HND1", "HND3"],
     "interactionNote": "Acts as institutional enabler for HND1: without stronger ICF and SEFIN capacity, SALH will stall. Also reinforces HND3 (PDCC) by improving regulatory readiness for digital trade facilitation and customs reform.",
     "overallRisk": "Medium"
   },
@@ -209,10 +203,7 @@ const seed: Project[] = [
     "dim5_note": "EU contribution committed and PDCC live since Dec 2023; PDCC 2.0 co-financing IDB board-approved (RG-T4217). No funding gap. Supports D5 score 1 (secure).",
     "compositeScore": 9,
     "interactionType": "Complementary",
-    "linkedProjectIds": [
-      "HND1",
-      "HND2"
-    ],
+    "linkedProjectIds": ["HND1", "HND2"],
     "interactionNote": "PDCC complements HND1 by providing the regional export interoperability layer that SALH-certified timber will eventually feed into. Complementary to HND2 as customs modernisation and regulatory harmonisation both improve platform adoption.",
     "overallRisk": "Medium"
   },
@@ -221,28 +212,25 @@ const seed: Project[] = [
     "projectId": "GTM1",
     "projectName": "EU Global Gateway: Digital Inclusive Transition Initiative (GG-TDEI) — MSME Competitiveness and Trade Digitalisation",
     "projectType": "Global Gateway Team Europe digital economy initiative — MSME platform and trade digitalisation",
-    "leadDonor": "EU (INTPA) / Team Europe — Germany (GIZ), Spain (COFIDES), Sweden (Swisscontact), IDB Lab, ITC (International Trade Centre)",
-    "implementingAgency": "Ministry of Economy (MINECO) + Secretariat for Public Innovation (SIP) — GIZ, COFIDES, Swisscontact, IDB Lab, ITC as implementing partners",
+    "leadDonor": "EU (INTPA) / Team Europe — Germany (GIZ), Spain (COFIDES), Sweden (Swisscontact), IDB Lab, ITC. Five separate signed funding agreements totaling €73.32M: daBio TraDe €3.7M (GIZ), Conecta por Guatemala €48.5M (COFIDES), Desarrollo Económico Inclusivo €3.87M (Swisscontact), Wayfree Expansión €5M (IDB Lab), trade facilitation €12.25M (ITC).",
+    "implementingAgency": "Ministry of Economy (MINECO) — the only Guatemalan government counterpart named in EU documentation, and only for the ITC trade-facilitation component (€12.25M). The other four components partner directly with private/financial-sector beneficiaries (FEDECOVERA cooperative, microfinance institutions, municipalities) with no government ministry named.",
     "gtmiTier": "B",
     "startDate": "06/01/2025",
-    "endDate": "12/01/2028",
-    "dim1_institutional": 3,
-    "dim1_note": "Five implementing partners (GIZ, COFIDES, Swisscontact, IDB Lab, ITC) operate separate project lines under a Team Europe umbrella with no formally designated coordinating mechanism above the bilateral level. SIP, created in 2021, has limited administrative capacity relative to its Digital Government Plan 2021–2026 mandate.",
-    "dim2_regulatory": 3,
-    "dim2_note": "Guatemala has no comprehensive data protection law — Decreto 57-2008 covers only partial public-sector data — so digital financial services and data-sharing components lack a secure legal framework, exposing private partners such as COFIDES to regulatory risk.",
+    "endDate": "11/01/2029",
+    "dim1_institutional": 1,
+    "dim1_note": "Only one national counterpart (MINECO) is documented across all five components, and only for one of them. No inter-ministerial coordination requirement is described in either the EEAS press release or the EU's factsheet.",
+    "dim2_regulatory": 2,
+    "dim2_note": "The ITC trade-facilitation component requires developing a \"marco habilitante\" (enabling regulatory framework) to transition to an online single-window trade/investment system — secondary-level regulatory work, executable by executive action. No primary/congressional legislation requirement documented.",
     "dim3_technical": 2,
-    "dim3_note": "The initiative relies on existing fintech infrastructure (mobile POS, APIs) and GIZ's INATrace traceability tool, avoiding new state infrastructure build-out; integration with MINECO's business registration systems and the Guatecompras e-procurement platform is required for trade-facilitation components, creating moderate interoperability demands on legacy systems.",
+    "dim3_note": "Components build on existing infrastructure: GIZ's established INATrace tool, existing fintech/mobile-payment rails, expansion of the existing Wayfree connectivity network. The ITC component integrates MINECO's trade/investment services into an online single-window system — integration with 1–2 existing core systems, no new backbone.",
     "dim4_political": 2,
-    "dim4_note": "The Arévalo government has positioned digital transformation as a reform priority, lending political buy-in to MSME-focused components; implementation in indigenous and rural communities — over 40% of the population — introduces logistical and political complexity not fully captured in the programme design as launched.",
-    "dim5_investment": 2,
-    "dim5_note": "€82M Digital and Inclusive Transition Team Europe Initiative. Global Gateway Forum (2025) confirms its \"already supporting Guatemala,\"  but component budgets remain undisaggregated and no private leverage (COFIDES, IDB Lab) is referenced; Supports D5 score 2 (partly secured)",
-    "compositeScore": 12,
-    "interactionType": "Institutionally Competing",
-    "linkedProjectIds": [
-      "GTM2",
-      "GTM3"
-    ],
-    "interactionNote": "GTM1 and GTM2 both draw on SIP's limited digital governance capacity, creating institutional competition, while GTM1's ITC trade-digitalisation outputs overlap with GTM3's PDCC interface at MINECO/VUPE, so without a joint coordination mechanism there is a high risk of parallel rather than complementary trade-facilitation platforms.",
+    "dim4_note": "EU EUDR-style traceability requirements in the daBio TraDe component increase compliance costs for exporters in priority value chains, which implies identifiable groups may face a relative disadvantage from the new burden.",
+    "dim5_investment": 1,
+    "dim5_note": "€73.32M total across 5 components. All five components have signed, dated financing agreements (GIZ/BMZ; COFIDES/FONPRODE-AECID; Swisscontact/Swedish Embassy; IDB Lab; ITC/Team Europe). No funding gap documented. Supports D5 score 1 (secure).",
+    "compositeScore": 8,
+    "interactionType": "Complementary",
+    "linkedProjectIds": ["GTM2", "GTM3"],
+    "interactionNote": "GTM1's trade-facilitation component (single-window enablement at MINECO) and GTM3's PDCC node (regional customs interoperability via MINECO/VUPE) both touch Guatemala's trade-digitalisation work at MINECO/VUPE and appear mutually reinforcing — a specific, named institutional overlap. GTM1's relationship to GTM2 is looser: both are concurrent Global Gateway digital-sector investments in Guatemala under the same country strategy, but run through entirely distinct agencies (MINECO vs. GAE) with no documented technical or institutional dependency between them.",
     "overallRisk": "Medium"
   },
   {
@@ -250,28 +238,25 @@ const seed: Project[] = [
     "projectId": "GTM2",
     "projectName": "Digital Governance Enhancement in Guatemala (EU–Estonia eGA / Global Gateway)",
     "projectType": "Digital Public Administration & GovTech Enablers (Global Gateway)",
-    "leadDonor": "EU (INTPA) — €2M grant | Team Europe (Estonia e-Governance Academy)",
-    "implementingAgency": "Comisión Presidencial de Gobierno Abierto y Electrónico (GAE) — lead + inter-institutional group of strategic ministries and secretariats",
+    "leadDonor": "EU (INTPA) — €2M grant; Team Europe (Estonia, e-Governance Academy/eGA)",
+    "implementingAgency": "Comisión Presidencial de Gobierno Abierto y Electrónico (GAE)",
     "gtmiTier": "B",
-    "startDate": "01/09/2025",
-    "endDate": "01/03/2029",
-    "dim1_institutional": 2,
-    "dim1_note": "GAE leads an inter-institutional group spanning multiple ministries and secretariats; coordination burden is real but modest given the TA-focused nature of the project and the Comisionado's cross-cutting mandate. No new permanent body required.",
+    "startDate": "10/01/2025",
+    "endDate": "03/01/2029",
+    "dim1_institutional": 3,
+    "dim1_note": "GAE is composed of representatives from at least five government bodies — Ministerio de Gobernación, SEGEPLAN, Ministerio de Relaciones Exteriores, Ministerio de Finanzas Públicas, and the Comisión Nacional Contra la Corrupción — per GAE's own 2024 relaunch coverage.",
     "dim2_regulatory": 2,
-    "dim2_note": "Guatemala's open-government legal framework (Decree 57-2008) is partial; full inter-institutional data-sharing requires secondary regulations not yet enacted; the absence of a comprehensive data protection law adds a compliance gap for the citizen-participation components.",
-    "dim3_technical": 2,
-    "dim3_note": "Primarily advisory and capacity-building; requires connecting GAE's digital governance tools to existing public administration information systems and the Guatecompras/SAT interface — moderate integration needs, no new national infrastructure layer required.",
-    "dim4_political": 2,
-    "dim4_note": "Governance reform and transparency tools can generate political friction in Guatemala's low-trust institutional environment (CPI 25/100); however, the Arévalo government's explicit pro-digital-governance agenda and Estonia's neutral technical image lower short-term political exposure.",
+    "dim2_note": "One of the project's four stated outputs is a \"digital governance strategy + legal framework recommendations\" — regulatory development is a core deliverable, implying existing gaps. Project is advisory/TA in nature (recommendations, not direct legislation).",
+    "dim3_technical": 1,
+    "dim3_note": "Per eGA's own project page, this 42-month phase's four outputs are a digitalisation landscape review, a strategy/legal-framework recommendation, interoperability research, and capacity-building workshops — research and advisory work, not platform deployment.",
+    "dim4_political": 3,
+    "dim4_note": "Guatemala's CPI is 25/100 (2024, Transparency International) and the project sits in the transparency/governance domain (GAE includes the Comisión Nacional Contra la Corrupción; project explicitly framed around anti-corruption by both parties at signing).",
     "dim5_investment": 1,
-    "dim5_note": "€2M EU grant committed, financing agreement signed Sep 2025. Budget fully secured for the 42-month period with no funding gap. Supports D5 score 1 (secure).",
-    "compositeScore": 9,
+    "dim5_note": "€2M EU grant, financing agreement signed 24 Sept 2025, full 42-month period funded — confirmed/secured, no funding gap documented. Supports D5 score 1 (secure).",
+    "compositeScore": 10,
     "interactionType": "Complementary",
-    "linkedProjectIds": [
-      "GTM1",
-      "GTM3"
-    ],
-    "interactionNote": "Digital Governance Enhancement provides the e-government architecture, open-data standards, and inter-institutional data-sharing layer that GTM1's MSME digital services and GTM3's customs/VUPE interoperability both depend on for reliable back-end government data; acting as an enabling GovTech layer it reinforces rather than competes with the trade-facing projects.",
+    "linkedProjectIds": ["GTM1", "GTM3"],
+    "interactionNote": "GTM2's own primary source (eGA project page) describes this phase as research and strategy recommendations only, not platform delivery; there is no sourced basis for claims that GTM1 or GTM3 technically depend on a GTM2 deliverable. GTM1, GTM2, and GTM3 share a real, looser basis for Complementary classification — all three are concurrent EU Global Gateway digital-sector investments in Guatemala under the same country strategy, run through entirely distinct agencies (MINECO / GAE / SAT-VUPE-MAGA), with non-overlapping outputs. Classified Complementary on shared-policy-objective basis only — not on any specific technical handoff.",
     "overallRisk": "Medium"
   },
   {
@@ -279,28 +264,25 @@ const seed: Project[] = [
     "projectId": "GTM3",
     "projectName": "PDCC Guatemala National Node — Central American Digital Trade Interoperability Platform (EU Global Gateway Regional Flagship; SIECA-managed)",
     "projectType": "Global Gateway regional flagship — PDCC / regional digital trade interoperability platform",
-    "leadDonor": "EU (INTPA) + IDB (co-financing, RG-T4217) — USD 9M EU contribution Phase 1, administered via IDB; SIECA as regional executing agency",
-    "implementingAgency": "SAT Customs Administration (Intendencia de Aduanas) + MINECO/VUPE + MAGA/VISAR — as national node within SIECA regional governance framework",
+    "leadDonor": "EU (€8M original cooperation agreement, per EEAS 2016) + IDB co-financing (PDCC 2.0 expansion, RG-T4217, COMIECO-approved Dec 2022); administered via IDB, executed by SIECA as regional executing agency.",
+    "implementingAgency": "SAT (Superintendencia de Administración Tributaria / Customs) + VUPE (Ventanilla Única para las Exportaciones, under MINECO) + Ministerio de Agricultura (MAGA) + Dirección General de Migración — confirmed via a documented 2023 Guatemala interinstitutional coordination meeting; national node operates within SIECA's regional governance framework.",
     "gtmiTier": "B",
-    "startDate": "11/01/2023",
+    "startDate": "12/01/2022",
     "endDate": "12/01/2027",
-    "dim1_institutional": 2,
-    "dim1_note": "Guatemala's national node requires coordination among SAT, MAGA/VISAR, MINECO/VUPE, and Migration within SIECA's regional governance framework, which absorbs most coordination overhead; adaptation to SAT's legacy customs IT systems is the main pending operational challenge.",
+    "dim1_institutional": 3,
+    "dim1_note": "Guatemala's node requires coordination among at least four national agencies (SAT, VUPE, MAGA, Dirección General de Migración) plus SIECA's regional secretariat, confirmed via a documented interinstitutional coordination meeting.",
     "dim2_regulatory": 2,
-    "dim2_note": "CAUCA IV and existing phytosanitary frameworks cover core PDCC functions, while PDCC 2.0 requires COMIECO-level harmonisation of technical standards and national updates for electronic data-sharing, with SAT's SATData modernisation partially reducing the marginal regulatory adjustment burden.",
+    "dim2_note": "CAUCA IV and existing phytosanitary frameworks cover core PDCC functions; PDCC 2.0 requires COMIECO-level harmonisation of technical standards rather than new primary legislation.",
     "dim3_technical": 3,
-    "dim3_note": "Guatemala's node requires integration of SAT's customs IT, VUPE's single foreign trade window, MAGA/VISAR's phytosanitary certificate database, and Migration records with the SIECA regional hub across 24 currently operational platform functionalities; the September 2025 PDCC–Algeciras Port Community System interoperability launch adds an EU-side integration layer requiring pre-arrival data exchange with European port authorities.",
+    "dim3_note": "Requires integration of SAT's customs IT, VUPE's single window, MAGA's phytosanitary database, and Migration records with the SIECA regional hub; 24 of 71 planned regional functionalities are currently operational.",
     "dim4_political": 1,
-    "dim4_note": "Trade facilitation is broadly technocratic and supported across the political spectrum in Guatemala, Central America's largest exporter; projected GDP gains of 0.20–0.39% and export growth of 1.67–3.28% generate distributable benefits with few clear domestic losers.",
+    "dim4_note": "Available documentation frames PDCC as technocratic trade facilitation and regional interoperability; no vested-interest opposition was identified in sources reviewed for the Guatemala node specifically.",
     "dim5_investment": 1,
-    "dim5_note": "$9M EU contribution (Phase 1) committed and PDCC live since Nov 2023; PDCC 2.0 co-financed by IDB (RG-T4217), node adaptation borne within the regional programme. No funding gap. Supports D5 score 1 (secure).",
-    "compositeScore": 9,
-    "interactionType": "Sequentially Dependent",
-    "linkedProjectIds": [
-      "GTM1",
-      "GTM2"
-    ],
-    "interactionNote": "GTM3 is complementary to GTM1's trade-digitalisation component and depends on GTM2's RENAP-based digital identity and interoperability framework to authenticate trusted traders; if GTM2's DPI layer is delayed, PDCC must fall back on weaker identification mechanisms, reducing traceability and customs risk-profiling quality.",
+    "dim5_note": "EU-funded (€8M original cooperation, per EEAS), administered by IDB, executed by SIECA; PDCC 2.0 expansion co-financed by IDB (RG-T4217, COMIECO-approved Dec 2022). No funding gap documented for the Guatemala node. Supports D5 score 1 (secure).",
+    "compositeScore": 10,
+    "interactionType": "Complementary",
+    "linkedProjectIds": ["GTM1", "GTM2"],
+    "interactionNote": "GTM3's customs/VUPE interoperability work overlaps with GTM1's MINECO-based trade-facilitation/single-window component; both feed Guatemala's trade-digitalisation work at MINECO/VUPE and appear mutually reinforcing — a specific, named institutional overlap. GTM3's relationship to GTM2 is looser: both are concurrent Global Gateway digital-sector investments in Guatemala under the same country strategy, but run through entirely distinct agencies (SAT/VUPE/MAGA vs. GAE) with no documented technical dependency between them. The previously claimed dependency on GTM2's RENAP-based digital identity layer does not appear in either project's primary sources and is removed.",
     "overallRisk": "Medium"
   },
   {
@@ -325,11 +307,8 @@ const seed: Project[] = [
     "dim5_note": "TA contract (~€1M) funded within the EU-LAC Digital Alliance €172M envelope; fully committed, no capital expenditure or sovereign debt. Supports D5 score 1 (secure).",
     "compositeScore": 10,
     "interactionType": "Complementary",
-    "linkedProjectIds": [
-      "SLV2",
-      "SLV3"
-    ],
-    "interactionNote": "SLV1 directly implements the civil digital registration component identified as a regulatory dependency in SLV2 (EU bilateral MIP), making the two complementary rather than conflicting.SLV3's BELLA connectivity backbone enables online civil registry services to reach citizens and institutions outside San Salvador. Together the three projects form an integrated EU digital governance and identity stack for El Salvador.",
+    "linkedProjectIds": ["SLV2", "SLV3"],
+    "interactionNote": "SLV1 directly implements the civil digital registration component identified as a regulatory dependency in SLV2 (EU bilateral MIP), making the two complementary rather than conflicting. SLV3's BELLA connectivity backbone enables online civil registry services to reach citizens and institutions outside San Salvador. Together the three projects form an integrated EU digital governance and identity stack for El Salvador.",
     "overallRisk": "Medium"
   },
   {
@@ -354,9 +333,7 @@ const seed: Project[] = [
     "dim5_note": "€49.5M bilateral grants committed 2021–24 plus €22M planned 2025–27 (not confirmed) and blended finance on top. ~31% of the declared envelope unconfirmed plus uncommitted private co-financing. Supports D5 score 3 (at risk).",
     "compositeScore": 13,
     "interactionType": "Governance-Conflicting",
-    "linkedProjectIds": [
-      "SLV1"
-    ],
+    "linkedProjectIds": ["SLV1"],
     "interactionNote": "The EU and Team Europe require rule-of-law standards and transparency conditions, but SLV1 centralizes state data under the executive. The two can run side by side, but visible co-funding or shared platforms would put both sides in an uncomfortable position.",
     "overallRisk": "High"
   },
@@ -382,16 +359,14 @@ const seed: Project[] = [
     "dim5_note": "EC contribution €13M over 48 months; RedCLARA to raise at least €15M more from governments, private companies and banks, not yet committed (~€28M total, ~46% gap). Supports D5 score 3 (at risk).",
     "compositeScore": 13,
     "interactionType": "Complementary",
-    "linkedProjectIds": [
-      "SLV2"
-    ],
+    "linkedProjectIds": ["SLV2"],
     "interactionNote": "BELLA is the connectivity backbone that the EU's broader bilateral partnership (SLV2) needs to deliver digital services to schools, health centres, and public administration. Running SLV2 and SLV3 together reinforces both — they are designed to fit together inside Team Europe.",
     "overallRisk": "Medium"
   }
 ] as Project[];
 
 const defaultSummaries: Record<CountryCode, string> = {
-  GTM: "Guatemala's GG-TDEI, Estonia eGA digital governance, and PDCC national node converge on SIP and MINECO/VUPE. Institutional competition over SIP's limited capacity is the dominant sequencing risk; the absence of a comprehensive data protection law is the primary regulatory blocker.",
+  GTM: "Guatemala's three Global Gateway digital investments — GG-TDEI (GTM1), the Estonia eGA governance project (GTM2), and the PDCC national node (GTM3) — are all classified Complementary. They share a common EU country strategy but operate through entirely distinct agencies: MINECO, GAE, and SAT/VUPE/MAGA respectively. The dominant coordination risk is the absence of any cross-portfolio oversight mechanism, not direct institutional competition. GTM1 and GTM3 share the clearest functional link through MINECO/VUPE's trade-digitalisation work.",
   HND: "Honduras concentrates EU funding around forest traceability (SALH), institutional strengthening, and PDCC. SALH depends sequentially on the Cooperation Facility to build ICF capacity; high political sensitivity around anti-corruption tools is the main coordination risk.",
   SLV: "El Salvador's $60M IDB data infrastructure programme and BELLA cable extension form a sequentially dependent backbone, but the EU's MIP partnership imposes governance and rule-of-law conditions that conflict with centralised state data control — visible co-funding is constrained.",
 };
@@ -452,7 +427,7 @@ export const useProjectStore = create<State>()(
         }),
     }),
     {
-      name: "dpi-dashboard-v6",
+      name: "dpi-dashboard-v7",
       skipHydration: true,
       merge: (persisted, current) => ({
         ...current,
