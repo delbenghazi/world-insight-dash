@@ -94,9 +94,9 @@ function buildSteps(countryCode: string): TourStep[] {
     },
     {
       path: "/add-project",
-      selector: '[data-tour="add-project"]',
+      selector: '[data-tour="add-project-template"]',
       title: "Or fill it in manually",
-      body: "Download the blank interaction matrix template, fill it out offline, and re-upload it to load your portfolio.",
+      body: "Download the blank interaction matrix template, fill it out offline, and re-upload it to load your portfolio. Once you're done — by AI or by hand — validate the criteria below before committing.",
     },
   ];
 }
