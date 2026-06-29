@@ -13,7 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { TourProvider } from "@/components/Tour";
-import { useProjectStore } from "@/lib/project-data";
+import { PROJECT_STORE_KEY, useProjectStore } from "@/lib/project-data";
 
 function NotFoundComponent() {
   return (
@@ -129,8 +129,8 @@ function RootComponent() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        for (const k of ["dpi-dashboard-v6", "dpi-dashboard-v7"]) {
-          if (window.localStorage.getItem(k) !== null) {
+        for (const k of Object.keys(window.localStorage)) {
+          if (k.startsWith("dpi-dashboard-") && k !== PROJECT_STORE_KEY) {
             window.localStorage.removeItem(k);
           }
         }
