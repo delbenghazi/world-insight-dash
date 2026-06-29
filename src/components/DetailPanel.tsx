@@ -454,23 +454,19 @@ function CountrySwitcher({ current }: { current: CountryCode }) {
   );
   if (codes.length <= 1) return null;
   return (
-    <label className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1">
-      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-        Switch
-      </span>
-      <select
-        value={current}
-        onChange={(e) =>
-          navigate({ to: "/country/$code", params: { code: e.target.value } })
-        }
-        className="bg-transparent text-xs outline-none"
-      >
-        {codes.map((c) => (
-          <option key={c} value={c}>
-            {FOCUS_COUNTRIES[c]?.name ?? c}
-          </option>
-        ))}
-      </select>
-    </label>
+    <select
+      value={current}
+      onChange={(e) =>
+        navigate({ to: "/country/$code", params: { code: e.target.value } })
+      }
+      className="bg-transparent text-sm text-muted-foreground outline-none cursor-pointer hover:text-foreground"
+      aria-label="Switch country"
+    >
+      {codes.map((c) => (
+        <option key={c} value={c}>
+          {FOCUS_COUNTRIES[c]?.name ?? c}
+        </option>
+      ))}
+    </select>
   );
 }
