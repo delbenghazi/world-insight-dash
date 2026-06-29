@@ -427,7 +427,7 @@ export const useProjectStore = create<State>()(
         }),
     }),
     {
-      name: "dpi-dashboard-v7",
+      name: "dpi-dashboard-v8",
       skipHydration: true,
       merge: (persisted, current) => {
         const p = persisted as State;
