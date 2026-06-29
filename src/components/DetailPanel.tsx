@@ -90,8 +90,11 @@ export function DetailPanel({ code }: { code: CountryCode }) {
             {country?.name ?? code} portfolio
           </div>
         </div>
-        <div className="ml-auto text-[11px] text-muted-foreground">
-          {stats.count} project{stats.count === 1 ? "" : "s"}
+        <div className="ml-auto flex items-center gap-3">
+          <CountrySwitcher current={code} />
+          <span className="text-[11px] text-muted-foreground">
+            {stats.count} project{stats.count === 1 ? "" : "s"}
+          </span>
         </div>
       </div>
 
