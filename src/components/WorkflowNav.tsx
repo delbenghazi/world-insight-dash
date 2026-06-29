@@ -43,6 +43,7 @@ export function WorkflowNav() {
         key={item.label}
         to={item.to}
         params={item.params as never}
+        data-tour={item.tour}
         className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition ${
           isActive
             ? "bg-primary text-primary-foreground"
