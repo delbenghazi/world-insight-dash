@@ -10,6 +10,7 @@ interface NavItem {
   icon: LucideIcon;
   match: (pathname: string) => boolean;
   params?: Record<string, string>;
+  tour?: string;
 }
 
 export function WorkflowNav() {
