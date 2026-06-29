@@ -429,11 +429,18 @@ export const useProjectStore = create<State>()(
     {
       name: "dpi-dashboard-v7",
       skipHydration: true,
-      merge: (persisted, current) => ({
-        ...current,
-        ...(persisted as object),
-        sources: (persisted as State)?.sources?.length ? (persisted as State).sources : defaultSources,
-      }),
+      merge: (persisted, current) => {
+        const p = persisted as State;
+        const seedIds = new Set(current.projects.map((pr) => pr.projectId));
+        // Seed data always wins for built-in projects; preserve user-added ones.
+        const userProjects = (p.projects ?? []).filter((pr) => !seedIds.has(pr.projectId));
+        return {
+          ...current,
+          ...p,
+          projects: [...current.projects, ...userProjects],
+          sources: p.sources?.length ? p.sources : defaultSources,
+        };
+      },
     }
   )
 );
