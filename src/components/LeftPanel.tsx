@@ -98,7 +98,7 @@ export function LeftPanel() {
                 },
                 { to: "/portfolio-advisor", label: "Portfolio Advisor", icon: Workflow },
                 { to: "/compare", label: "Compare", icon: GitCompare },
-                { to: "/add-project", label: "Add Project", icon: Plus },
+                { to: "/add-project", label: "Add Project", icon: Plus, tour: "add-project" },
                 { to: "/about", label: "About", icon: Info },
               ].map((item) => {
                 const Icon = item.icon;
