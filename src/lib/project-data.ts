@@ -128,6 +128,8 @@ export interface ProjectSource {
   note?: string;
 }
 
+export const PROJECT_STORE_KEY = "dpi-dashboard-v9";
+
 const seed: Project[] = [
   {
     "country": "HND",
@@ -427,7 +429,7 @@ export const useProjectStore = create<State>()(
         }),
     }),
     {
-      name: "dpi-dashboard-v8",
+      name: PROJECT_STORE_KEY,
       skipHydration: true,
       merge: (persisted, current) => {
         const p = persisted as State;
