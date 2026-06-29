@@ -90,8 +90,11 @@ export function DetailPanel({ code }: { code: CountryCode }) {
             {country?.name ?? code} portfolio
           </div>
         </div>
-        <div className="ml-auto text-[11px] text-muted-foreground">
-          {stats.count} project{stats.count === 1 ? "" : "s"}
+        <div className="ml-auto flex items-center gap-3">
+          <CountrySwitcher current={code} />
+          <span className="text-[11px] text-muted-foreground">
+            {stats.count} project{stats.count === 1 ? "" : "s"}
+          </span>
         </div>
       </div>
 
@@ -439,5 +442,35 @@ function ProxyFlag({ info }: { info: ReturnType<typeof countryProxyInfo> }) {
       ))}
       <span>— see project details.</span>
     </div>
+  );
+}
+
+function CountrySwitcher({ current }: { current: CountryCode }) {
+  const navigate = useNavigate();
+  const { projects } = useProjectStore();
+  const codes = useMemo(
+    () => Array.from(new Set(projects.map((p) => p.country))).sort(),
+    [projects]
+  );
+  if (codes.length <= 1) return null;
+  return (
+    <label className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1">
+      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+        Switch
+      </span>
+      <select
+        value={current}
+        onChange={(e) =>
+          navigate({ to: "/country/$code", params: { code: e.target.value } })
+        }
+        className="bg-transparent text-xs outline-none"
+      >
+        {codes.map((c) => (
+          <option key={c} value={c}>
+            {FOCUS_COUNTRIES[c]?.name ?? c}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
