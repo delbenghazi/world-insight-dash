@@ -105,7 +105,25 @@ export const analyzeIntake = createServerFn({ method: "POST" })
       type: "text",
       text: `You will receive ${data.files.length} file(s) and ${data.urls.length} URL(s). Analyse them and return the JSON schema specified in the system prompt. Today's date is ${new Date().toISOString().slice(0, 10)}.`,
     });
+// Auto-fetch reference data for CPI and GTMI
+const REFERENCE_URLS = [
+  {
+    url: "https://www.transparency.org/en/cpi/2025",
+    label: "REFERENCE: CPI 2025 — use this to find the CPI score and rank for the detected project country and apply it when scoring D4 Political Sensitivity",
+  },
+  {
+    url: "https://openknowledge.worldbank.org/server/api/core/bitstreams/5e157ee3-e97a-5e42-bfc0-f1416f3de4de/content",
+    label: "REFERENCE: GTMI 2022 — use this to find the GovTech Maturity Index group (A, B, C, or D) for the detected project country and use it to populate the gtmi_tier field",
+  },
+];
 
+for (const ref of REFERENCE_URLS) {
+  const text = await fetchUrlText(ref.url);
+  parts.push({
+    type: "text",
+    text: `\n--- ${ref.label} ---\n${text}\n--- END REFERENCE ---\n`,
+  });
+}
     for (const u of data.urls) {
       const text = await fetchUrlText(u);
       parts.push({
