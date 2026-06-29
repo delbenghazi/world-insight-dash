@@ -190,7 +190,7 @@ const seed: Project[] = [
     "implementingAgency": "Dirección General de Aduanas (DGA) + Ministerio de Agricultura (SAG) + SENASA – as national node within SIECA-managed platform",
     "gtmiTier": "B",
     "startDate": "12/01/2022",
-    "endDate": "11/01/2027",
+    "endDate": "12/01/2026",
     "dim1_institutional": 2,
     "dim1_note": "Honduras node requires coordination between Customs (DGA), Agriculture (SAG/SENASA), and Migration — manageable as a national sub-component of a SIECA-governed regional system, but adaptation to national system legacy is needed.",
     "dim2_regulatory": 2,

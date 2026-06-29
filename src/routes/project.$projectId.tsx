@@ -122,10 +122,7 @@ function implementationStatus(p: Project): { label: string; tone: string } {
     return { label: "Closed", tone: "var(--muted-foreground)" };
   }
   if (!Number.isNaN(start)) {
-    const live = new Date(start).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-    });
+    const live = fmtDate(p.startDate);
     return { label: `Active — live since ${live}`, tone: "var(--color-risk-low)" };
   }
   return { label: "Active", tone: "var(--color-risk-low)" };
