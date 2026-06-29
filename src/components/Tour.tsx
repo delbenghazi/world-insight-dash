@@ -86,6 +86,18 @@ function buildSteps(countryCode: string): TourStep[] {
       title: "Compare country portfolios",
       body: "Tick two or more country checkboxes to compare their portfolios side by side. The comparison view updates automatically as you add or remove countries.",
     },
+    {
+      path: "/add-project",
+      selector: '[data-tour="add-project"]',
+      title: "Add project documentation",
+      body: "Upload your project documents and the AI will analyse them to automatically populate the interaction matrix.",
+    },
+    {
+      path: "/add-project",
+      selector: '[data-tour="add-project"]',
+      title: "Or fill it in manually",
+      body: "Download the blank interaction matrix template, fill it out offline, and re-upload it to load your portfolio.",
+    },
   ];
 }
 

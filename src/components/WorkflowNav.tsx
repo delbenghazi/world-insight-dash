@@ -29,7 +29,7 @@ export function WorkflowNav() {
     },
     { label: "Portfolio Advisor", to: "/portfolio-advisor", icon: Workflow, match: (p) => p.startsWith("/portfolio-advisor") },
     { label: "Compare", to: "/compare", icon: GitCompare, match: (p) => p.startsWith("/compare") },
-    { label: "Add Project", to: "/add-project", icon: Plus, match: (p) => p.startsWith("/add-project") },
+    { label: "Add Project", to: "/add-project", icon: Plus, match: (p) => p.startsWith("/add-project"), tour: "add-project" },
   ];
 
   const aboutItem: NavItem = { label: "About", to: "/about", icon: Info, match: (p) => p.startsWith("/about") };
