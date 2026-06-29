@@ -10,6 +10,7 @@ interface NavItem {
   icon: LucideIcon;
   match: (pathname: string) => boolean;
   params?: Record<string, string>;
+  tour?: string;
 }
 
 export function WorkflowNav() {
@@ -29,7 +30,7 @@ export function WorkflowNav() {
     },
     { label: "Portfolio Advisor", to: "/portfolio-advisor", icon: Workflow, match: (p) => p.startsWith("/portfolio-advisor") },
     { label: "Compare", to: "/compare", icon: GitCompare, match: (p) => p.startsWith("/compare") },
-    { label: "Add Project", to: "/add-project", icon: Plus, match: (p) => p.startsWith("/add-project") },
+    { label: "Add Project", to: "/add-project", icon: Plus, match: (p) => p.startsWith("/add-project"), tour: "add-project" },
   ];
 
   const aboutItem: NavItem = { label: "About", to: "/about", icon: Info, match: (p) => p.startsWith("/about") };
@@ -42,6 +43,7 @@ export function WorkflowNav() {
         key={item.label}
         to={item.to}
         params={item.params as never}
+        data-tour={item.tour}
         className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition ${
           isActive
             ? "bg-primary text-primary-foreground"

@@ -88,7 +88,7 @@ export function LeftPanel() {
 
           <div className="mt-auto border-t pt-3">
             <nav className="flex flex-col gap-0.5">
-              {[
+            {[
                 { to: "/methodology", label: "Atlas", icon: Map },
                 {
                   to: "/country/$code",
@@ -98,7 +98,7 @@ export function LeftPanel() {
                 },
                 { to: "/portfolio-advisor", label: "Portfolio Advisor", icon: Workflow },
                 { to: "/compare", label: "Compare", icon: GitCompare },
-                { to: "/add-project", label: "Add Project", icon: Plus },
+                { to: "/add-project", label: "Add Project", icon: Plus, tour: "add-project" },
                 { to: "/about", label: "About", icon: Info },
               ].map((item) => {
                 const Icon = item.icon;
@@ -107,6 +107,7 @@ export function LeftPanel() {
                     key={item.label}
                     to={item.to}
                     params={item.params as never}
+                    data-tour={(item as any).tour}
                     className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
                   >
                     <Icon size={13} />
