@@ -88,7 +88,7 @@ export function LeftPanel() {
 
           <div className="mt-auto border-t pt-3">
             <nav className="flex flex-col gap-0.5">
-              {[
+            {[
                 { to: "/methodology", label: "Atlas", icon: Map },
                 {
                   to: "/country/$code",
@@ -107,13 +107,14 @@ export function LeftPanel() {
                     key={item.label}
                     to={item.to}
                     params={item.params as never}
+                    data-tour={(item as any).tour}
                     className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
                   >
                     <Icon size={13} />
                     {item.label}
                   </Link>
                 );
-              })}
+              })
             </nav>
           </div>
         </div>
