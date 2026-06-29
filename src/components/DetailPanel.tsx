@@ -86,10 +86,7 @@ export function DetailPanel({ code }: { code: CountryCode }) {
           <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
             {country?.region ?? "Unknown region"}
           </div>
-          <div className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-            <span>{country?.name ?? code} portfolio</span>
-            <CountrySwitcher current={code} />
-          </div>
+          <CountrySwitcher current={code} />
         </div>
         <div className="ml-auto flex items-center gap-3">
           <span className="text-[11px] text-muted-foreground">
