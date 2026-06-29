@@ -114,7 +114,7 @@ export function LeftPanel() {
                     {item.label}
                   </Link>
                 );
-              })
+              })}
             </nav>
           </div>
         </div>
