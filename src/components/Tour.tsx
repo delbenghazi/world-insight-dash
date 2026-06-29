@@ -88,7 +88,7 @@ function buildSteps(countryCode: string): TourStep[] {
     },
     {
       path: "/add-project",
-      selector: '[data-tour="add-project"]',
+      selector: '[data-tour="add-project-upload"]',
       title: "Add project documentation",
       body: "Upload your project documents and the AI will analyse them to automatically populate the interaction matrix.",
     },

@@ -576,7 +576,7 @@ function AddProject() {
         </p>
 
         {/* ───────── AI INTAKE ───────── */}
-        <section className="mt-8 rounded-xl border bg-surface-elevated p-6">
+        <section data-tour="add-project-upload" className="mt-8 rounded-xl border bg-surface-elevated p-6">
           <div className="flex items-start gap-3">
             <div className="rounded-md bg-primary/10 p-2 text-primary">
               <Sparkles size={18} />
