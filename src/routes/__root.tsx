@@ -129,8 +129,10 @@ function RootComponent() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        if (window.localStorage.getItem("dpi-dashboard-v6") !== null) {
-          window.localStorage.removeItem("dpi-dashboard-v6");
+        for (const k of ["dpi-dashboard-v6", "dpi-dashboard-v7"]) {
+          if (window.localStorage.getItem(k) !== null) {
+            window.localStorage.removeItem(k);
+          }
         }
       } catch {
         // ignore storage access errors
