@@ -1273,11 +1273,16 @@ function ScoreDetail({
           const isProxyScore = !missing && !!proxy && !!proxy.note;
           const config = PROXY_CONFIGS[dimField];
 
+          const isEdited = editedFields.has(dimField);
+          const currentNote = (row as any)[DIM_NOTE_FIELD[dimField]] as string | undefined;
+
           const borderClass = missing
             ? "border-[color:var(--color-risk-medium)]"
             : isProxyScore
               ? "border-[color:var(--color-risk-medium)]"
-              : "";
+              : isEdited
+                ? "border-l-2 border-l-primary"
+                : "";
 
           return (
             <div key={k as string} className={`rounded-md border bg-surface p-3 ${borderClass}`}>
@@ -1308,13 +1313,19 @@ function ScoreDetail({
                       title={isProxyScore ? "Proxy score — click to override" : "Click to edit"}
                     />
                   )}
+                  {isEdited && (
+                    <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-primary">
+                      Edited
+                    </span>
+                  )}
                   <ConfidenceBadge level={d.confidence} />
                 </div>
               </div>
 
-              <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                {d.rationale || "(no rationale provided)"}
-              </div>
+              <EditableRationale
+                value={currentNote ?? d.rationale ?? ""}
+                onSave={(v) => onNoteChange(row._key, dimField, v)}
+              />
 
               {isProxyScore && (
                 <div className="mt-2 space-y-0.5">
