@@ -907,6 +907,8 @@ function AddProject() {
                                 row={row}
                                 detail={row._aiDetail}
                                 onScoreChange={updateDim}
+                                onNoteChange={updateDimNote}
+                                editedFields={editedDims[row._key] ?? new Set()}
                                 proxyState={proxyState}
                                 onProxyAnswer={setProxyAnswer}
                               />
