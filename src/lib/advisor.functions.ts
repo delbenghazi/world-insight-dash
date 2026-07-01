@@ -163,10 +163,8 @@ export const askAdvisor = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured.");
 
-    const analytics = computeAdvisorAnalytics(
-      data.projects as unknown as import("./project-data").Project[],
-      data.pairs,
-    );
+    const analytics = computeAdvisorAnalytics(data.projects, data.pairs);
+
     const analyticsBlock = analyticsToPromptBlock(analytics);
     const quickActions = suggestQuickActions(analytics);
 
