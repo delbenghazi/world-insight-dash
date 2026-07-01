@@ -37,10 +37,11 @@ export interface AdvisorAnalytics {
   timelinePressure: Array<{ a: string; b: string; overlapMonths: number }>;
 }
 
-function avg(nums: number[]): number {
-  const clean = nums.filter((n) => typeof n === "number" && !Number.isNaN(n));
+function avg(nums: Array<number | null | undefined>): number {
+  const clean = nums.filter((n): n is number => typeof n === "number" && !Number.isNaN(n));
   return clean.length ? Math.round((clean.reduce((s, n) => s + n, 0) / clean.length) * 10) / 10 : 0;
 }
+
 
 function monthsBetween(a: string, b: string): number {
   const da = new Date(a);
