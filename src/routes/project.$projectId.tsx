@@ -458,7 +458,7 @@ function ProjectPage() {
                     onChange={(e) => patch("gtmiTier", e.target.value as Project["gtmiTier"])}
                     className="rounded border bg-background px-2 py-1 font-mono text-[12px]"
                   >
-                    {["1", "2", "3"].map((t) => (
+                    {["A", "B", "C", "D"].map((t) => (
                       <option key={t} value={t}>Tier {t}</option>
                     ))}
                   </select>
