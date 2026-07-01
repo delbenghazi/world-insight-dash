@@ -22,7 +22,7 @@ function extractIds(q: string): Set<string> {
   return ids;
 }
 
-export function scoreProject(p: Project, q: string, ids: Set<string>): number {
+export function scoreProject(p: AnalyticsProject, q: string, ids: Set<string>): number {
   let s = 0;
   if (ids.has(p.projectId)) s += 10;
   const qL = q.toLowerCase();
