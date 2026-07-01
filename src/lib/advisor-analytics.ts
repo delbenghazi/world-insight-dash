@@ -1,7 +1,21 @@
 // Precomputed portfolio patterns for the AI advisor. Runs server-side before
 // prompt assembly so the model reasons on cooked signals, not raw rows.
 
-import type { Project } from "./project-data";
+export interface AnalyticsProject {
+  projectId: string;
+  projectName?: string;
+  leadDonor?: string;
+  startDate?: string;
+  endDate?: string;
+  dim1_institutional?: number | null;
+  dim2_regulatory?: number | null;
+  dim3_technical?: number | null;
+  dim4_political?: number | null;
+  dim5_investment?: number | null;
+  compositeScore?: number | null;
+  overallRisk?: string;
+}
+
 
 export interface PairLite {
   a: string;
