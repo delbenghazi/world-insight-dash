@@ -468,6 +468,16 @@ function AddProject() {
       delete next[k];
       return next;
     });
+    markEdited(key, field);
+  }
+
+  function updateDimNote(key: string, field: DimField, value: string) {
+    setImported(false);
+    const noteField = DIM_NOTE_FIELD[field];
+    setRows((prev) =>
+      prev.map((r) => (r._key === key ? ({ ...r, [noteField]: value } as EditableRow) : r))
+    );
+    markEdited(key, field);
   }
 
   function setProxyAnswer(rowKey: string, field: DimField, questionId: string, value: string) {
