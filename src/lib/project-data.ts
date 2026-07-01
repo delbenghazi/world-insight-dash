@@ -379,10 +379,12 @@ interface State {
   sources: ProjectSource[];
   selectedCountry: CountryCode | null;
   hoveredCountry: CountryCode | null;
+  editedProjectIds: string[];
   setSelectedCountry: (c: CountryCode | null) => void;
   setHoveredCountry: (c: CountryCode | null) => void;
   setProjects: (p: Project[]) => void;
   removeProject: (projectId: string) => void;
+  updateProject: (projectId: string, patch: Partial<Project>) => void;
   updateSummary: (c: CountryCode, summary: string) => void;
   addSources: (s: ProjectSource[]) => void;
 }
@@ -394,6 +396,18 @@ const seededSummaries: Record<string, CountrySummary> = Object.fromEntries(
   ])
 );
 
+function recomputeRisk(p: Project): Project {
+  const composite =
+    (p.dim1_institutional || 0) +
+    (p.dim2_regulatory || 0) +
+    (p.dim3_technical || 0) +
+    (p.dim4_political || 0) +
+    (p.dim5_investment || 0);
+  const overallRisk: RiskLevel =
+    composite <= 7 ? "Low" : composite <= 10 ? "Medium" : "High";
+  return { ...p, compositeScore: composite, overallRisk };
+}
+
 export const useProjectStore = create<State>()(
   persist(
     (set) => ({
@@ -402,6 +416,7 @@ export const useProjectStore = create<State>()(
       sources: defaultSources,
       selectedCountry: null,
       hoveredCountry: null,
+      editedProjectIds: [],
       setSelectedCountry: (c) => set({ selectedCountry: c }),
       setHoveredCountry: (c) => set({ hoveredCountry: c }),
       setProjects: (p) => set({ projects: p }),
@@ -409,6 +424,15 @@ export const useProjectStore = create<State>()(
         set((s) => ({
           projects: s.projects.filter((p) => p.projectId !== projectId),
           sources: s.sources.filter((src) => src.projectId !== projectId),
+        })),
+      updateProject: (projectId, patch) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.projectId === projectId ? recomputeRisk({ ...p, ...patch }) : p
+          ),
+          editedProjectIds: s.editedProjectIds.includes(projectId)
+            ? s.editedProjectIds
+            : [...s.editedProjectIds, projectId],
         })),
       updateSummary: (c, summary) =>
         set((s) => ({
@@ -434,12 +458,18 @@ export const useProjectStore = create<State>()(
       merge: (persisted, current) => {
         const p = persisted as State;
         const seedIds = new Set(current.projects.map((pr) => pr.projectId));
-        // Seed data always wins for built-in projects; preserve user-added ones.
+        const editedIds = new Set(p.editedProjectIds ?? []);
         const userProjects = (p.projects ?? []).filter((pr) => !seedIds.has(pr.projectId));
+        const mergedSeed = current.projects.map((seedPr) => {
+          if (!editedIds.has(seedPr.projectId)) return seedPr;
+          const override = (p.projects ?? []).find((x) => x.projectId === seedPr.projectId);
+          return override ?? seedPr;
+        });
         return {
           ...current,
           ...p,
-          projects: [...current.projects, ...userProjects],
+          projects: [...mergedSeed, ...userProjects],
+          editedProjectIds: p.editedProjectIds ?? [],
           sources: p.sources?.length ? p.sources : defaultSources,
         };
       },
