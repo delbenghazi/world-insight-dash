@@ -16,6 +16,7 @@ import {
   Loader2,
   ChevronDown,
   ChevronRight,
+  Pencil,
 } from "lucide-react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import {
