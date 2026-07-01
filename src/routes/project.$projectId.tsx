@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
-import { AlertTriangle, ArrowLeft, ChevronDown, ChevronUp, ExternalLink, FileText } from "lucide-react";
+import { useMemo, useState } from "react";
+import { AlertTriangle, ArrowLeft, ChevronDown, ChevronUp, ExternalLink, FileText, Pencil, Save, X } from "lucide-react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import { RadarChart } from "@/components/RadarChart";
 import {
@@ -13,6 +13,13 @@ import {
   projectHasProxy,
   useProjectStore,
 } from "@/lib/project-data";
+
+const INTERACTION_TYPES: InteractionType[] = [
+  "Complementary",
+  "Sequentially Dependent",
+  "Institutionally Competing",
+  "Governance-Conflicting",
+];
 
 export const Route = createFileRoute("/project/$projectId")({
   head: ({ params }) => ({
