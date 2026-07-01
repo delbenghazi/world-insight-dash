@@ -1232,12 +1232,16 @@ function ScoreDetail({
   row,
   detail,
   onScoreChange,
+  onNoteChange,
+  editedFields,
   proxyState,
   onProxyAnswer,
 }: {
   row: EditableRow;
   detail: AIDetail;
   onScoreChange: (key: string, field: DimField, value: string) => void;
+  onNoteChange: (key: string, field: DimField, value: string) => void;
+  editedFields: Set<DimField>;
   proxyState: Record<string, ProxyEntry>;
   onProxyAnswer: (rowKey: string, field: DimField, questionId: string, value: string) => void;
 }) {
