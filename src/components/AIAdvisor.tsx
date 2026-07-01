@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Bot, Send, Sparkles, X, Maximize2, Minimize2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Bot, Send, Sparkles, X, Maximize2, Minimize2, Copy, RefreshCw, Trash2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -13,17 +13,46 @@ interface Msg {
   content: string;
 }
 
-const SUGGESTIONS_COUNTRY = [
+const DEFAULT_SUGGESTIONS_COUNTRY = [
   "What should be sequenced first in this portfolio?",
   "Where do mandates compete inside this country?",
   "Which projects look complementary and can be coordinated?",
 ];
 
-const SUGGESTIONS_PORTFOLIO = [
+const DEFAULT_SUGGESTIONS_PORTFOLIO = [
   "Which countries have the highest coordination risk right now?",
   "Where are donors most likely to overlap across the region?",
   "What cross-country sequencing themes stand out?",
 ];
+
+const HISTORY_KEY_PREFIX = "dpi-advisor-history-v1:";
+
+function loadHistory(key: string): Msg[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(HISTORY_KEY_PREFIX + key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed.filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string");
+  } catch {}
+  return [];
+}
+
+function saveHistory(key: string, messages: Msg[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(HISTORY_KEY_PREFIX + key, JSON.stringify(messages.slice(-40)));
+  } catch {}
+}
+
+/** Turn [GTM1], [GTM1×GTM3] into internal links inside markdown before rendering. */
+function linkifyCitations(md: string): string {
+  return md
+    // pair citation → portfolio advisor deep link
+    .replace(/\[([A-Z]{2,4}\d+)×([A-Z]{2,4}\d+)\]/g, (_m, a, b) => `[${a}×${b}](/portfolio-advisor?focus=${a},${b})`)
+    // single project citation
+    .replace(/\[([A-Z]{2,4}\d+)\](?!\()/g, (_m, id) => `[${id}](/project/${id})`);
+}
 
 export function AIAdvisor({
   countryCode,
@@ -38,9 +67,13 @@ export function AIAdvisor({
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quickActions, setQuickActions] = useState<string[]>([]);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const autoSentRef = useRef<string | null>(null);
 
   const { selectedCountry, projects, summaries } = useProjectStore();
-  // In portfolio mode, advisor is region-wide and IGNORES per-country hover/selection.
   const activeCode = portfolioMode ? null : (countryCode ?? selectedCountry);
   const country = activeCode ? FOCUS_COUNTRIES[activeCode] : null;
   const portfolio = useMemo(
@@ -59,26 +92,63 @@ export function AIAdvisor({
   );
 
   const ask = useServerFn(askAdvisor);
+  const historyKey = portfolioMode ? "ALL" : (activeCode ?? "none");
 
+  // Listen for external open + optional autoSend
   useEffect(() => {
-    const handler = () => setOpen(true);
-    window.addEventListener("open-advisor", handler);
-    return () => window.removeEventListener("open-advisor", handler);
+    const handler = (e: Event) => {
+      setOpen(true);
+      const detail = (e as CustomEvent).detail as { question?: string } | undefined;
+      if (detail?.question) {
+        setTimeout(() => send(detail.question!), 100);
+      }
+    };
+    window.addEventListener("open-advisor", handler as EventListener);
+    return () => window.removeEventListener("open-advisor", handler as EventListener);
   }, []);
 
-  // Reset chat when active country changes — advisor is scoped to current portfolio.
+  // Auto-open + auto-ask from URL params (?ask=... on any page)
   useEffect(() => {
-    setMessages([]);
-    setError(null);
-  }, [activeCode]);
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const ask = params.get("ask");
+    if (ask && autoSentRef.current !== ask) {
+      autoSentRef.current = ask;
+      setOpen(true);
+      setTimeout(() => send(ask), 150);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // In portfolio mode the chat is always available — there's no per-country gate.
+  // Load per-scope history when scope changes.
+  useEffect(() => {
+    const loaded = loadHistory(historyKey);
+    setMessages(loaded);
+    setError(null);
+  }, [historyKey]);
+
+  // Persist on every change.
+  useEffect(() => {
+    if (messages.length > 0) saveHistory(historyKey, messages);
+  }, [messages, historyKey]);
+
+  // Auto-scroll + focus input.
+  useEffect(() => {
+    if (open && inputRef.current) inputRef.current.focus();
+  }, [open, historyKey]);
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, loading]);
+
   const canChat = portfolioMode || !!activeCode;
 
-  async function send(q: string) {
+  async function send(q: string, replaceLastAssistant = false) {
     if (!q.trim() || !canChat || loading) return;
     const userMsg: Msg = { role: "user", content: q.trim() };
-    const next = [...messages, userMsg];
+    const base = replaceLastAssistant
+      ? messages.slice(0, messages.length - (messages[messages.length - 1]?.role === "assistant" ? 1 : 0))
+      : messages;
+    const next: Msg[] = replaceLastAssistant ? base : [...base, userMsg];
     setMessages(next);
     setInput("");
     setError(null);
@@ -135,6 +205,7 @@ export function AIAdvisor({
         },
       });
       setMessages((m) => [...m, { role: "assistant", content: result.reply }]);
+      if (Array.isArray(result.quickActions)) setQuickActions(result.quickActions);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Something went wrong.";
       setError(msg);
@@ -143,12 +214,34 @@ export function AIAdvisor({
     }
   }
 
+  function regenerateLast() {
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    if (lastUser) send(lastUser.content, true);
+  }
+
+  function copyMessage(idx: number, content: string) {
+    if (typeof navigator === "undefined") return;
+    navigator.clipboard.writeText(content).then(() => {
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx((i) => (i === idx ? null : i)), 1500);
+    });
+  }
+
+  function newConversation() {
+    setMessages([]);
+    setError(null);
+    saveHistory(historyKey, []);
+    inputRef.current?.focus();
+  }
+
   const label = portfolioMode
     ? "AI Advisor · Regional portfolio"
     : countryCode && country
       ? `AI Advisor · ${country.name}`
       : "AI Advisor";
-  const suggestions = portfolioMode ? SUGGESTIONS_PORTFOLIO : SUGGESTIONS_COUNTRY;
+  const suggestions = quickActions.length > 0
+    ? quickActions
+    : (portfolioMode ? DEFAULT_SUGGESTIONS_PORTFOLIO : DEFAULT_SUGGESTIONS_COUNTRY);
 
   return (
     <>
@@ -177,8 +270,8 @@ export function AIAdvisor({
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background">
                 <Bot size={14} />
               </div>
-              <div>
-                <div className="text-sm font-semibold">{label}</div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold">{label}</div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                   {portfolioMode
                     ? `Region-wide · ${portfolio.length} project${portfolio.length === 1 ? "" : "s"} across ${Object.keys(FOCUS_COUNTRIES).length} countries`
@@ -187,9 +280,19 @@ export function AIAdvisor({
                       : "Select a country to scope this advisor"}
                 </div>
               </div>
+              {messages.length > 0 && (
+                <button
+                  onClick={newConversation}
+                  className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  aria-label="Clear conversation"
+                  title="Clear conversation"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
               <button
                 onClick={() => setExpanded((e) => !e)}
-                className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                className={`${messages.length > 0 ? "" : "ml-auto "}rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground`}
                 aria-label={expanded ? "Collapse advisor" : "Expand advisor"}
               >
                 {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -203,8 +306,7 @@ export function AIAdvisor({
               </button>
             </div>
 
-
-            <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
               {!canChat ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground">
@@ -220,33 +322,49 @@ export function AIAdvisor({
                   {messages.length === 0 && (
                     <div className="rounded-md bg-secondary px-3 py-2 text-sm leading-relaxed text-foreground">
                       {portfolioMode ? (
-                        <>
-                          Ready to advise on the{" "}
-                          <span className="font-semibold">regional portfolio</span>. Ask about cross-country sequencing, donor overlaps, or coordination risks across all projects.
-                        </>
+                        <>Ready to advise on the <span className="font-semibold">regional portfolio</span>. Ask about cross-country sequencing, donor overlaps, or coordination risks.</>
                       ) : (
-                        <>
-                          Ready to advise on{" "}
-                          <span className="font-semibold">{country?.name}</span>. Ask about sequencing, mandate overlaps, or coordination risks across this portfolio.
-                        </>
+                        <>Ready to advise on <span className="font-semibold">{country?.name}</span>. Ask about sequencing, mandate overlaps, or coordination risks.</>
                       )}
                     </div>
                   )}
                   {messages.map((m, i) => (
                     <div
                       key={i}
-                      className={`${expanded ? "max-w-[80%]" : "max-w-[88%]"} rounded-lg px-3 py-2 text-sm leading-relaxed ${
+                      className={`group ${expanded ? "max-w-[80%]" : "max-w-[92%]"} rounded-lg px-3 py-2 text-sm leading-relaxed ${
                         m.role === "user"
                           ? "ml-auto whitespace-pre-wrap bg-primary text-primary-foreground"
                           : "bg-secondary text-foreground"
                       }`}
                     >
                       {m.role === "assistant" ? (
-                        <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1.5 prose-headings:mt-3 prose-headings:mb-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-code:rounded prose-code:bg-background/60 prose-code:px-1 prose-code:py-0.5 prose-code:text-[0.85em] prose-code:before:content-none prose-code:after:content-none prose-strong:text-foreground prose-a:text-primary">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {m.content}
-                          </ReactMarkdown>
-                        </div>
+                        <>
+                          <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1.5 prose-headings:mt-3 prose-headings:mb-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-code:rounded prose-code:bg-background/60 prose-code:px-1 prose-code:py-0.5 prose-code:text-[0.85em] prose-code:before:content-none prose-code:after:content-none prose-strong:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {linkifyCitations(m.content)}
+                            </ReactMarkdown>
+                          </div>
+                          <div className="mt-1.5 flex gap-1 opacity-0 transition group-hover:opacity-100">
+                            <button
+                              onClick={() => copyMessage(i, m.content)}
+                              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-background hover:text-foreground"
+                              title="Copy"
+                            >
+                              {copiedIdx === i ? <Check size={10} /> : <Copy size={10} />}
+                              {copiedIdx === i ? "Copied" : "Copy"}
+                            </button>
+                            {i === messages.length - 1 && (
+                              <button
+                                onClick={regenerateLast}
+                                disabled={loading}
+                                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-50"
+                                title="Regenerate"
+                              >
+                                <RefreshCw size={10} /> Regenerate
+                              </button>
+                            )}
+                          </div>
+                        </>
                       ) : (
                         <span className="whitespace-pre-wrap">{m.content}</span>
                       )}
@@ -262,8 +380,11 @@ export function AIAdvisor({
                       {error}
                     </div>
                   )}
-                  {messages.length === 0 && !loading && (
+                  {!loading && suggestions.length > 0 && (
                     <div className="space-y-1.5 pt-1">
+                      {messages.length === 0 && (
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Suggested</div>
+                      )}
                       {suggestions.map((s) => (
                         <button
                           key={s}
@@ -287,6 +408,7 @@ export function AIAdvisor({
               className="flex items-center gap-2 border-t p-3"
             >
               <input
+                ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
