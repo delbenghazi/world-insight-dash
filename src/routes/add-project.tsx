@@ -1408,6 +1408,86 @@ function ScoreDetail({
   );
 }
 
+function EditableRationale({
+  value,
+  onSave,
+}: {
+  value: string;
+  onSave: (v: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  if (!editing) {
+    return (
+      <div className="mt-2 group flex items-start gap-1.5">
+        <div className="flex-1 text-[11px] leading-relaxed text-muted-foreground">
+          {value || <span className="italic">(no rationale provided)</span>}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(value);
+            setEditing(true);
+          }}
+          className="shrink-0 rounded p-1 text-muted-foreground opacity-60 transition hover:bg-secondary hover:text-foreground hover:opacity-100"
+          aria-label="Edit rationale"
+          title="Edit rationale"
+        >
+          <Pencil size={11} />
+        </button>
+      </div>
+    );
+  }
+
+  const save = () => {
+    setEditing(false);
+    if (draft !== value) onSave(draft);
+  };
+
+  return (
+    <div className="mt-2 space-y-1.5">
+      <textarea
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            save();
+          }
+          if (e.key === "Escape") {
+            setDraft(value);
+            setEditing(false);
+          }
+        }}
+        className="min-h-[80px] w-full rounded border bg-background px-2 py-1.5 text-[11px] leading-relaxed outline-none focus:border-primary"
+      />
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={save}
+          className="rounded bg-primary px-2 py-1 text-[10px] font-medium text-primary-foreground transition hover:opacity-90"
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(value);
+            setEditing(false);
+          }}
+          className="rounded border bg-surface px-2 py-1 text-[10px] font-medium transition hover:border-primary hover:text-primary"
+        >
+          Cancel
+        </button>
+        <span className="text-[10px] text-muted-foreground">Enter to save · Shift+Enter for newline · Esc to cancel</span>
+      </div>
+    </div>
+  );
+}
+
+
 function ConfidenceBadge({ level }: { level: "High" | "Medium" | "Low" }) {
   const tone =
     level === "High"
