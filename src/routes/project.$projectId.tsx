@@ -118,10 +118,21 @@ function riskBadge(risk: RiskLevel) {
   return { letter, color };
 }
 
+function parseUTC(s: string): number {
+  if (!s) return NaN;
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m) {
+    return Date.UTC(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+  }
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (iso) return Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+  return Date.parse(s);
+}
+
 function implementationStatus(p: Project): { label: string; tone: string } {
   const now = Date.now();
-  const start = Date.parse(p.startDate);
-  const end = Date.parse(p.endDate);
+  const start = parseUTC(p.startDate);
+  const end = parseUTC(p.endDate);
   if (!Number.isNaN(start) && start > now) {
     return { label: "Under Preparation", tone: "var(--color-risk-medium)" };
   }
@@ -150,7 +161,7 @@ function splitFunders(raw: string): { lead: string; cofinanciers: string[] } {
 
 
 function fmtDate(s: string): string {
-  const t = Date.parse(s);
+  const t = parseUTC(s);
   if (Number.isNaN(t)) return s || "—";
   return new Intl.DateTimeFormat("en", { year: "numeric", month: "short", timeZone: "UTC" }).format(new Date(t));
 }
