@@ -67,7 +67,7 @@ export function computeAdvisorAnalytics(
     .filter((p) => typeof p.compositeScore === "number")
     .sort((a, b) => (b.compositeScore ?? 0) - (a.compositeScore ?? 0))
     .slice(0, 3)
-    .map((p) => ({ id: p.projectId, composite: p.compositeScore, risk: p.overallRisk }));
+    .map((p) => ({ id: p.projectId, composite: p.compositeScore ?? 0, risk: p.overallRisk ?? "" }));
 
   const dimensionAverages = {
     d1: avg(projects.map((p) => p.dim1_institutional)),
