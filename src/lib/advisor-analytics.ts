@@ -4,7 +4,9 @@
 export interface AnalyticsProject {
   projectId: string;
   projectName?: string;
+  projectType?: string;
   leadDonor?: string;
+  implementingAgency?: string;
   startDate?: string;
   endDate?: string;
   dim1_institutional?: number | null;
@@ -15,6 +17,7 @@ export interface AnalyticsProject {
   compositeScore?: number | null;
   overallRisk?: string;
 }
+
 
 
 export interface PairLite {
