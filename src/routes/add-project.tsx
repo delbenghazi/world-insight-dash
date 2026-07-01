@@ -353,6 +353,17 @@ function AddProject() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [pendingSources, setPendingSources] = useState<ProjectSource[]>([]);
   const [proxyState, setProxyState] = useState<Record<string, ProxyEntry>>({});
+  const [editedDims, setEditedDims] = useState<Record<string, Set<DimField>>>({});
+
+  function markEdited(rowKey: string, field: DimField) {
+    setEditedDims((prev) => {
+      const next = { ...prev };
+      const set = new Set(next[rowKey] ?? []);
+      set.add(field);
+      next[rowKey] = set;
+      return next;
+    });
+  }
 
   const issues = useMemo(() => validateRows(rows), [rows]);
   const issuesByCell = useMemo(() => {
