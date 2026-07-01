@@ -256,10 +256,55 @@ function ProjectPage() {
   const { projectId } = Route.useLoaderData();
   const projects = useProjectStore((s) => s.projects);
   const storeSources = useProjectStore((s) => s.sources);
-  const project = projects.find((p) => p.projectId === projectId);
+  const updateProject = useProjectStore((s) => s.updateProject);
+  const stored = projects.find((p) => p.projectId === projectId);
 
-  if (!project) throw notFound();
+  if (!stored) throw notFound();
 
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<Project>(stored);
+  const [showAllDocs, setShowAllDocs] = useState(false);
+
+  // Sync draft when navigating between projects or after external updates
+  const draftForThisProject = draft.projectId === projectId;
+  const currentDraft: Project = editing && draftForThisProject ? draft : stored;
+
+  const editedFields = useMemo(() => {
+    if (!editing) return new Set<keyof Project>();
+    const s = new Set<keyof Project>();
+    (Object.keys(draft) as (keyof Project)[]).forEach((k) => {
+      const a = JSON.stringify(draft[k]);
+      const b = JSON.stringify(stored[k]);
+      if (a !== b) s.add(k);
+    });
+    return s;
+  }, [editing, draft, stored]);
+
+  function beginEdit() {
+    setDraft(stored);
+    setEditing(true);
+  }
+  function cancelEdit() {
+    setDraft(stored);
+    setEditing(false);
+  }
+  function saveEdit() {
+    const composite =
+      draft.dim1_institutional +
+      draft.dim2_regulatory +
+      draft.dim3_technical +
+      draft.dim4_political +
+      draft.dim5_investment;
+    const overallRisk: RiskLevel =
+      composite <= 7 ? "Low" : composite <= 10 ? "Medium" : "High";
+    updateProject(projectId, { ...draft, compositeScore: composite, overallRisk });
+    setEditing(false);
+  }
+  function patch<K extends keyof Project>(key: K, value: Project[K]) {
+    setDraft((d) => ({ ...d, [key]: value }));
+  }
+
+  const project = currentDraft;
   const country = FOCUS_COUNTRIES[project.country];
   const dimensions = getDimensions(project);
   const keyDim = getKeyRiskDimension(project);
@@ -281,24 +326,70 @@ function ProjectPage() {
   const { primary: primaryAgency, partners: implementingPartners } = splitAgencies(
     project.implementingAgency,
   );
-  
-  const [showAllDocs, setShowAllDocs] = useState(false);
+
   const visibleDocs = showAllDocs ? documents : documents.slice(0, 2);
-  const status = implementationStatus(project);
+
+  // Live composite when editing
+  const liveComposite = editing
+    ? project.dim1_institutional +
+      project.dim2_regulatory +
+      project.dim3_technical +
+      project.dim4_political +
+      project.dim5_investment
+    : project.compositeScore;
+  const liveRisk: RiskLevel = editing
+    ? liveComposite <= 7
+      ? "Low"
+      : liveComposite <= 10
+        ? "Medium"
+        : "High"
+    : project.overallRisk;
+
+  const status = implementationStatus({ ...project, startDate: project.startDate, endDate: project.endDate });
   const accent = countryColorVar(project.country);
-  const risk = riskBadge(project.overallRisk);
+  const risk = riskBadge(liveRisk);
+
+  const isEdited = (k: keyof Project) => editedFields.has(k);
+  const editedClass = "bg-primary/5 ring-1 ring-primary/40 rounded";
+
+  const countryOptions = Object.keys(FOCUS_COUNTRIES);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <WorkflowNav />
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
-        <Link
-          to="/country/$code"
-          params={{ code: project.country }}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
-        >
-          <ArrowLeft size={12} /> Back to {country?.name ?? project.country} portfolio
-        </Link>
+        <div className="flex items-start justify-between gap-4">
+          <Link
+            to="/country/$code"
+            params={{ code: project.country }}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
+          >
+            <ArrowLeft size={12} /> Back to {country?.name ?? project.country} portfolio
+          </Link>
+          {!editing ? (
+            <button
+              onClick={beginEdit}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
+            >
+              <Pencil size={12} /> Edit Project
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={cancelEdit}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              >
+                <X size={12} /> Cancel
+              </button>
+              <button
+                onClick={saveEdit}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:opacity-90"
+              >
+                <Save size={12} /> Save Changes
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Header */}
         <header className="mt-10">
@@ -313,9 +404,22 @@ function ProjectPage() {
             <span>·</span>
             <span>{project.projectId}</span>
           </div>
-          <h1 className="mt-3 text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground">
-            {project.projectName}
-          </h1>
+          {editing ? (
+            <input
+              value={project.projectName}
+              onChange={(e) => patch("projectName", e.target.value)}
+              className={`mt-3 w-full bg-transparent text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground outline-none border-b border-dashed border-border focus:border-primary ${isEdited("projectName") ? "text-primary" : ""}`}
+            />
+          ) : (
+            <h1 className="mt-3 text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground">
+              {project.projectName}
+            </h1>
+          )}
+          {editing && (
+            <div className="mt-2 text-[11px] text-muted-foreground">
+              Editing mode — highlighted fields have unsaved changes.
+            </div>
+          )}
         </header>
 
         {/* ============ SECTION 1 — PROJECT SNAPSHOT + RADAR ============ */}
@@ -330,61 +434,176 @@ function ProjectPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
             {/* Datasheet */}
             <dl className="overflow-hidden rounded-xl border bg-surface">
-              <SnapshotRow label="Project ID">
+              <SnapshotRow label="Project ID" edited={false}>
                 <span className="font-mono">{project.projectId}</span>
               </SnapshotRow>
-              <SnapshotRow label="GTMI Tier">
-                <span className="font-mono">Tier {project.gtmiTier}</span>
-              </SnapshotRow>
-              <SnapshotRow label="Project Type">{project.projectType}</SnapshotRow>
-              <SnapshotRow label="Project Name">{project.projectName}</SnapshotRow>
-              <SnapshotRow label="Lead Funder">{lead}</SnapshotRow>
-              <SnapshotRow label="Co-Financiers">
-                {cofinanciers.length === 0 ? (
-                  <span className="italic text-muted-foreground">None recorded</span>
-                ) : (
-                  <ul className="space-y-1">
-                    {cofinanciers.map((c, i) => (
-                      <li key={i}>{c}</li>
+              <SnapshotRow label="GTMI Tier" edited={isEdited("gtmiTier")}>
+                {editing ? (
+                  <select
+                    value={String(project.gtmiTier)}
+                    onChange={(e) => patch("gtmiTier", e.target.value as Project["gtmiTier"])}
+                    className="rounded border bg-background px-2 py-1 font-mono text-[12px]"
+                  >
+                    {["1", "2", "3"].map((t) => (
+                      <option key={t} value={t}>Tier {t}</option>
                     ))}
-                  </ul>
+                  </select>
+                ) : (
+                  <span className="font-mono">Tier {project.gtmiTier}</span>
                 )}
               </SnapshotRow>
-              <SnapshotRow label="Implementing Agency">{primaryAgency}</SnapshotRow>
-              <SnapshotRow label="Implementing Partners">
-                {implementingPartners.length === 0 ? (
-                  <span className="italic text-muted-foreground">None recorded</span>
-                ) : (
-                  <ul className="space-y-1">
-                    {implementingPartners.map((p, i) => (
-                      <li key={i}>{p}</li>
+              <SnapshotRow label="Country" edited={isEdited("country")}>
+                {editing ? (
+                  <select
+                    value={project.country}
+                    onChange={(e) => patch("country", e.target.value as Project["country"])}
+                    className="rounded border bg-background px-2 py-1 text-[13px]"
+                  >
+                    {countryOptions.map((c) => (
+                      <option key={c} value={c}>{FOCUS_COUNTRIES[c as keyof typeof FOCUS_COUNTRIES]?.name ?? c}</option>
                     ))}
-                  </ul>
+                  </select>
+                ) : (
+                  country?.name ?? project.country
                 )}
               </SnapshotRow>
-              <SnapshotRow label="Status">
+              <SnapshotRow label="Project Type" edited={isEdited("projectType")}>
+                {editing ? (
+                  <input
+                    value={project.projectType}
+                    onChange={(e) => patch("projectType", e.target.value)}
+                    className="w-full rounded border bg-background px-2 py-1 text-[13px]"
+                  />
+                ) : (
+                  project.projectType
+                )}
+              </SnapshotRow>
+              <SnapshotRow label="Project Name" edited={isEdited("projectName")}>
+                {editing ? (
+                  <input
+                    value={project.projectName}
+                    onChange={(e) => patch("projectName", e.target.value)}
+                    className="w-full rounded border bg-background px-2 py-1 text-[13px]"
+                  />
+                ) : (
+                  project.projectName
+                )}
+              </SnapshotRow>
+              <SnapshotRow label="Lead Funder" edited={isEdited("leadDonor")}>
+                {editing ? (
+                  <textarea
+                    value={project.leadDonor}
+                    onChange={(e) => patch("leadDonor", e.target.value)}
+                    rows={2}
+                    className="w-full rounded border bg-background px-2 py-1 text-[13px]"
+                  />
+                ) : (
+                  lead
+                )}
+              </SnapshotRow>
+              {!editing && (
+                <SnapshotRow label="Co-Financiers" edited={false}>
+                  {cofinanciers.length === 0 ? (
+                    <span className="italic text-muted-foreground">None recorded</span>
+                  ) : (
+                    <ul className="space-y-1">
+                      {cofinanciers.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  )}
+                </SnapshotRow>
+              )}
+              <SnapshotRow label="Implementing Agency" edited={isEdited("implementingAgency")}>
+                {editing ? (
+                  <textarea
+                    value={project.implementingAgency}
+                    onChange={(e) => patch("implementingAgency", e.target.value)}
+                    rows={2}
+                    className="w-full rounded border bg-background px-2 py-1 text-[13px]"
+                  />
+                ) : (
+                  primaryAgency
+                )}
+              </SnapshotRow>
+              {!editing && (
+                <SnapshotRow label="Implementing Partners" edited={false}>
+                  {implementingPartners.length === 0 ? (
+                    <span className="italic text-muted-foreground">None recorded</span>
+                  ) : (
+                    <ul className="space-y-1">
+                      {implementingPartners.map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
+                  )}
+                </SnapshotRow>
+              )}
+              <SnapshotRow label="Status" edited={false}>
                 <span style={{ color: status.tone }} className="font-medium">
                   {status.label}
                 </span>
               </SnapshotRow>
-              <SnapshotRow label="Start – End">
-                <span className="font-mono text-[12px]">
-                  {fmtDate(project.startDate)} → {fmtDate(project.endDate)}
-                </span>
+              <SnapshotRow label="Start – End" edited={isEdited("startDate") || isEdited("endDate")}>
+                {editing ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={project.startDate}
+                      onChange={(e) => patch("startDate", e.target.value)}
+                      placeholder="MM/DD/YYYY"
+                      className="w-32 rounded border bg-background px-2 py-1 font-mono text-[12px]"
+                    />
+                    <span>→</span>
+                    <input
+                      value={project.endDate}
+                      onChange={(e) => patch("endDate", e.target.value)}
+                      placeholder="MM/DD/YYYY"
+                      className="w-32 rounded border bg-background px-2 py-1 font-mono text-[12px]"
+                    />
+                  </div>
+                ) : (
+                  <span className="font-mono text-[12px]">
+                    {fmtDate(project.startDate)} → {fmtDate(project.endDate)}
+                  </span>
+                )}
               </SnapshotRow>
-              <SnapshotRow label="Interaction Type">
-                <span
-                  className="rounded px-2 py-0.5 text-[11px] font-medium"
-                  style={{
-                    background: interactionTone(project.interactionType).bg,
-                    color: interactionTone(project.interactionType).fg,
-                  }}
-                >
-                  {project.interactionType}
-                </span>
+              <SnapshotRow label="Interaction Type" edited={isEdited("interactionType")}>
+                {editing ? (
+                  <select
+                    value={project.interactionType}
+                    onChange={(e) => patch("interactionType", e.target.value as InteractionType)}
+                    className="rounded border bg-background px-2 py-1 text-[13px]"
+                  >
+                    {INTERACTION_TYPES.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <span
+                    className="rounded px-2 py-0.5 text-[11px] font-medium"
+                    style={{
+                      background: interactionTone(project.interactionType).bg,
+                      color: interactionTone(project.interactionType).fg,
+                    }}
+                  >
+                    {project.interactionType}
+                  </span>
+                )}
               </SnapshotRow>
-              <SnapshotRow label="Linked Projects">
-                {project.linkedProjectIds.length === 0 ? (
+              <SnapshotRow label="Linked Projects" edited={isEdited("linkedProjectIds")}>
+                {editing ? (
+                  <input
+                    value={project.linkedProjectIds.join(", ")}
+                    onChange={(e) =>
+                      patch(
+                        "linkedProjectIds",
+                        e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                      )
+                    }
+                    placeholder="e.g. GTM1, GTM3"
+                    className="w-full rounded border bg-background px-2 py-1 font-mono text-[12px]"
+                  />
+                ) : project.linkedProjectIds.length === 0 ? (
                   <span className="italic text-muted-foreground">None</span>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
@@ -433,7 +652,7 @@ function ProjectPage() {
                   Composite Score
                 </div>
                 <div className="mt-0.5 text-2xl font-bold tabular-nums">
-                  {project.compositeScore} <span className="text-muted-foreground">/ 15</span>
+                  {liveComposite} <span className="text-muted-foreground">/ 15</span>
                 </div>
                 <div className="mt-2 flex items-center justify-center gap-2">
                   <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -459,14 +678,23 @@ function ProjectPage() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        {/* Plain Language Summary */}
+        {/* Plain Language Summary / Interaction note */}
         <section className="mt-6">
           <h3 className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            What this project does
+            {editing ? "Project description / interaction note" : "What this project does"}
           </h3>
-          <p className="mt-3 text-base leading-relaxed text-foreground">
-            {plainLanguageSummary(project)}
-          </p>
+          {editing ? (
+            <textarea
+              value={project.interactionNote}
+              onChange={(e) => patch("interactionNote", e.target.value)}
+              rows={5}
+              className={`mt-3 w-full rounded-md border bg-background p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-ring/40 ${isEdited("interactionNote") ? editedClass : ""}`}
+            />
+          ) : (
+            <p className="mt-3 text-base leading-relaxed text-foreground">
+              {plainLanguageSummary(project)}
+            </p>
+          )}
         </section>
 
         {/* Key Risk Flag */}
@@ -503,10 +731,10 @@ function ProjectPage() {
               Per-dimension scoring rationale
             </h3>
             <div className="font-mono text-xs text-muted-foreground">
-              Composite {project.compositeScore}/15
+              Composite {liveComposite}/15
             </div>
           </div>
-          {projectHasProxy(project) && (
+          {projectHasProxy(project) && !editing && (
             <div
               className="mt-1 text-right text-[11px] italic"
               style={{ color: "var(--color-risk-medium)" }}
@@ -516,18 +744,64 @@ function ProjectPage() {
             </div>
           )}
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-5">
-            {dimensions.map((d) => (
-              <div key={d.key} className="rounded-lg border bg-surface p-4">
-                <div className="flex items-baseline justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {d.abbr}
-                  </span>
-                  <span className="font-mono text-2xl font-semibold tabular-nums">{d.score}</span>
+            {dimensions.map((d) => {
+              const scoreKey = ({
+                D1: "dim1_institutional",
+                D2: "dim2_regulatory",
+                D3: "dim3_technical",
+                D4: "dim4_political",
+                D5: "dim5_investment",
+              } as const)[d.key as "D1" | "D2" | "D3" | "D4" | "D5"];
+              const noteKey = ({
+                D1: "dim1_note",
+                D2: "dim2_note",
+                D3: "dim3_note",
+                D4: "dim4_note",
+                D5: "dim5_note",
+              } as const)[d.key as "D1" | "D2" | "D3" | "D4" | "D5"];
+              const dimEdited = isEdited(scoreKey) || isEdited(noteKey);
+              return (
+                <div
+                  key={d.key}
+                  className={`rounded-lg border bg-surface p-4 ${dimEdited ? "border-l-2 border-l-primary" : ""}`}
+                >
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {d.abbr}
+                    </span>
+                    {editing ? (
+                      <select
+                        value={d.score}
+                        onChange={(e) => patch(scoreKey, Number(e.target.value) as Project[typeof scoreKey])}
+                        className="rounded border bg-background px-1 py-0.5 font-mono text-lg font-semibold"
+                      >
+                        {[1, 2, 3].map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="font-mono text-2xl font-semibold tabular-nums">{d.score}</span>
+                    )}
+                  </div>
+                  <div className="mt-1 text-[11px] font-medium text-foreground">{d.label}</div>
+                  {editing ? (
+                    <textarea
+                      value={d.note}
+                      onChange={(e) => patch(noteKey, e.target.value)}
+                      rows={4}
+                      className="mt-2 w-full rounded border bg-background p-2 text-[11px] leading-relaxed outline-none focus:ring-1 focus:ring-ring/40"
+                    />
+                  ) : (
+                    <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{d.note}</p>
+                  )}
+                  {dimEdited && (
+                    <div className="mt-2 inline-block rounded bg-primary/15 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-primary">
+                      Edited
+                    </div>
+                  )}
                 </div>
-                <div className="mt-1 text-[11px] font-medium text-foreground">{d.label}</div>
-                <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{d.note}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
