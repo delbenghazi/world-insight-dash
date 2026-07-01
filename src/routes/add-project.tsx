@@ -94,6 +94,16 @@ const DIM_FIELDS: DimField[] = [
   "dim5_investment",
 ];
 
+type DimNoteField = "dim1_note" | "dim2_note" | "dim3_note" | "dim4_note" | "dim5_note";
+
+const DIM_NOTE_FIELD: Record<DimField, DimNoteField> = {
+  dim1_institutional: "dim1_note",
+  dim2_regulatory: "dim2_note",
+  dim3_technical: "dim3_note",
+  dim4_political: "dim4_note",
+  dim5_investment: "dim5_note",
+};
+
 interface AIDimensionDetail {
   score: number | null;
   rationale: string;
