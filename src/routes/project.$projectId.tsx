@@ -381,12 +381,30 @@ function ProjectPage() {
             <ArrowLeft size={12} /> Back to {country?.name ?? project.country} portfolio
           </Link>
           {!editing ? (
-            <button
-              onClick={beginEdit}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
-            >
-              <Pencil size={12} /> Edit Project
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() =>
+                  window.dispatchEvent(
+                    new CustomEvent("open-advisor", {
+                      detail: {
+                        question: `Give me a full analytical brief on [${project.projectId}]: what does it do, why does its composite score = ${project.compositeScore} (${project.overallRisk}), which dimensions are the weakest, and which sibling projects should we sequence or coordinate it with?`,
+                      },
+                    }),
+                  )
+                }
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
+                title="Open AI Advisor scoped to this project"
+              >
+                <span aria-hidden>✨</span> Ask advisor about this project
+              </button>
+              <button
+                onClick={beginEdit}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
+              >
+                <Pencil size={12} /> Edit Project
+              </button>
+            </div>
+
           ) : (
             <div className="flex items-center gap-2">
               <button
