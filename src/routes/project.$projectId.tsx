@@ -237,15 +237,18 @@ function buildDocumentTrail(p: Project) {
 
 function SnapshotRow({
   label,
+  edited,
   children,
 }: {
   label: string;
+  edited?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[140px_1fr] items-baseline gap-4 border-b border-border/60 px-4 py-2.5 last:border-b-0">
+    <div className={`grid grid-cols-[140px_1fr] items-baseline gap-4 border-b border-border/60 px-4 py-2.5 last:border-b-0 ${edited ? "bg-primary/5" : ""}`}>
       <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
         {label}
+        {edited && <span className="ml-1 text-primary">•</span>}
       </dt>
       <dd className="text-[13px] leading-snug text-foreground">{children}</dd>
     </div>
