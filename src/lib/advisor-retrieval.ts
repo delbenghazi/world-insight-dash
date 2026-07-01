@@ -2,8 +2,9 @@
 // latest question so the prompt always includes what they asked about in
 // full, and truncates the rest to a one-liner.
 
-import type { Project } from "./project-data";
+import type { AnalyticsProject } from "./advisor-analytics";
 import type { PairLite } from "./advisor-analytics";
+
 
 const DIM_KEYWORDS: Record<string, RegExp> = {
   dim1_institutional: /\b(institution|mandate|agency|govern|coordinat)/i,
