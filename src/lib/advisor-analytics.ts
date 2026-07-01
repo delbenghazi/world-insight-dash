@@ -49,7 +49,7 @@ function monthsBetween(a: string, b: string): number {
   return Math.round((+db - +da) / (1000 * 60 * 60 * 24 * 30));
 }
 
-function windowsOverlap(p: Project, q: Project): number {
+function windowsOverlap(p: AnalyticsProject, q: Project): number {
   if (!p.startDate || !p.endDate || !q.startDate || !q.endDate) return 0;
   const start = new Date(Math.max(+new Date(p.startDate), +new Date(q.startDate)));
   const end = new Date(Math.min(+new Date(p.endDate), +new Date(q.endDate)));
@@ -58,7 +58,7 @@ function windowsOverlap(p: Project, q: Project): number {
 }
 
 export function computeAdvisorAnalytics(
-  projects: Project[],
+  projects: AnalyticsProject[],
   pairs: PairLite[],
 ): AdvisorAnalytics {
   // Hotspots — top by composite
