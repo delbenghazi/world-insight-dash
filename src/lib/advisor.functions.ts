@@ -1,6 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { CODEBOOK_SECTION } from "./codebook-content";
+import {
+  analyticsToPromptBlock,
+  computeAdvisorAnalytics,
+  suggestQuickActions,
+} from "./advisor-analytics";
+import { extractIds, lastUserQuery, rankMentioned, scorePair, scoreProject } from "./advisor-retrieval";
+
+
 
 
 const Msg = z.object({
