@@ -16,6 +16,7 @@ import {
   Loader2,
   ChevronDown,
   ChevronRight,
+  Pencil,
 } from "lucide-react";
 import { WorkflowNav } from "@/components/WorkflowNav";
 import {
@@ -92,6 +93,16 @@ const DIM_FIELDS: DimField[] = [
   "dim4_political",
   "dim5_investment",
 ];
+
+type DimNoteField = "dim1_note" | "dim2_note" | "dim3_note" | "dim4_note" | "dim5_note";
+
+const DIM_NOTE_FIELD: Record<DimField, DimNoteField> = {
+  dim1_institutional: "dim1_note",
+  dim2_regulatory: "dim2_note",
+  dim3_technical: "dim3_note",
+  dim4_political: "dim4_note",
+  dim5_investment: "dim5_note",
+};
 
 interface AIDimensionDetail {
   score: number | null;
@@ -342,6 +353,17 @@ function AddProject() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [pendingSources, setPendingSources] = useState<ProjectSource[]>([]);
   const [proxyState, setProxyState] = useState<Record<string, ProxyEntry>>({});
+  const [editedDims, setEditedDims] = useState<Record<string, Set<DimField>>>({});
+
+  function markEdited(rowKey: string, field: DimField) {
+    setEditedDims((prev) => {
+      const next = { ...prev };
+      const set = new Set(next[rowKey] ?? []);
+      set.add(field);
+      next[rowKey] = set;
+      return next;
+    });
+  }
 
   const issues = useMemo(() => validateRows(rows), [rows]);
   const issuesByCell = useMemo(() => {
@@ -446,6 +468,16 @@ function AddProject() {
       delete next[k];
       return next;
     });
+    markEdited(key, field);
+  }
+
+  function updateDimNote(key: string, field: DimField, value: string) {
+    setImported(false);
+    const noteField = DIM_NOTE_FIELD[field];
+    setRows((prev) =>
+      prev.map((r) => (r._key === key ? ({ ...r, [noteField]: value } as EditableRow) : r))
+    );
+    markEdited(key, field);
   }
 
   function setProxyAnswer(rowKey: string, field: DimField, questionId: string, value: string) {
@@ -875,6 +907,8 @@ function AddProject() {
                                 row={row}
                                 detail={row._aiDetail}
                                 onScoreChange={updateDim}
+                                onNoteChange={updateDimNote}
+                                editedFields={editedDims[row._key] ?? new Set()}
                                 proxyState={proxyState}
                                 onProxyAnswer={setProxyAnswer}
                               />
@@ -1198,12 +1232,16 @@ function ScoreDetail({
   row,
   detail,
   onScoreChange,
+  onNoteChange,
+  editedFields,
   proxyState,
   onProxyAnswer,
 }: {
   row: EditableRow;
   detail: AIDetail;
   onScoreChange: (key: string, field: DimField, value: string) => void;
+  onNoteChange: (key: string, field: DimField, value: string) => void;
+  editedFields: Set<DimField>;
   proxyState: Record<string, ProxyEntry>;
   onProxyAnswer: (rowKey: string, field: DimField, questionId: string, value: string) => void;
 }) {
@@ -1235,11 +1273,16 @@ function ScoreDetail({
           const isProxyScore = !missing && !!proxy && !!proxy.note;
           const config = PROXY_CONFIGS[dimField];
 
+          const isEdited = editedFields.has(dimField);
+          const currentNote = (row as any)[DIM_NOTE_FIELD[dimField]] as string | undefined;
+
           const borderClass = missing
             ? "border-[color:var(--color-risk-medium)]"
             : isProxyScore
               ? "border-[color:var(--color-risk-medium)]"
-              : "";
+              : isEdited
+                ? "border-l-2 border-l-primary"
+                : "";
 
           return (
             <div key={k as string} className={`rounded-md border bg-surface p-3 ${borderClass}`}>
@@ -1270,13 +1313,19 @@ function ScoreDetail({
                       title={isProxyScore ? "Proxy score — click to override" : "Click to edit"}
                     />
                   )}
+                  {isEdited && (
+                    <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-primary">
+                      Edited
+                    </span>
+                  )}
                   <ConfidenceBadge level={d.confidence} />
                 </div>
               </div>
 
-              <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                {d.rationale || "(no rationale provided)"}
-              </div>
+              <EditableRationale
+                value={currentNote ?? d.rationale ?? ""}
+                onSave={(v) => onNoteChange(row._key, dimField, v)}
+              />
 
               {isProxyScore && (
                 <div className="mt-2 space-y-0.5">
@@ -1358,6 +1407,86 @@ function ScoreDetail({
     </div>
   );
 }
+
+function EditableRationale({
+  value,
+  onSave,
+}: {
+  value: string;
+  onSave: (v: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  if (!editing) {
+    return (
+      <div className="mt-2 group flex items-start gap-1.5">
+        <div className="flex-1 text-[11px] leading-relaxed text-muted-foreground">
+          {value || <span className="italic">(no rationale provided)</span>}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(value);
+            setEditing(true);
+          }}
+          className="shrink-0 rounded p-1 text-muted-foreground opacity-60 transition hover:bg-secondary hover:text-foreground hover:opacity-100"
+          aria-label="Edit rationale"
+          title="Edit rationale"
+        >
+          <Pencil size={11} />
+        </button>
+      </div>
+    );
+  }
+
+  const save = () => {
+    setEditing(false);
+    if (draft !== value) onSave(draft);
+  };
+
+  return (
+    <div className="mt-2 space-y-1.5">
+      <textarea
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            save();
+          }
+          if (e.key === "Escape") {
+            setDraft(value);
+            setEditing(false);
+          }
+        }}
+        className="min-h-[80px] w-full rounded border bg-background px-2 py-1.5 text-[11px] leading-relaxed outline-none focus:border-primary"
+      />
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={save}
+          className="rounded bg-primary px-2 py-1 text-[10px] font-medium text-primary-foreground transition hover:opacity-90"
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(value);
+            setEditing(false);
+          }}
+          className="rounded border bg-surface px-2 py-1 text-[10px] font-medium transition hover:border-primary hover:text-primary"
+        >
+          Cancel
+        </button>
+        <span className="text-[10px] text-muted-foreground">Enter to save · Shift+Enter for newline · Esc to cancel</span>
+      </div>
+    </div>
+  );
+}
+
 
 function ConfidenceBadge({ level }: { level: "High" | "Medium" | "Low" }) {
   const tone =

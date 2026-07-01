@@ -1,30 +1,42 @@
-## Audit results
+## Goal
+On the Add Project page, let users revise each AI-generated dimension score **and its rationale** before committing. Save the user-revised values (not the original AI output) as the project's final data. Only the AI review/commit stage changes — no other pages, no changes to the AI intake flow itself.
 
-I walked through every route and shared component. Here's what's worth fixing, grouped by impact. Tell me which to address (default: all 🔴 + 🟠).
+## Where the change lives
+Only `src/routes/add-project.tsx`. The `ScoreDetail` component already renders the 5 dimension cards (score input + rationale text). Today the rationale is read-only text; scores are editable but edits aren't visually tracked, and rationale edits aren't captured at all.
 
-### 🔴 Broken (recommend fix)
-1. **WorkflowNav "Atlas" label points to `/methodology`** (`src/components/WorkflowNav.tsx:22`). Misleading. Either rename the label to "Methodology" or change the link to `/`. My recommendation: rename to **"Methodology"** since `/` is already covered by another nav item.
+## Changes
 
-### 🟠 Minor UX gaps
-2. **Blank country region/name** when a URL uses a code outside `FOCUS_COUNTRIES` (`src/routes/project.$projectId.tsx:265`, `src/components/DetailPanel.tsx:38`). Add a safe fallback like `"Unknown region"` / `code.toUpperCase()`.
-3. **Empty `<p>` on Compare** when a country has no summary (`src/routes/compare.tsx:193`). Add fallback copy: "No sequencing notes yet."
-4. **Dead `extractBudget` function** in project detail (`src/routes/project.$projectId.tsx:147,286`). Either surface the budget in the UI or delete the function + `void` line.
+### 1. Editable rationale per dimension
+In `ScoreDetail`, replace the static rationale `<div>` with an inline-editable block:
+- Default view: rationale text with a small pencil "Edit" affordance.
+- On click: swap to a `<textarea>` prefilled with the current rationale; Save / Cancel buttons (Save writes on blur/Enter, Cancel restores).
+- Persist via a new handler `updateDimNote(rowKey, dimField, value)` in `AddProject`, which writes to the row's `dim1_note` … `dim5_note` field (these already exist on `EditableRow` and on `Project`).
 
-### 🟡 Nits (optional)
-5. Remove `console.error(error)` in root error boundary (`src/routes/__root.tsx:41`) — already reported via `reportLovableError`.
-6. WorkflowNav fallback `countryCode = "GTM"` (`src/components/WorkflowNav.tsx:14`) — use first country from store, or disable the link when none selected.
-7. Local `DetailPanel` inside `PortfolioAdvisor.tsx` shadows the shared component name — rename for clarity.
+### 2. Track "edited" state per dimension
+Add a lightweight per-cell dirty map, e.g. `editedDims: Record<string, Set<DimField>>` keyed by row `_key`. Mark a dimension as edited when the user:
+- changes the score via the number input in `ScoreDetail` (existing `updateDim` path), OR
+- edits the rationale via the new `updateDimNote` path.
+Proxy-derived scores stay in their existing "proxy" state and are not marked as user-edited (they already have their own amber styling).
 
-### Not bugs
-- No broken `<Link to=…>` paths.
-- No runtime errors in the current session.
-- No missing alt text (no `<img>` tags).
+### 3. Visual "edited" indicator
+Inside `ScoreDetail`, when a dimension is in the edited set:
+- Add a subtle left border accent on that dimension card (e.g. `border-l-2` in the primary color).
+- Add a small `Edited` badge next to the existing `ConfidenceBadge` (same badge styling, neutral/primary tint).
+Leave untouched dimensions visually identical to today (AI default look).
 
-## Proposed changes (default scope: 🔴 + 🟠)
+### 4. Commit path
+`commit()` already spreads `rest` into the final `Project`, which includes `dim1_note` … `dim5_note`. Because `updateDimNote` writes straight into those fields, the user-revised rationale is saved automatically. No schema change required. Scores likewise already flow through `updateDim` → `rest.dimN_*`.
 
-- `WorkflowNav.tsx`: change `label: "Atlas"` → `label: "Methodology"`.
-- `project.$projectId.tsx`: replace `country?.name` / `country?.region` reads with `country?.name ?? project.country` and `country?.region ?? "Unknown region"`. Decide on `extractBudget`: I'll **delete** it unless you want it surfaced.
-- `DetailPanel.tsx`: same fallback pattern for `country?.region`.
-- `compare.tsx`: `{summaries[code]?.summary ?? "No sequencing notes yet."}`.
+Also carry the edited-set forward so the committed project's `_aiDetail.rationale` display (only used in the intake table) matches — the committed `Project` uses `dimN_note`, which is the source of truth downstream.
 
-Reply with anything to adjust (e.g. "include nits", "keep extractBudget and show budget", "rename to Atlas instead") or approve to implement.
+### 5. Small UX polish
+- Rationale textarea: `min-h-[80px]`, monospace-optional, same border/focus styles as other inputs in this file.
+- Keyboard: Enter to save, Shift+Enter for newline, Esc to cancel.
+- No changes to composite calc, validation, proxy flow, sources, template upload, or any other section.
+
+## Files touched
+- `src/routes/add-project.tsx` (only)
+
+## Out of scope
+- Editing already-committed projects from the atlas.
+- Any changes to `Project` schema, project detail page, or AI intake server function.
