@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { CODEBOOK_SECTION } from "./codebook-content";
+
 
 const Msg = z.object({
   role: z.enum(["user", "assistant"]),
@@ -46,6 +48,18 @@ const Input = z.object({
   messages: z.array(Msg).min(1).max(40),
 });
 
+const CALIBRATION = `
+CALIBRATION — DNA RUBRIC × INTERACTION MATRIX (authoritative)
+When explaining any score, risk band, or pair outcome, you MUST reason from the codebook below.
+- Every D1–D5 score you cite must be justified with the exact Score-level criteria or Decision rule from DIMENSION SCORING. If a user challenges a score, quote the rule that supports it verbatim.
+- Every interaction call (Complementary / Sequentially Dependent / Institutionally Competing / Governance-Conflicting) must be tied to the specific Trigger from INTERACTION TYPES. Never label a pair with a type whose trigger is not met by the provided evidence.
+- Composite = D1+D2+D3+D4+D5 (range 5–15). Risk bands come from OVERALL RISK LEVEL. Do not recompute or reband.
+- If the codebook and the sequencing engine output disagree on a pair, the engine wins — explain the engine outcome and note the tension; do not override.
+- If evidence for a trigger is absent from PORTFOLIO CONTEXT, say so; do not infer.
+
+${CODEBOOK_SECTION}
+`;
+
 const SYSTEM_COUNTRY = `You are the DPI-Atlas portfolio advisor. You explain — you do not invent.
 
 GROUND RULES
@@ -53,7 +67,8 @@ GROUND RULES
 - Sequencing outcomes (Redesign / Sequence / Coordinate / Parallel) are decided by a deterministic four-gate engine in code. NEVER second-guess them. Quote the engine's outcome and reasoning verbatim when asked about a pair.
 - Composite scores (5–15) and dimension scores (D1–D5) come from the codebook. Don't recompute them; cite the values provided.
 - If the user asks something you don't have data for, say so plainly. Do not fabricate projects, donors, dates, or scores.
-- Be concise. Prefer short paragraphs and bullet lists. Cite project IDs (e.g. GTM1, HND2) explicitly.`;
+- Be concise. Prefer short paragraphs and bullet lists. Cite project IDs (e.g. GTM1, HND2) explicitly.
+${CALIBRATION}`;
 
 const SYSTEM_PORTFOLIO = `You are the DPI-Atlas portfolio advisor. You explain — you do not invent.
 
@@ -62,7 +77,9 @@ GROUND RULES
 - Sequencing outcomes (Redesign / Sequence / Coordinate / Parallel) are decided by a deterministic four-gate engine in code. NEVER second-guess them. Quote the engine's outcome and reasoning verbatim when asked about a pair.
 - Composite scores (5–15) and dimension scores (D1–D5) come from the codebook. Don't recompute them; cite the values provided.
 - If the user asks something you don't have data for, say so plainly. Do not fabricate projects, donors, dates, or scores.
-- Be concise. Prefer short paragraphs and bullet lists. Cite project IDs (e.g. GTM1, HND2) explicitly, and prefix country when ambiguous.`;
+- Be concise. Prefer short paragraphs and bullet lists. Cite project IDs (e.g. GTM1, HND2) explicitly, and prefix country when ambiguous.
+${CALIBRATION}`;
+
 
 function buildContext(data: z.infer<typeof Input>): string {
   const lines: string[] = [];
