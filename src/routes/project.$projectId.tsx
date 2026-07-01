@@ -284,11 +284,11 @@ function ProjectPage() {
   }, [editing, draft, stored]);
 
   function beginEdit() {
-    setDraft(stored);
+    setDraft(stored!);
     setEditing(true);
   }
   function cancelEdit() {
-    setDraft(stored);
+    setDraft(stored!);
     setEditing(false);
   }
   function saveEdit() {
